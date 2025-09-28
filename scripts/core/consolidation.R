@@ -264,7 +264,7 @@ consolidate_performance_data <- function(all_data) {
     chrono_data <- all_data$chrono_split
     if (nrow(chrono_data) > 0) {
       performance_data$chrono_performance <- chrono_data %>%
-        select(Model, Asset, AIC, BIC, LogLikelihood, MSE, MAE) %>%
+        select(Model, Asset, AIC, BIC, LogLikelihood, any_of(c("Avg_MSE", "Avg_MAE", "MSE..Forecast.vs.Actual.", "MAE..Forecast.vs.Actual."))) %>%
         mutate(Source = "Chronological Split")
     }
   }
@@ -273,7 +273,7 @@ consolidate_performance_data <- function(all_data) {
     cv_data <- all_data$cv_split
     if (nrow(cv_data) > 0) {
       performance_data$cv_performance <- cv_data %>%
-        select(Model, Asset, AIC, BIC, LogLikelihood, MSE, MAE) %>%
+        select(Model, Asset, AIC, BIC, LogLikelihood, any_of(c("Avg_MSE", "Avg_MAE", "MSE..Forecast.vs.Actual.", "MAE..Forecast.vs.Actual."))) %>%
         mutate(Source = "Cross-Validation")
     }
   }
@@ -286,11 +286,11 @@ consolidate_performance_data <- function(all_data) {
         # Extract performance metrics from TS CV data
         if ("Asset" %in% colnames(tscv_data)) {
           performance_data[[paste0("tscv_", key)]] <- tscv_data %>%
-            select(Model, Asset, AIC, BIC, LogLikelihood, MSE, MAE) %>%
+            select(Model, Asset, AIC, BIC, LogLikelihood, any_of(c("Avg_MSE", "Avg_MAE", "MSE..Forecast.vs.Actual.", "MAE..Forecast.vs.Actual."))) %>%
             mutate(Source = "Time_Series_CV")
         } else if ("AssetType" %in% colnames(tscv_data)) {
           performance_data[[paste0("tscv_", key)]] <- tscv_data %>%
-            select(Model, AssetType, AIC, BIC, LogLikelihood, MSE, MAE) %>%
+            select(Model, AssetType, AIC, BIC, LogLikelihood, any_of(c("Avg_MSE", "Avg_MAE", "MSE..Forecast.vs.Actual.", "MAE..Forecast.vs.Actual."))) %>%
             rename(Asset = AssetType) %>%
             mutate(Source = "Time_Series_CV")
         }
@@ -307,7 +307,7 @@ consolidate_performance_data <- function(all_data) {
         # Extract performance metrics if available
         if (all(c("Model", "Asset") %in% colnames(nf_data))) {
           nf_performance[[key]] <- nf_data %>%
-            select(Model, Asset, any_of(c("AIC", "BIC", "LogLikelihood", "MSE", "MAE"))) %>%
+            select(Model, Asset, any_of(c("AIC", "BIC", "LogLikelihood", "Avg_MSE", "Avg_MAE", "MSE..Forecast.vs.Actual.", "MAE..Forecast.vs.Actual."))) %>%
             mutate(Source = "NF-GARCH")
         }
       }
@@ -337,8 +337,8 @@ consolidate_performance_data <- function(all_data) {
         Avg_AIC = mean(AIC, na.rm = TRUE),
         Avg_BIC = mean(BIC, na.rm = TRUE),
         Avg_LogLik = mean(LogLikelihood, na.rm = TRUE),
-        Avg_MSE = mean(MSE, na.rm = TRUE),
-        Avg_MAE = mean(MAE, na.rm = TRUE),
+        Avg_MSE = mean(if("Avg_MSE" %in% names(.)) Avg_MSE else if("MSE..Forecast.vs.Actual." %in% names(.)) `MSE..Forecast.vs.Actual.` else NA, na.rm = TRUE),
+        Avg_MAE = mean(if("Avg_MAE" %in% names(.)) Avg_MAE else if("MAE..Forecast.vs.Actual." %in% names(.)) `MAE..Forecast.vs.Actual.` else NA, na.rm = TRUE),
         .groups = "drop"
       )
     
