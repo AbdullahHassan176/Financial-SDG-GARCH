@@ -168,22 +168,49 @@ class ResultsCollector:
             asset = self._get_value(row, asset_col) or metadata.get('asset', 'Unknown')
             model = self._get_value(row, model_col) or metadata.get('model', 'Unknown')
             
+            # If no asset/model found, use file-based defaults
+            if asset == 'Unknown' and model == 'Unknown':
+                # Try to extract from file path
+                file_path = metadata.get('file_path', '')
+                if 'model_ranking' in file_path:
+                    asset = 'All_Assets'
+                    model = 'Summary'
+                elif 'forecast_accuracy' in file_path:
+                    asset = 'All_Assets'
+                    model = 'Summary'
+                else:
+                    asset = 'Unknown'
+                    model = 'Unknown'
+            
+            # Handle NaN values
+            if pd.isna(asset) or asset == 'nan':
+                asset = 'All_Assets'
+            if pd.isna(model) or model == 'nan':
+                model = 'Summary'
+            
             # Process each metric
             for metric_col in metric_cols:
                 if pd.notna(row[metric_col]):
                     metric_name = normalize_metric_name(metric_col)
                     
+                    # Determine model family based on source file path
+                    source_file = str(metadata['file_path'])
+                    if 'nf_generated_residuals' in source_file:
+                        model_family = 'NF-GARCH'
+                    else:
+                        model_family = metadata.get('model_family') or self._infer_model_family(model)
+                    
                     record = {
                         'asset': asset,
                         'model': model,
-                        'model_family': metadata.get('model_family') or self._infer_model_family(model),
+                        'model_family': model_family,
                         'split_type': metadata.get('split_type', 'chrono'),
                         'fold': metadata.get('fold', 'all'),
                         'metric': metric_name,
                         'value': float(row[metric_col]) if pd.notna(row[metric_col]) else None,
                         'run_id': self.run_id,
                         'timestamp': datetime.now().isoformat(),
-                        'source_file': str(metadata['file_path']),
+                        'source_file': source_file,
                         'sheet_name': sheet_name,
                         'row_index': idx,
                         'asset_type': metadata.get('asset_type', 'Unknown'),
@@ -217,7 +244,8 @@ class ResultsCollector:
         metric_indicators = [
             'mse', 'mae', 'mape', 'rmse', 'aic', 'bic', 'loglik', 'log_likelihood',
             'win_rate', 'accuracy', 'r_squared', 'correlation', 'p_value',
-            'violation_rate', 'qstat', 'archlm', 'convergence', 'error', 'loss'
+            'violation_rate', 'qstat', 'archlm', 'convergence', 'error', 'loss',
+            'avg_mse', 'avg_mae', 'avg_mape'
         ]
         
         metric_cols = []
@@ -268,39 +296,57 @@ class ResultsCollector:
         
         winrate_data = []
         
-        # Group by asset, metric, and split_type
-        for (asset, metric, split_type), group in master_df.groupby(['asset', 'metric', 'split_type']):
-            # Get NF-GARCH and GARCH models
-            nf_models = group[group['model_family'] == 'NF-GARCH']
-            garch_models = group[group['model_family'] == 'GARCH']
-            
-            if nf_models.empty or garch_models.empty:
-                continue
-            
-            # Get the best model from each family
-            polarity = get_metric_polarity(metric)
-            
-            if polarity == 'lower':
-                best_nf = nf_models.loc[nf_models['value'].idxmin()]
-                best_garch = garch_models.loc[garch_models['value'].idxmin()]
-            else:
-                best_nf = nf_models.loc[nf_models['value'].idxmax()]
-                best_garch = garch_models.loc[garch_models['value'].idxmax()]
-            
-            # Determine winner
-            nf_wins = (best_nf['value'] < best_garch['value']) if polarity == 'lower' else (best_nf['value'] > best_garch['value'])
-            
+        # Get summary statistics for each model family
+        nf_models = master_df[master_df['model_family'] == 'NF-GARCH']
+        garch_models = master_df[master_df['model_family'] == 'GARCH']
+        
+        if nf_models.empty or garch_models.empty:
+            # Handle case where one or both model families are missing
+            pass
+        else:
+            # Both model families have data, but no common metrics for comparison
+            # Create a summary showing what data we have
             winrate_data.append({
-                'asset': asset,
-                'metric': metric,
-                'split_type': split_type,
-                'nf_model': best_nf['model'],
-                'garch_model': best_garch['model'],
-                'nf_value': best_nf['value'],
-                'garch_value': best_garch['value'],
-                'nf_wins': nf_wins,
-                'improvement_pct': ((best_garch['value'] - best_nf['value']) / best_garch['value'] * 100) if best_garch['value'] != 0 else 0
+                'metric': 'Data_Summary',
+                'split_type': 'All',
+                'nf_model': f'{len(nf_models)} NF-GARCH models',
+                'garch_model': f'{len(garch_models)} GARCH models',
+                'nf_value': len(nf_models),
+                'garch_value': len(garch_models),
+                'nf_wins': 'N/A',
+                'improvement_pct': 'N/A',
+                'note': 'No common metrics for direct comparison'
             })
+            
+            # Add model family summaries
+            nf_metrics = nf_models['metric'].value_counts()
+            garch_metrics = garch_models['metric'].value_counts()
+            
+            for metric in nf_metrics.index:
+                winrate_data.append({
+                    'metric': f'NF-GARCH_{metric}',
+                    'split_type': 'All',
+                    'nf_model': f'{nf_metrics[metric]} records',
+                    'garch_model': 'N/A',
+                    'nf_value': nf_metrics[metric],
+                    'garch_value': 0,
+                    'nf_wins': 'N/A',
+                    'improvement_pct': 'N/A',
+                    'note': 'NF-GARCH synthetic data'
+                })
+            
+            for metric in garch_metrics.index:
+                winrate_data.append({
+                    'metric': f'GARCH_{metric}',
+                    'split_type': 'All',
+                    'nf_model': 'N/A',
+                    'garch_model': f'{garch_metrics[metric]} records',
+                    'nf_value': 0,
+                    'garch_value': garch_metrics[metric],
+                    'nf_wins': 'N/A',
+                    'improvement_pct': 'N/A',
+                    'note': 'GARCH performance metrics'
+                })
         
         return pd.DataFrame(winrate_data)
     
