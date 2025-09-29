@@ -1,3 +1,1 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:426075cec7f2564c6c8db36c634250e6b5bd270f5ec659b4f5cf2deaf8c2ab74
-size 345
+[{"Field":"Total Records","Value":371317},{"Field":"Unique Assets","Value":13},{"Field":"Unique Models","Value":12},{"Field":"Unique Metrics","Value":30},{"Field":"Run ID","Value":"run_20250929_141035"},{"Field":"Generated At","Value":"2025-09-29T14:11:54.456641"},{"Field":"Files Processed","Value":371317},{"Field":"Files Skipped","Value":17}]
