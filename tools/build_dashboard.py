@@ -97,9 +97,14 @@ class DashboardBuilder:
             else:
                 records = df.to_dict('records')
             
-            # Write without indentation to reduce file size
+            # Write without indentation to reduce file size, handle NaN values
+            def json_serializer(obj):
+                if pd.isna(obj) or obj is None:
+                    return None
+                return str(obj)
+            
             with open(json_file, 'w') as f:
-                json.dump(records, f, separators=(',', ':'), default=str)
+                json.dump(records, f, separators=(',', ':'), default=json_serializer)
         
         logger.info(f"Created {len(data)} JSON data files")
     

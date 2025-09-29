@@ -313,8 +313,8 @@ class ResultsCollector:
                 'garch_model': f'{len(garch_models)} GARCH models',
                 'nf_value': len(nf_models),
                 'garch_value': len(garch_models),
-                'nf_wins': 'N/A',
-                'improvement_pct': 'N/A',
+                'nf_wins': None,
+                'improvement_pct': None,
                 'note': 'No common metrics for direct comparison'
             })
             
@@ -330,8 +330,8 @@ class ResultsCollector:
                     'garch_model': 'N/A',
                     'nf_value': nf_metrics[metric],
                     'garch_value': 0,
-                    'nf_wins': 'N/A',
-                    'improvement_pct': 'N/A',
+                    'nf_wins': None,
+                    'improvement_pct': None,
                     'note': 'NF-GARCH synthetic data'
                 })
             
@@ -343,12 +343,16 @@ class ResultsCollector:
                     'garch_model': f'{garch_metrics[metric]} records',
                     'nf_value': 0,
                     'garch_value': garch_metrics[metric],
-                    'nf_wins': 'N/A',
-                    'improvement_pct': 'N/A',
+                    'nf_wins': None,
+                    'improvement_pct': None,
                     'note': 'GARCH performance metrics'
                 })
         
-        return pd.DataFrame(winrate_data)
+        # Convert DataFrame and handle NaN values
+        winrate_df = pd.DataFrame(winrate_data)
+        # Replace NaN values with None for proper JSON serialization
+        winrate_df = winrate_df.where(pd.notna(winrate_df), None)
+        return winrate_df
     
     def save_to_excel(self, master_df: pd.DataFrame, summaries: Dict[str, pd.DataFrame]):
         """Save all data to Excel workbook."""
