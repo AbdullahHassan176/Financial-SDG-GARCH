@@ -1,0 +1,1 @@
+[{"asset":"USDZAR","model":"sGARCH_norm","model_family":"GARCH","split_type":"chrono","fold":"all","metric":"AIC","value":-1234.5,"run_id":"test123","timestamp":"2025-09-29T16:50:00Z"},{"asset":"USDZAR","model":"sGARCH_norm","model_family":"GARCH","split_type":"chrono","fold":"all","metric":"BIC","value":-1200.3,"run_id":"test123","timestamp":"2025-09-29T16:50:00Z"}]
