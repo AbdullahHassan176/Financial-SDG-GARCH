@@ -355,13 +355,13 @@
         // Load data from JSON files
         async function loadData() {
             try {
-                const response = await fetch('data/master-fixed.json');
+                const response = await fetch('master.json');
                 masterData = await response.json();
                 
                 const summaryResponse = await fetch('data/summary_by_model.json');
                 summaryData = await summaryResponse.json();
                 
-                const winratesResponse = await fetch('data/winrates-fixed.json');
+                const winratesResponse = await fetch('winrates.json');
                 winratesData = await winratesResponse.json();
                 
                 initializeDashboard();
