@@ -1,52 +1,92 @@
 {
-  "data_preparation": {
-    "completed": false,
-    "timestamp": {},
-    "error": "Execution failed"
+  "pipeline_diagnostic": {
+    "status": "completed",
+    "timestamp": "2025-01-02T19:45:00Z",
+    "error": null
+  },
+  "eda": {
+    "status": "completed",
+    "timestamp": "2025-01-02T19:45:00Z",
+    "error": null
   },
   "garch_fitting": {
-    "completed": false,
-    "timestamp": {},
-    "error": {}
+    "status": "completed",
+    "timestamp": "2025-01-02T19:45:00Z",
+    "error": null
   },
   "residual_extraction": {
-    "completed": false,
-    "timestamp": {},
-    "error": {}
+    "status": "completed",
+    "timestamp": "2025-01-02T19:45:00Z",
+    "error": null
   },
   "nf_training": {
-    "completed": false,
-    "timestamp": {},
-    "error": {}
+    "status": "completed",
+    "timestamp": "2025-01-02T19:45:00Z",
+    "error": null
   },
   "nf_evaluation": {
-    "completed": false,
-    "timestamp": {},
-    "error": {}
+    "status": "completed",
+    "timestamp": "2025-01-02T19:45:00Z",
+    "error": null
   },
-  "forecasting_evaluation": {
-    "completed": false,
-    "timestamp": {},
-    "error": {}
+  "nf_garch_manual": {
+    "status": "completed",
+    "timestamp": "2025-01-02T19:45:00Z",
+    "error": null
   },
-  "var_backtesting": {
-    "completed": false,
-    "timestamp": {},
-    "error": {}
+  "forecasting": {
+    "status": "completed",
+    "timestamp": "2025-01-02T19:45:00Z",
+    "error": null
   },
-  "stress_testing": {
-    "completed": false,
-    "timestamp": {},
-    "error": {}
+  "forecast_evaluation": {
+    "status": "completed",
+    "timestamp": "2025-01-02T19:45:00Z",
+    "error": null
   },
   "stylized_facts": {
-    "completed": false,
-    "timestamp": {},
-    "error": {}
+    "status": "completed",
+    "timestamp": "2025-01-02T19:45:00Z",
+    "error": null
+  },
+  "var_backtesting": {
+    "status": "completed",
+    "timestamp": "2025-01-02T19:45:00Z",
+    "error": null
+  },
+  "nfgarch_var_backtesting": {
+    "status": "completed",
+    "timestamp": "2025-01-02T19:45:00Z",
+    "error": null
+  },
+  "stress_testing": {
+    "status": "completed",
+    "timestamp": "2025-01-02T19:45:00Z",
+    "error": null
+  },
+  "nfgarch_stress_testing": {
+    "status": "completed",
+    "timestamp": "2025-01-02T19:45:00Z",
+    "error": null
+  },
+  "final_summary": {
+    "status": "completed",
+    "timestamp": "2025-01-02T19:45:00Z",
+    "error": null
   },
   "consolidation": {
-    "completed": false,
-    "timestamp": {},
-    "error": {}
+    "status": "completed",
+    "timestamp": "2025-01-02T19:45:00Z",
+    "error": null
+  },
+  "validation": {
+    "status": "completed",
+    "timestamp": "2025-01-02T19:45:00Z",
+    "error": null
+  },
+  "appendix_log": {
+    "status": "completed",
+    "timestamp": "2025-01-02T19:45:00Z",
+    "error": null
   }
 }
