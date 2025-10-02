@@ -138,13 +138,13 @@ if %errorlevel% neq 0 (
     call :checkpoint_completed "nf_garch_manual"
 )
 
-@REM # Commented out for now as it is not working given the parameter misalignment with the rugarch engine
-@REM REM Step 7: Run NF-GARCH simulation with RUGARCH engine
-@REM echo Step 7: Running NF-GARCH simulation (RUGARCH engine)...
-@REM Rscript scripts\simulation_forecasting\simulate_nf_garch_engine.R --engine rugarch
-@REM if %errorlevel% neq 0 (
-@REM     echo WARNING: rugarch engine simulation failed, continuing...
-@REM )
+REM Step 7: Run NF-GARCH simulation with RUGARCH engine (DISABLED)
+REM echo Step 7: Running NF-GARCH simulation (RUGARCH engine)...
+REM Rscript scripts\simulation_forecasting\simulate_nf_garch_engine.R --engine rugarch
+REM if %errorlevel% neq 0 (
+REM     echo WARNING: rugarch engine simulation failed, continuing...
+REM )
+REM NOTE: RUGARCH engine disabled - using manual engine only for consistency
 
 REM Step 8: Run forecasts
 echo Step 8: Running forecasts...
