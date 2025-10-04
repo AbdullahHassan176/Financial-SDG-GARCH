@@ -117,6 +117,7 @@ run_all.bat
 The repository includes a **static HTML results viewer** that provides easy access to all generated results and plots:
 
 ### Features
+- **📊 Research Dashboard**: Comprehensive analysis with key findings, statistical significance, and reviewer concerns addressed
 - **Results Browser**: View and download all CSV, JSON, Excel, and text files
 - **Plots Gallery**: Browse all generated plots with lightbox viewing
 - **Auto-updating**: Automatically discovers new files in `/results` and `/outputs`
@@ -130,15 +131,22 @@ The repository includes a **static HTML results viewer** that provides easy acce
 # Generate the manifest and build the site
 python tools/generate_results_site.py
 
+# Generate the research dashboard
+python tools/create_research_dashboard.py
+
 # Option 1: Use the provided batch script (Windows)
 start_results_viewer.bat
 
-# Option 2: Manual server (any OS)
+# Option 2: Research dashboard launcher (Windows)
+start_research_dashboard.bat
+
+# Option 3: Manual server (any OS)
 cd docs
 python -m http.server 8000
-# Then visit: http://localhost:8000
+# Then visit: http://localhost:8000 (file browser)
+# Or: http://localhost:8000/research_dashboard.html (research dashboard)
 
-# Option 3: Direct file opening (limited functionality)
+# Option 4: Direct file opening (limited functionality)
 # Note: This may not work due to CORS restrictions
 open docs/index.html
 ```

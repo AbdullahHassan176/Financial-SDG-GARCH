@@ -5,79 +5,79 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NF-GARCH Results Viewer</title>
     <style>
-        body { 
+        body {
             font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
-            margin: 0; 
-            padding: 20px; 
+            margin: 0;
+            padding: 20px;
             background: #f5f5f5; 
             line-height: 1.6;
         }
-        .container { 
-            max-width: 1200px; 
-            margin: 0 auto; 
-            background: white; 
-            border-radius: 8px; 
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1); 
-            overflow: hidden; 
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
         }
-        .header { 
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
-            color: white; 
-            padding: 30px; 
-            text-align: center; 
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
         }
-        .header h1 { 
-            margin: 0; 
-            font-size: 2.5em; 
-            font-weight: 300; 
+        .header h1 {
+            margin: 0;
+            font-size: 2.5em;
+            font-weight: 300;
         }
-        .header p { 
-            margin: 10px 0 0 0; 
-            opacity: 0.9; 
-            font-size: 1.1em; 
+        .header p {
+            margin: 10px 0 0 0;
+            opacity: 0.9;
+            font-size: 1.1em;
         }
         .content { 
             padding: 30px; 
         }
         .tabs { 
-            display: flex; 
-            background: #f8f9fa; 
-            border-bottom: 1px solid #dee2e6; 
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
         }
         .tab { 
-            flex: 1; 
-            padding: 15px 20px; 
-            text-align: center; 
-            cursor: pointer; 
-            border: none; 
-            background: none; 
-            font-size: 1em; 
-            transition: all 0.3s ease; 
+            flex: 1;
+            padding: 15px 20px;
+            text-align: center;
+            cursor: pointer;
+            border: none;
+            background: none;
+            font-size: 1em;
+            transition: all 0.3s ease;
         }
         .tab:hover { 
-            background: #e9ecef; 
+            background: #e9ecef;
         }
         .tab.active { 
-            background: white; 
-            border-bottom: 3px solid #667eea; 
-            font-weight: 600; 
+            background: white;
+            border-bottom: 3px solid #667eea;
+            font-weight: 600;
         }
-        .tab-content { 
-            display: none; 
+        .tab-content {
+            display: none;
         }
         .tab-content.active { 
-            display: block; 
+            display: block;
         }
         .file-list { 
-            display: grid; 
+            display: grid;
             gap: 10px; 
             margin-top: 20px; 
         }
         .file-item { 
-            background: #f8f9fa; 
+            background: #f8f9fa;
             padding: 15px; 
-            border-radius: 8px; 
-            border-left: 4px solid #667eea; 
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
             transition: transform 0.2s ease;
         }
         .file-item:hover {
@@ -85,7 +85,7 @@
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
         .file-item a { 
-            color: #667eea; 
+            color: #667eea;
             text-decoration: none; 
             font-weight: 600; 
             font-size: 1.1em;
@@ -94,44 +94,44 @@
             text-decoration: underline; 
         }
         .file-meta { 
-            color: #6c757d; 
+            color: #6c757d;
             font-size: 0.9em; 
-            margin-top: 5px; 
+            margin-top: 5px;
         }
-        .plot-gallery { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); 
-            gap: 20px; 
-            margin-top: 20px; 
+        .plot-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
         }
-        .plot-item { 
-            background: white; 
-            border-radius: 8px; 
-            overflow: hidden; 
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
-            cursor: pointer; 
-            transition: transform 0.2s ease; 
+        .plot-item {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: transform 0.2s ease;
         }
-        .plot-item:hover { 
-            transform: translateY(-2px); 
+        .plot-item:hover {
+            transform: translateY(-2px);
             box-shadow: 0 4px 8px rgba(0,0,0,0.15);
         }
-        .plot-item img { 
-            width: 100%; 
-            height: 200px; 
-            object-fit: cover; 
+        .plot-item img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
         }
-        .plot-info { 
-            padding: 15px; 
+        .plot-info {
+            padding: 15px;
         }
-        .plot-title { 
-            font-weight: 600; 
-            margin-bottom: 5px; 
+        .plot-title {
+            font-weight: 600;
+            margin-bottom: 5px;
             color: #333;
         }
-        .plot-path { 
-            color: #6c757d; 
-            font-size: 0.9em; 
+        .plot-path {
+            color: #6c757d;
+            font-size: 0.9em;
         }
         .loading { 
             text-align: center; 
@@ -200,9 +200,17 @@
         <div class="tabs">
             <button class="tab active" onclick="showTab('results')">Results</button>
             <button class="tab" onclick="showTab('plots')">Plots</button>
+            <button class="tab" onclick="window.open('research_dashboard.html', '_blank')">📊 Research Dashboard</button>
         </div>
         
         <div class="content">
+            <!-- Research Dashboard Highlight -->
+            <div class="research-highlight" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 8px; margin-bottom: 30px; text-align: center;">
+                <h2 style="margin: 0 0 10px 0;">🎯 Research Results Dashboard</h2>
+                <p style="margin: 0 0 15px 0; opacity: 0.9;">Comprehensive analysis with key findings, statistical significance, and reviewer concerns addressed</p>
+                <a href="research_dashboard.html" target="_blank" style="background: white; color: #667eea; padding: 10px 20px; border-radius: 5px; text-decoration: none; font-weight: bold; display: inline-block;">View Research Dashboard →</a>
+            </div>
+            
             <div id="results" class="tab-content active">
                 <h2>Result Files</h2>
                 <div id="results-summary" class="summary">
@@ -248,8 +256,8 @@
                             <li>Or use GitHub Pages deployment</li>
                         </ul>
                         <p><strong>Error details:</strong> ${error.message}</p>
-                    </div>
-                `;
+                </div>
+            `;
                 document.getElementById('results-list').innerHTML = errorMessage;
                 document.getElementById('plots-gallery').innerHTML = errorMessage;
             }
