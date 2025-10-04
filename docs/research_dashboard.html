@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NF-GARCH Research Dashboard</title>
+    <title>Comprehensive NF-GARCH Research Dashboard</title>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <style>
         body {
@@ -14,7 +14,7 @@
             line-height: 1.6;
         }
         .container {
-            max-width: 1200px;
+            max-width: 1800px;
             margin: 0 auto;
             background: white;
             border-radius: 8px;
@@ -30,27 +30,62 @@
         .content {
             padding: 30px;
         }
-        .section {
-            margin-bottom: 40px;
+        .tabs {
+            display: flex;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        .tab {
+            padding: 12px 24px;
+            background: #f8f9fa;
+            border: none;
+            cursor: pointer;
+            border-radius: 8px 8px 0 0;
+            margin-right: 5px;
+            margin-bottom: 5px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        .tab:hover {
+            background: #e9ecef;
+        }
+        .tab.active {
+            background: #667eea;
+            color: white;
+        }
+        .tab-content {
+            display: none;
             padding: 20px;
             background: #f8f9fa;
             border-radius: 8px;
-            border-left: 4px solid #667eea;
+            margin-bottom: 20px;
         }
-        .insights {
+        .tab-content.active {
+            display: block;
+        }
+        .section {
+            margin-bottom: 40px;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .metrics-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 20px;
             margin: 20px 0;
         }
-        .insight-card {
+        .metric-card {
             background: white;
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             text-align: center;
+            border-left: 4px solid #667eea;
         }
-        .insight-value {
+        .metric-value {
             font-size: 1.5em;
             font-weight: bold;
             color: #667eea;
@@ -63,91 +98,431 @@
             padding: 20px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+            font-size: 0.9em;
+        }
+        .data-table th, .data-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .data-table th {
+            background-color: #f2f2f2;
+        }
+        .model-type {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            font-weight: bold;
+            margin-left: 8px;
+        }
+        .standard-garch {
+            background: #ff9800;
+            color: #000;
+        }
+        .nf-garch {
+            background: #4caf50;
+            color: white;
+        }
+        .success-box {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>NF-GARCH Research Dashboard</h1>
-            <p>Key Findings and Model Performance Analysis</p>
-            <p><small>Generated: 2025-10-04 16:00:05</small></p>
+            <h1>Comprehensive NF-GARCH Research Dashboard</h1>
+            <p>Complete Analysis: Model Performance, Risk Assessment, Stress Testing, Stylized Facts & More</p>
+            <p><small>Generated: 2025-10-04 18:06:46</small></p>
         </div>
         
         <div class="content">
-            <!-- Key Insights -->
-            <div class="section">
-                <h2>🔍 Key Research Insights</h2>
-                <div class="insights">
-                    <div class="insight-card">
-                        <div class="insight-value">eGARCH</div>
-                        <div class="insight-label">Best Performing Model</div>
+            <!-- Tab Navigation -->
+            <div class="tabs">
+                <button class="tab active" onclick="showTab('overview')">📊 Overview</button>
+                <button class="tab" onclick="showTab('performance')">🎯 Model Performance</button>
+                <button class="tab" onclick="showTab('risk')">⚠️ Risk Assessment</button>
+                <button class="tab" onclick="showTab('stress')">💪 Stress Testing</button>
+                <button class="tab" onclick="showTab('stylized')">🔬 Stylized Facts</button>
+                <button class="tab" onclick="showTab('quantitative')">📈 Quantitative Metrics</button>
+                <button class="tab" onclick="showTab('distributional')">📊 Distributional Metrics</button>
+                <button class="tab" onclick="showTab('engine')">⚙️ Engine Analysis</button>
+                <button class="tab" onclick="showTab('comparison')">🔄 Model Comparison</button>
+            </div>
+            
+            <!-- Overview Tab -->
+            <div id="overview" class="tab-content active">
+                <div class="section">
+                    <h2>🔍 Executive Summary</h2>
+                    <div class="metrics-grid">
+                        <div class="metric-card">
+                            <div class="metric-value">8</div>
+                            <div class="metric-label">Total Models</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value">4</div>
+                            <div class="metric-label">NF-GARCH Models</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value">4</div>
+                            <div class="metric-label">Standard GARCH Models</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value">4</div>
+                            <div class="metric-label">Manual Engine</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value">4</div>
+                            <div class="metric-label">RUGARCH Engine</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value">gjrGARCH</div>
+                            <div class="metric-label">Best Model</div>
+                        </div>
                     </div>
-                    <div class="insight-card">
-                        <div class="insight-value">EURUSD</div>
-                        <div class="insight-label">Best Performing Asset</div>
-                    </div>
-                    <div class="insight-card">
-                        <div class="insight-value">1.9x</div>
-                        <div class="insight-label">Performance Improvement</div>
-                    </div>
-                    <div class="insight-card">
-                        <div class="insight-value">29.2%</div>
-                        <div class="insight-label">Statistical Significance</div>
+                    
+                    <div class="success-box">
+                        <h3>✅ Complete Analysis Dashboard</h3>
+                        <p><strong>This dashboard includes ALL analysis components:</strong></p>
+                        <ul>
+                            <li>📊 Model Performance Analysis</li>
+                            <li>⚠️ Risk Assessment Results</li>
+                            <li>💪 Stress Testing Analysis</li>
+                            <li>🔬 Stylized Facts Analysis</li>
+                            <li>📈 Quantitative Metrics</li>
+                            <li>📊 Distributional Metrics</li>
+                            <li>⚙️ Engine Analysis</li>
+                            <li>🔄 Model Comparison</li>
+                        </ul>
                     </div>
                 </div>
             </div>
             
-            <!-- Model Performance -->
-            <div class="section">
-                <h2>📊 Model Performance Comparison</h2>
-                <div class="chart-container" id="model-chart"></div>
+            <!-- Model Performance Tab -->
+            <div id="performance" class="tab-content">
+                <div class="section">
+                    <h2>🎯 Model Performance Analysis</h2>
+                    <div class="chart-container" id="performance-chart"></div>
+                    <table class="data-table">
+                        <tr><th>Model</th><th>Type</th><th>Engine</th><th>MSE</th><th>MAE</th><th>Rank</th></tr>
+                        <tr><td>NF_sGARCH</td><td><span class='model-type nf-garch'>NF-GARCH</span></td><td>manual</td><td>0.000471</td><td>0.000000</td><td>1</td></tr><tr><td>NF_gjrGARCH</td><td><span class='model-type nf-garch'>NF-GARCH</span></td><td>manual</td><td>0.000313</td><td>0.000000</td><td>2</td></tr><tr><td>NF_eGARCH</td><td><span class='model-type nf-garch'>NF-GARCH</span></td><td>manual</td><td>1.181375</td><td>0.000000</td><td>3</td></tr><tr><td>fGARCH</td><td><span class='model-type nf-garch'>NF-GARCH</span></td><td>manual</td><td>0.000278</td><td>0.000000</td><td>4</td></tr><tr><td>TGARCH</td><td><span class='model-type standard-garch'>Standard GARCH</span></td><td>rugarch</td><td>0.000265</td><td>0.000000</td><td>5</td></tr><tr><td>eGARCH</td><td><span class='model-type standard-garch'>Standard GARCH</span></td><td>rugarch</td><td>0.000133</td><td>0.000000</td><td>6</td></tr><tr><td>gjrGARCH</td><td><span class='model-type standard-garch'>Standard GARCH</span></td><td>rugarch</td><td>0.000132</td><td>0.000000</td><td>7</td></tr><tr><td>sGARCH</td><td><span class='model-type standard-garch'>Standard GARCH</span></td><td>rugarch</td><td>0.000177</td><td>0.000000</td><td>8</td></tr>
+                    </table>
+                </div>
             </div>
             
-            <!-- Asset Performance -->
-            <div class="section">
-                <h2>🏢 Asset Performance Analysis</h2>
-                <div class="chart-container" id="asset-chart"></div>
+            <!-- Risk Assessment Tab -->
+            <div id="risk" class="tab-content">
+                <div class="section">
+                    <h2>⚠️ Risk Assessment Results</h2>
+                    <div class="chart-container" id="risk-chart"></div>
+                    <table class="data-table">
+                        <tr><th>Model</th><th>Type</th><th>VaR 95%</th><th>VaR 99%</th><th>Violation Rate 95%</th><th>Violation Rate 99%</th><th>Kupiec P-Value</th></tr>
+                        <tr><td>NF_sGARCH</td><td><span class='model-type nf-garch'>NF-GARCH</span></td><td>0.0263</td><td>0.0116</td><td>0.0376</td><td>0.0134</td><td>0.8444</td></tr><tr><td>NF_gjrGARCH</td><td><span class='model-type nf-garch'>NF-GARCH</span></td><td>0.0373</td><td>0.0123</td><td>0.0579</td><td>0.0130</td><td>0.3375</td></tr><tr><td>NF_eGARCH</td><td><span class='model-type nf-garch'>NF-GARCH</span></td><td>0.0335</td><td>0.0272</td><td>0.0685</td><td>0.0114</td><td>0.1357</td></tr><tr><td>fGARCH</td><td><span class='model-type nf-garch'>NF-GARCH</span></td><td>0.0379</td><td>0.0292</td><td>0.0692</td><td>0.0055</td><td>0.8389</td></tr><tr><td>TGARCH</td><td><span class='model-type standard-garch'>Standard GARCH</span></td><td>0.0333</td><td>0.0136</td><td>0.0752</td><td>0.0145</td><td>0.8541</td></tr><tr><td>eGARCH</td><td><span class='model-type standard-garch'>Standard GARCH</span></td><td>0.0238</td><td>0.0251</td><td>0.0417</td><td>0.0140</td><td>0.8300</td></tr><tr><td>gjrGARCH</td><td><span class='model-type standard-garch'>Standard GARCH</span></td><td>0.0219</td><td>0.0120</td><td>0.0626</td><td>0.0151</td><td>0.1680</td></tr><tr><td>sGARCH</td><td><span class='model-type standard-garch'>Standard GARCH</span></td><td>0.0367</td><td>0.0177</td><td>0.0598</td><td>0.0169</td><td>0.2333</td></tr>
+                    </table>
+                </div>
             </div>
             
-            <!-- Risk Assessment -->
-            <div class="section">
-                <h2>⚠️ Risk Assessment Results</h2>
-                <div class="chart-container" id="risk-chart"></div>
+            <!-- Stress Testing Tab -->
+            <div id="stress" class="tab-content">
+                <div class="section">
+                    <h2>💪 Stress Testing Analysis</h2>
+                    <div class="chart-container" id="stress-chart"></div>
+                    <table class="data-table">
+                        <tr><th>Model</th><th>Type</th><th>Convergence Rate</th><th>Robustness Score</th><th>Max Drawdown</th></tr>
+                        <tr><td>NF_sGARCH</td><td><span class='model-type nf-garch'>NF-GARCH</span></td><td>0.9262</td><td>0.8585</td><td>0.1978</td></tr><tr><td>NF_gjrGARCH</td><td><span class='model-type nf-garch'>NF-GARCH</span></td><td>0.9400</td><td>0.7249</td><td>0.1070</td></tr><tr><td>NF_eGARCH</td><td><span class='model-type nf-garch'>NF-GARCH</span></td><td>0.8831</td><td>0.8414</td><td>0.2690</td></tr><tr><td>fGARCH</td><td><span class='model-type nf-garch'>NF-GARCH</span></td><td>0.9490</td><td>0.8809</td><td>0.2237</td></tr><tr><td>TGARCH</td><td><span class='model-type standard-garch'>Standard GARCH</span></td><td>0.9179</td><td>0.8450</td><td>0.1289</td></tr><tr><td>eGARCH</td><td><span class='model-type standard-garch'>Standard GARCH</span></td><td>0.8625</td><td>0.8947</td><td>0.1666</td></tr><tr><td>gjrGARCH</td><td><span class='model-type standard-garch'>Standard GARCH</span></td><td>0.9738</td><td>0.7792</td><td>0.2959</td></tr><tr><td>sGARCH</td><td><span class='model-type standard-garch'>Standard GARCH</span></td><td>0.9404</td><td>0.7380</td><td>0.2049</td></tr>
+                    </table>
+                </div>
             </div>
             
-            <!-- Research Summary -->
-            <div class="section">
-                <h2>🎯 Research Summary</h2>
-                <p><strong>Key Findings:</strong></p>
-                <ul>
-                    <li><strong>Best Model:</strong> eGARCH with MSE of 0.000123</li>
-                    <li><strong>Best Asset:</strong> EURUSD shows lowest prediction error</li>
-                    <li><strong>Performance Range:</strong> 1.9x difference between best and worst models</li>
-                    <li><strong>Risk Assessment:</strong> TGARCH_Parametric shows most reliable VaR estimates</li>
-                    <li><strong>Statistical Validation:</strong> 105 out of 360 tests show significant results</li>
-                </ul>
+            <!-- Stylized Facts Tab -->
+            <div id="stylized" class="tab-content">
+                <div class="section">
+                    <h2>🔬 Stylized Facts Analysis</h2>
+                    <div class="chart-container" id="stylized-chart"></div>
+                    <table class="data-table">
+                        <tr><th>Model</th><th>Type</th><th>Tail Index</th><th>Autocorr Decay</th><th>Volatility Clustering</th><th>Asymmetry</th><th>Hurst Exponent</th><th>Kurtosis</th></tr>
+                        <tr><td>NF_sGARCH</td><td><span class='model-type nf-garch'>NF-GARCH</span></td><td>3.7312</td><td>0.1875</td><td>0.6215</td><td>-0.1675</td><td>0.5209</td><td>3.2751</td></tr><tr><td>NF_gjrGARCH</td><td><span class='model-type nf-garch'>NF-GARCH</span></td><td>3.3040</td><td>0.1147</td><td>0.6057</td><td>0.0627</td><td>0.4464</td><td>5.9342</td></tr><tr><td>NF_eGARCH</td><td><span class='model-type nf-garch'>NF-GARCH</span></td><td>3.4153</td><td>0.2225</td><td>0.8707</td><td>-0.0522</td><td>0.4090</td><td>7.8987</td></tr><tr><td>fGARCH</td><td><span class='model-type nf-garch'>NF-GARCH</span></td><td>3.6915</td><td>0.3432</td><td>0.7908</td><td>-0.2664</td><td>0.5345</td><td>3.0881</td></tr><tr><td>TGARCH</td><td><span class='model-type standard-garch'>Standard GARCH</span></td><td>3.6276</td><td>0.3539</td><td>0.8173</td><td>-0.2497</td><td>0.4336</td><td>5.4549</td></tr><tr><td>eGARCH</td><td><span class='model-type standard-garch'>Standard GARCH</span></td><td>3.1132</td><td>0.1972</td><td>0.6691</td><td>-0.0106</td><td>0.4897</td><td>6.7359</td></tr><tr><td>gjrGARCH</td><td><span class='model-type standard-garch'>Standard GARCH</span></td><td>3.5184</td><td>0.3802</td><td>0.7069</td><td>-0.1803</td><td>0.4239</td><td>7.3213</td></tr><tr><td>sGARCH</td><td><span class='model-type standard-garch'>Standard GARCH</span></td><td>3.3395</td><td>0.2376</td><td>0.6124</td><td>0.0334</td><td>0.4535</td><td>7.6562</td></tr>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Quantitative Metrics Tab -->
+            <div id="quantitative" class="tab-content">
+                <div class="section">
+                    <h2>📈 Quantitative Metrics</h2>
+                    <div class="chart-container" id="quantitative-chart"></div>
+                    <table class="data-table">
+                        <tr><th>Model</th><th>Type</th><th>RMSE</th><th>MAE</th><th>AIC</th><th>BIC</th></tr>
+                        <tr><td>NF_sGARCH</td><td><span class='model-type nf-garch'>NF-GARCH</span></td><td>0.021703</td><td>0.012914</td><td>-27993.33</td><td>-27964.46</td></tr><tr><td>NF_gjrGARCH</td><td><span class='model-type nf-garch'>NF-GARCH</span></td><td>0.017702</td><td>0.011222</td><td>-28244.76</td><td>-28206.27</td></tr><tr><td>NF_eGARCH</td><td><span class='model-type nf-garch'>NF-GARCH</span></td><td>1.086911</td><td>0.639552</td><td>27401.31</td><td>27439.80</td></tr><tr><td>fGARCH</td><td><span class='model-type nf-garch'>NF-GARCH</span></td><td>0.016680</td><td>0.010099</td><td>-28273.75</td><td>-28235.26</td></tr><tr><td>TGARCH</td><td><span class='model-type standard-garch'>Standard GARCH</span></td><td>0.016286</td><td>0.009980</td><td>-6.24</td><td>-6.18</td></tr><tr><td>eGARCH</td><td><span class='model-type standard-garch'>Standard GARCH</span></td><td>0.011516</td><td>0.004990</td><td>13697.57</td><td>13716.85</td></tr><tr><td>gjrGARCH</td><td><span class='model-type standard-garch'>Standard GARCH</span></td><td>0.011498</td><td>0.004983</td><td>-14125.50</td><td>-14106.22</td></tr><tr><td>sGARCH</td><td><span class='model-type standard-garch'>Standard GARCH</span></td><td>0.013297</td><td>0.006652</td><td>-9335.23</td><td>-9325.58</td></tr>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Distributional Metrics Tab -->
+            <div id="distributional" class="tab-content">
+                <div class="section">
+                    <h2>📊 Distributional Metrics</h2>
+                    <div class="chart-container" id="distributional-chart"></div>
+                    <table class="data-table">
+                        <tr><th>Model</th><th>Type</th><th>KS Distance</th><th>Wasserstein Distance</th><th>KL Divergence</th><th>JS Divergence</th></tr>
+                        <tr><td>NF_sGARCH</td><td><span class='model-type nf-garch'>NF-GARCH</span></td><td>0.119712</td><td>0.017004</td><td>0.084496</td><td>0.015235</td></tr><tr><td>NF_gjrGARCH</td><td><span class='model-type nf-garch'>NF-GARCH</span></td><td>0.122317</td><td>0.029909</td><td>0.017594</td><td>0.040872</td></tr><tr><td>NF_eGARCH</td><td><span class='model-type nf-garch'>NF-GARCH</span></td><td>0.028526</td><td>0.024526</td><td>0.089389</td><td>0.097262</td></tr><tr><td>fGARCH</td><td><span class='model-type nf-garch'>NF-GARCH</span></td><td>0.076907</td><td>0.047999</td><td>0.058150</td><td>0.031345</td></tr><tr><td>TGARCH</td><td><span class='model-type standard-garch'>Standard GARCH</span></td><td>0.148428</td><td>0.017819</td><td>0.244281</td><td>0.012664</td></tr><tr><td>eGARCH</td><td><span class='model-type standard-garch'>Standard GARCH</span></td><td>0.060764</td><td>0.034780</td><td>0.060834</td><td>0.024335</td></tr><tr><td>gjrGARCH</td><td><span class='model-type standard-garch'>Standard GARCH</span></td><td>0.095593</td><td>0.015382</td><td>0.235750</td><td>0.086852</td></tr><tr><td>sGARCH</td><td><span class='model-type standard-garch'>Standard GARCH</span></td><td>0.029943</td><td>0.009581</td><td>0.230090</td><td>0.068718</td></tr>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Engine Analysis Tab -->
+            <div id="engine" class="tab-content">
+                <div class="section">
+                    <h2>⚙️ Engine Analysis</h2>
+                    <div class="chart-container" id="engine-chart"></div>
+                    <div class="metrics-grid">
+                        <div class="metric-card">
+                            <div class="metric-value">114</div>
+                            <div class="metric-label">Manual Engine Models</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value">16</div>
+                            <div class="metric-label">RUGARCH Engine Models</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value">0.083258</div>
+                            <div class="metric-label">Manual Engine Avg MSE</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value">0.000166</div>
+                            <div class="metric-label">RUGARCH Engine Avg MSE</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Model Comparison Tab -->
+            <div id="comparison" class="tab-content">
+                <div class="section">
+                    <h2>🔄 Model Comparison</h2>
+                    <div class="chart-container" id="comparison-chart"></div>
+                    <table class="data-table">
+                        <tr><th>Rank</th><th>Model</th><th>Type</th><th>Engine</th><th>Avg MSE</th></tr>
+                        <tr><td>1</td><td>gjrGARCH</td><td><span class='model-type standard-garch'>Standard GARCH</span></td><td>rugarch</td><td>0.000132</td></tr><tr><td>2</td><td>eGARCH</td><td><span class='model-type standard-garch'>Standard GARCH</span></td><td>rugarch</td><td>0.000133</td></tr><tr><td>3</td><td>sGARCH</td><td><span class='model-type standard-garch'>Standard GARCH</span></td><td>rugarch</td><td>0.000177</td></tr><tr><td>4</td><td>TGARCH</td><td><span class='model-type standard-garch'>Standard GARCH</span></td><td>rugarch</td><td>0.000265</td></tr><tr><td>5</td><td>fGARCH</td><td><span class='model-type nf-garch'>NF-GARCH</span></td><td>manual</td><td>0.000278</td></tr><tr><td>6</td><td>NF_gjrGARCH</td><td><span class='model-type nf-garch'>NF-GARCH</span></td><td>manual</td><td>0.000313</td></tr><tr><td>7</td><td>NF_sGARCH</td><td><span class='model-type nf-garch'>NF-GARCH</span></td><td>manual</td><td>0.000471</td></tr><tr><td>8</td><td>NF_eGARCH</td><td><span class='model-type nf-garch'>NF-GARCH</span></td><td>manual</td><td>1.181375</td></tr>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
     
     <script>
-        // Model Chart
+        // Tab functionality
+        function showTab(tabName) {
+            // Hide all tab contents
+            var tabContents = document.getElementsByClassName('tab-content');
+            for (var i = 0; i < tabContents.length; i++) {
+                tabContents[i].classList.remove('active');
+            }
+            
+            // Remove active class from all tabs
+            var tabs = document.getElementsByClassName('tab');
+            for (var i = 0; i < tabs.length; i++) {
+                tabs[i].classList.remove('active');
+            }
+            
+            // Show selected tab content
+            document.getElementById(tabName).classList.add('active');
+            
+            // Add active class to clicked tab
+            event.target.classList.add('active');
+        }
         
-        var model-chart_data = {"data":[{"marker":{"color":["green","orange","orange","orange","orange"]},"text":["0.000123","0.000129","0.000137","0.000192","0.000237"],"textposition":"auto","x":["eGARCH","TGARCH","sGARCH_norm","sGARCH_sstd","gjrGARCH"],"y":{"dtype":"f8","bdata":"P+q7bgstID\u002ftm+cIDPEgP0p+ZDJ85CE\u002fTMzM+O4xKT94KVNohQkvPw=="},"type":"bar"}],"layout":{"template":{"data":{"histogram2dcontour":[{"type":"histogram2dcontour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"choropleth":[{"type":"choropleth","colorbar":{"outlinewidth":0,"ticks":""}}],"histogram2d":[{"type":"histogram2d","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmap":[{"type":"heatmap","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"contourcarpet":[{"type":"contourcarpet","colorbar":{"outlinewidth":0,"ticks":""}}],"contour":[{"type":"contour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"surface":[{"type":"surface","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"mesh3d":[{"type":"mesh3d","colorbar":{"outlinewidth":0,"ticks":""}}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"parcoords":[{"type":"parcoords","line":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolargl":[{"type":"scatterpolargl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"scattergeo":[{"type":"scattergeo","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolar":[{"type":"scatterpolar","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"scattergl":[{"type":"scattergl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatter3d":[{"type":"scatter3d","line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermap":[{"type":"scattermap","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermapbox":[{"type":"scattermapbox","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterternary":[{"type":"scatterternary","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattercarpet":[{"type":"scattercarpet","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}],"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"pie":[{"automargin":true,"type":"pie"}]},"layout":{"autotypenumbers":"strict","colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"hovermode":"closest","hoverlabel":{"align":"left"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"bgcolor":"#E5ECF6","angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"ternary":{"bgcolor":"#E5ECF6","aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]]},"xaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"yaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"geo":{"bgcolor":"white","landcolor":"#E5ECF6","subunitcolor":"white","showland":true,"showlakes":true,"lakecolor":"white"},"title":{"x":0.05},"mapbox":{"style":"light"}}},"title":{"text":"Model Performance Comparison (Lower MSE = Better)"},"xaxis":{"title":{"text":"Model"}},"yaxis":{"title":{"text":"Mean Squared Error"}},"height":400}};
-        Plotly.newPlot('model-chart', model-chart_data.data, model-chart_data.layout);
+        // Performance Chart
+        var modelData = {"models": ["NF_sGARCH", "NF_gjrGARCH", "NF_eGARCH", "fGARCH", "TGARCH", "eGARCH", "gjrGARCH", "sGARCH"], "mse_values": [0.0004710235760764478, 0.00031337600622295214, 1.1813746906243392, 0.00027821647988907305, 0.000265231788437, 0.000132627623623, 0.0001322138869509, 0.00017682049061406666], "model_types": ["NF-GARCH", "NF-GARCH", "NF-GARCH", "NF-GARCH", "Standard GARCH", "Standard GARCH", "Standard GARCH", "Standard GARCH"], "engines": ["manual", "manual", "manual", "manual", "rugarch", "rugarch", "rugarch", "rugarch"], "total_models": 8, "nf_garch_models": 4, "standard_garch_models": 4, "manual_engine_models": 4, "rugarch_engine_models": 4, "best_model": "gjrGARCH"};
+        if (modelData.models && modelData.models.length > 0) {
+            var performanceTrace = {
+                x: modelData.models,
+                y: modelData.mse_values,
+                type: 'bar',
+                marker: {
+                    color: modelData.model_types.map(type => 
+                        type === 'NF-GARCH' ? '#4caf50' : '#ff9800'
+                    )
+                },
+                text: modelData.mse_values.map(val => val.toFixed(6)),
+                textposition: 'auto'
+            };
+            
+            var performanceLayout = {
+                title: 'Model Performance - MSE (Green=NF-GARCH, Orange=Standard GARCH)',
+                xaxis: { title: 'Model' },
+                yaxis: { title: 'Mean Squared Error' },
+                height: 400
+            };
+            
+            Plotly.newPlot('performance-chart', [performanceTrace], performanceLayout);
+        }
         
+        // Risk Assessment Chart
+        var riskData = [{"model": "NF_sGARCH", "model_type": "NF-GARCH", "var_95": 0.026269332764114556, "var_99": 0.011600554365289149, "violation_rate_95": 0.037554366269178976, "violation_rate_99": 0.013378599717414306, "kupiec_pvalue": 0.8443659396020331}, {"model": "NF_gjrGARCH", "model_type": "NF-GARCH", "var_95": 0.03730783412377654, "var_99": 0.01231969920929575, "violation_rate_95": 0.05787678986824939, "violation_rate_99": 0.013006994775367445, "kupiec_pvalue": 0.33752568215806467}, {"model": "NF_eGARCH", "model_type": "NF-GARCH", "var_95": 0.03347137482618175, "var_99": 0.027173177698311582, "violation_rate_95": 0.06850923931964588, "violation_rate_99": 0.011434420697962869, "kupiec_pvalue": 0.13573484533512228}, {"model": "fGARCH", "model_type": "NF-GARCH", "var_95": 0.03792611181887131, "var_99": 0.029181672168143435, "violation_rate_95": 0.0691829261738468, "violation_rate_99": 0.005525299634029084, "kupiec_pvalue": 0.838898143768347}, {"model": "TGARCH", "model_type": "Standard GARCH", "var_95": 0.033260191330132985, "var_99": 0.013631197156073735, "violation_rate_95": 0.07515814906486606, "violation_rate_99": 0.014503283305176251, "kupiec_pvalue": 0.8540857530879016}, {"model": "eGARCH", "model_type": "Standard GARCH", "var_95": 0.02376479509540026, "var_99": 0.025118469649208837, "violation_rate_95": 0.041651220787215074, "violation_rate_99": 0.014003083708861101, "kupiec_pvalue": 0.8299680759942696}, {"model": "gjrGARCH", "model_type": "Standard GARCH", "var_95": 0.021907036913965575, "var_99": 0.011990314575554575, "violation_rate_95": 0.06259536275597526, "violation_rate_99": 0.015076480497010266, "kupiec_pvalue": 0.16795573868360603}, {"model": "sGARCH", "model_type": "Standard GARCH", "var_95": 0.036747377287980366, "var_99": 0.017711307552796207, "violation_rate_95": 0.059762616073633895, "violation_rate_99": 0.016921752269182962, "kupiec_pvalue": 0.2332783723711866}];
+        if (riskData.length > 0) {
+            var riskTrace = {
+                x: riskData.map(d => d.model),
+                y: riskData.map(d => d.var_95),
+                type: 'bar',
+                marker: {
+                    color: riskData.map(d => d.model_type === 'NF-GARCH' ? '#4caf50' : '#ff9800')
+                },
+                name: 'VaR 95%'
+            };
+            
+            var riskLayout = {
+                title: 'Risk Assessment - VaR 95%',
+                xaxis: { title: 'Model' },
+                yaxis: { title: 'VaR 95%' },
+                height: 400
+            };
+            
+            Plotly.newPlot('risk-chart', [riskTrace], riskLayout);
+        }
         
-        // Asset Chart
+        // Stress Testing Chart
+        var stressData = [{"model": "NF_sGARCH", "model_type": "NF-GARCH", "convergence_rate": 0.9261503194155467, "robustness_score": 0.8585415108792063, "max_drawdown": 0.19780669834722242}, {"model": "NF_gjrGARCH", "model_type": "NF-GARCH", "convergence_rate": 0.9400335088422311, "robustness_score": 0.7249221206138372, "max_drawdown": 0.10704639898580133}, {"model": "NF_eGARCH", "model_type": "NF-GARCH", "convergence_rate": 0.8830814326844819, "robustness_score": 0.8413724670513294, "max_drawdown": 0.2689830067480703}, {"model": "fGARCH", "model_type": "NF-GARCH", "convergence_rate": 0.9489993399074641, "robustness_score": 0.8808560461388297, "max_drawdown": 0.2236678815071244}, {"model": "TGARCH", "model_type": "Standard GARCH", "convergence_rate": 0.9178852386717086, "robustness_score": 0.8449632105004107, "max_drawdown": 0.1289255752977862}, {"model": "eGARCH", "model_type": "Standard GARCH", "convergence_rate": 0.8624722952771282, "robustness_score": 0.894729676342333, "max_drawdown": 0.1666214993549385}, {"model": "gjrGARCH", "model_type": "Standard GARCH", "convergence_rate": 0.9737639623063821, "robustness_score": 0.7792422973938735, "max_drawdown": 0.29586834415126717}, {"model": "sGARCH", "model_type": "Standard GARCH", "convergence_rate": 0.9404350560104915, "robustness_score": 0.7379727902896456, "max_drawdown": 0.20491779859109666}];
+        if (stressData.length > 0) {
+            var stressTrace = {
+                x: stressData.map(d => d.model),
+                y: stressData.map(d => d.robustness_score),
+                type: 'bar',
+                marker: {
+                    color: stressData.map(d => d.model_type === 'NF-GARCH' ? '#4caf50' : '#ff9800')
+                },
+                name: 'Robustness Score'
+            };
+            
+            var stressLayout = {
+                title: 'Stress Testing - Robustness Scores',
+                xaxis: { title: 'Model' },
+                yaxis: { title: 'Robustness Score' },
+                height: 400
+            };
+            
+            Plotly.newPlot('stress-chart', [stressTrace], stressLayout);
+        }
         
-        var asset-chart_data = {"data":[{"marker":{"color":["blue","blue","blue","blue","blue","blue","red","red","red","red","red","red"]},"text":["0.000016","0.000018","0.000020","0.000036","0.000040","0.000043","0.000071","0.000106","0.000194","0.000216","0.000421","0.000782"],"textposition":"auto","x":["EURUSD","GBPCNY","GBPUSD","EURZAR","GBPZAR","USDZAR","PG","WMT","MSFT","CAT","AMZN","NVDA"],"y":{"dtype":"f8","bdata":"3zDaVo588D5Sb4BPqFrzPgZBWTsOY\u002fU+yme7ExDJAj\u002fzi1D+nA4FP2UmaUcmygY\u002fVhGJ4pR7Ej\u002fWQpYBjcwbPzkecgGRXik\u002fICQLYzVMLD8zwY1pmJ87P\u002fW81dL5oEk\u002f"},"type":"bar"}],"layout":{"template":{"data":{"histogram2dcontour":[{"type":"histogram2dcontour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"choropleth":[{"type":"choropleth","colorbar":{"outlinewidth":0,"ticks":""}}],"histogram2d":[{"type":"histogram2d","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmap":[{"type":"heatmap","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"contourcarpet":[{"type":"contourcarpet","colorbar":{"outlinewidth":0,"ticks":""}}],"contour":[{"type":"contour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"surface":[{"type":"surface","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"mesh3d":[{"type":"mesh3d","colorbar":{"outlinewidth":0,"ticks":""}}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"parcoords":[{"type":"parcoords","line":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolargl":[{"type":"scatterpolargl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"scattergeo":[{"type":"scattergeo","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolar":[{"type":"scatterpolar","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"scattergl":[{"type":"scattergl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatter3d":[{"type":"scatter3d","line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermap":[{"type":"scattermap","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermapbox":[{"type":"scattermapbox","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterternary":[{"type":"scatterternary","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattercarpet":[{"type":"scattercarpet","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}],"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"pie":[{"automargin":true,"type":"pie"}]},"layout":{"autotypenumbers":"strict","colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"hovermode":"closest","hoverlabel":{"align":"left"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"bgcolor":"#E5ECF6","angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"ternary":{"bgcolor":"#E5ECF6","aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]]},"xaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"yaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"geo":{"bgcolor":"white","landcolor":"#E5ECF6","subunitcolor":"white","showland":true,"showlakes":true,"lakecolor":"white"},"title":{"x":0.05},"mapbox":{"style":"light"}}},"title":{"text":"Asset Performance (Blue=FX, Red=Equity)"},"xaxis":{"title":{"text":"Asset"}},"yaxis":{"title":{"text":"Mean Squared Error"}},"height":400}};
-        Plotly.newPlot('asset-chart', asset-chart_data.data, asset-chart_data.layout);
+        // Stylized Facts Chart
+        var stylizedData = [{"model": "NF_sGARCH", "model_type": "NF-GARCH", "tail_index": 3.7311519342243677, "autocorr_decay": 0.187500516885796, "volatility_clustering": 0.621487911225188, "asymmetry": -0.16753466552469487, "hurst_exponent": 0.5209140889544714, "kurtosis": 3.275121060663024}, {"model": "NF_gjrGARCH", "model_type": "NF-GARCH", "tail_index": 3.3039891861305453, "autocorr_decay": 0.1146945018934144, "volatility_clustering": 0.6056888121015186, "asymmetry": 0.06265231598181048, "hurst_exponent": 0.44644317880673484, "kurtosis": 5.934247202989745}, {"model": "NF_eGARCH", "model_type": "NF-GARCH", "tail_index": 3.4153263155476474, "autocorr_decay": 0.22249052358260135, "volatility_clustering": 0.8706551706086949, "asymmetry": -0.05223115806822082, "hurst_exponent": 0.4089575605024623, "kurtosis": 7.898709745890872}, {"model": "fGARCH", "model_type": "NF-GARCH", "tail_index": 3.6914521349575686, "autocorr_decay": 0.34317467004858454, "volatility_clustering": 0.790849875400514, "asymmetry": -0.2664057223108987, "hurst_exponent": 0.5344821998148518, "kurtosis": 3.088092393447428}, {"model": "TGARCH", "model_type": "Standard GARCH", "tail_index": 3.6276388774885584, "autocorr_decay": 0.3539242976988698, "volatility_clustering": 0.8172560552553894, "asymmetry": -0.24971119624401664, "hurst_exponent": 0.43359132532629086, "kurtosis": 5.4549048225252115}, {"model": "eGARCH", "model_type": "Standard GARCH", "tail_index": 3.1132286305001475, "autocorr_decay": 0.19724561772000243, "volatility_clustering": 0.6690718767040809, "asymmetry": -0.010615310047959292, "hurst_exponent": 0.4896862984372226, "kurtosis": 6.735944967845346}, {"model": "gjrGARCH", "model_type": "Standard GARCH", "tail_index": 3.518439553740886, "autocorr_decay": 0.3802161925509302, "volatility_clustering": 0.7068974523195676, "asymmetry": -0.18031817669080763, "hurst_exponent": 0.42387512883293466, "kurtosis": 7.321315905208686}, {"model": "sGARCH", "model_type": "Standard GARCH", "tail_index": 3.3395485993370313, "autocorr_decay": 0.23758238366647483, "volatility_clustering": 0.6124287421033955, "asymmetry": 0.03339728481180043, "hurst_exponent": 0.45351245628915743, "kurtosis": 7.656150296014097}];
+        if (stylizedData.length > 0) {
+            var stylizedTrace = {
+                x: stylizedData.map(d => d.model),
+                y: stylizedData.map(d => d.volatility_clustering),
+                type: 'bar',
+                marker: {
+                    color: stylizedData.map(d => d.model_type === 'NF-GARCH' ? '#4caf50' : '#ff9800')
+                },
+                name: 'Volatility Clustering'
+            };
+            
+            var stylizedLayout = {
+                title: 'Stylized Facts - Volatility Clustering',
+                xaxis: { title: 'Model' },
+                yaxis: { title: 'Volatility Clustering' },
+                height: 400
+            };
+            
+            Plotly.newPlot('stylized-chart', [stylizedTrace], stylizedLayout);
+        }
         
+        // Quantitative Metrics Chart
+        var quantitativeData = [{"model": "NF_sGARCH", "model_type": "NF-GARCH", "rmse": 0.021703077571543807, "mae": 0.012914164776001309, "aic": -27993.3295905363, "bic": -27964.46136843996}, {"model": "NF_gjrGARCH", "model_type": "NF-GARCH", "rmse": 0.017702429387599663, "mae": 0.01122216556071127, "aic": -28244.756789512758, "bic": -28206.265826717652}, {"model": "NF_eGARCH", "model_type": "NF-GARCH", "rmse": 1.0869106175874532, "mae": 0.6395521004856297, "aic": 27401.31051074215, "bic": 27439.80147353725}, {"model": "fGARCH", "model_type": "NF-GARCH", "rmse": 0.016679822537697248, "mae": 0.010099466537561871, "aic": -28273.751316333106, "bic": -28235.260353538}, {"model": "TGARCH", "model_type": "Standard GARCH", "rmse": 0.01628593836525854, "mae": 0.0099795931204911, "aic": -6.23674331462475, "bic": -6.17773880124684}, {"model": "eGARCH", "model_type": "Standard GARCH", "rmse": 0.011516406714900269, "mae": 0.004990286375666, "aic": 13697.57275742767, "bic": 13716.847741081907}, {"model": "gjrGARCH", "model_type": "Standard GARCH", "rmse": 0.011498429760228133, "mae": 0.0049825418452868, "aic": -14125.49604086492, "bic": -14106.22105721068}, {"model": "sGARCH", "model_type": "Standard GARCH", "rmse": 0.013297386608430495, "mae": 0.006651759914672967, "aic": -9335.23289820775, "bic": -9325.582060121662}];
+        if (quantitativeData.length > 0) {
+            var quantitativeTrace = {
+                x: quantitativeData.map(d => d.model),
+                y: quantitativeData.map(d => d.rmse),
+                type: 'bar',
+                marker: {
+                    color: quantitativeData.map(d => d.model_type === 'NF-GARCH' ? '#4caf50' : '#ff9800')
+                },
+                name: 'RMSE'
+            };
+            
+            var quantitativeLayout = {
+                title: 'Quantitative Metrics - RMSE',
+                xaxis: { title: 'Model' },
+                yaxis: { title: 'RMSE' },
+                height: 400
+            };
+            
+            Plotly.newPlot('quantitative-chart', [quantitativeTrace], quantitativeLayout);
+        }
         
-        // Risk Chart
+        // Distributional Metrics Chart
+        var distributionalData = [{"model": "NF_sGARCH", "model_type": "NF-GARCH", "ks_distance": 0.11971230968041939, "wasserstein_distance": 0.01700400650191612, "kl_divergence": 0.08449571265551384, "js_divergence": 0.015234837979032703}, {"model": "NF_gjrGARCH", "model_type": "NF-GARCH", "ks_distance": 0.12231712568369651, "wasserstein_distance": 0.02990888088097276, "kl_divergence": 0.017593959625793267, "js_divergence": 0.0408720929262383}, {"model": "NF_eGARCH", "model_type": "NF-GARCH", "ks_distance": 0.02852635422368307, "wasserstein_distance": 0.024526456329965075, "kl_divergence": 0.08938915188972758, "js_divergence": 0.09726245977532148}, {"model": "fGARCH", "model_type": "NF-GARCH", "ks_distance": 0.07690741628894122, "wasserstein_distance": 0.04799859740895466, "kl_divergence": 0.05815032137382864, "js_divergence": 0.03134543760188601}, {"model": "TGARCH", "model_type": "Standard GARCH", "ks_distance": 0.14842755116476178, "wasserstein_distance": 0.017819105224674, "kl_divergence": 0.24428058589910656, "js_divergence": 0.012664159353185243}, {"model": "eGARCH", "model_type": "Standard GARCH", "ks_distance": 0.060763611885197785, "wasserstein_distance": 0.034779967885290114, "kl_divergence": 0.06083443230475577, "js_divergence": 0.024335219153942624}, {"model": "gjrGARCH", "model_type": "Standard GARCH", "ks_distance": 0.09559323168729139, "wasserstein_distance": 0.015382184874145267, "kl_divergence": 0.23574993132797625, "js_divergence": 0.08685198011538982}, {"model": "sGARCH", "model_type": "Standard GARCH", "ks_distance": 0.02994319916570904, "wasserstein_distance": 0.009581242895951966, "kl_divergence": 0.2300899003051705, "js_divergence": 0.06871818177543837}];
+        if (distributionalData.length > 0) {
+            var distributionalTrace = {
+                x: distributionalData.map(d => d.model),
+                y: distributionalData.map(d => d.ks_distance),
+                type: 'bar',
+                marker: {
+                    color: distributionalData.map(d => d.model_type === 'NF-GARCH' ? '#4caf50' : '#ff9800')
+                },
+                name: 'KS Distance'
+            };
+            
+            var distributionalLayout = {
+                title: 'Distributional Metrics - KS Distance',
+                xaxis: { title: 'Model' },
+                yaxis: { title: 'KS Distance' },
+                height: 400
+            };
+            
+            Plotly.newPlot('distributional-chart', [distributionalTrace], distributionalLayout);
+        }
         
-        var risk-chart_data = {"data":[{"marker":{"color":"red"},"text":["0.020","0.020","0.020","0.020","0.020","0.023","0.023","0.023","0.023","0.023","0.031","0.031","0.031","0.031","0.032"],"textposition":"auto","x":["TGARCH_Parametric","eGARCH_Parametric","sGARCH_norm_Parametric","gjrGARCH_Parametric","sGARCH_sstd_Parametric","gjrGARCH_Historical","eGARCH_Historical","TGARCH_Historical","sGARCH_sstd_Historical","sGARCH_norm_Historical","eGARCH_GARCH","sGARCH_norm_GARCH","gjrGARCH_GARCH","TGARCH_GARCH","sGARCH_sstd_GARCH"],"y":{"dtype":"f8","bdata":"HsXyW6eBlD8exfJbp4GUPx7F8lungZQ\u002fHsXyW6eBlD8exfJbp4GUP8zlgPxQS5c\u002fzOWA\u002fFBLlz\u002fM5YD8UEuXP8zlgPxQS5c\u002fzOWA\u002fFBLlz\u002fMR+hOiUefP9+HWrockJ8\u002f8cfMJbDYnz\u002f0J7W3yOSfPxqE4ldmcaA\u002f"},"type":"bar"}],"layout":{"template":{"data":{"histogram2dcontour":[{"type":"histogram2dcontour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"choropleth":[{"type":"choropleth","colorbar":{"outlinewidth":0,"ticks":""}}],"histogram2d":[{"type":"histogram2d","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmap":[{"type":"heatmap","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"contourcarpet":[{"type":"contourcarpet","colorbar":{"outlinewidth":0,"ticks":""}}],"contour":[{"type":"contour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"surface":[{"type":"surface","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"mesh3d":[{"type":"mesh3d","colorbar":{"outlinewidth":0,"ticks":""}}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"parcoords":[{"type":"parcoords","line":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolargl":[{"type":"scatterpolargl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"scattergeo":[{"type":"scattergeo","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolar":[{"type":"scatterpolar","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"scattergl":[{"type":"scattergl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatter3d":[{"type":"scatter3d","line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermap":[{"type":"scattermap","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermapbox":[{"type":"scattermapbox","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterternary":[{"type":"scatterternary","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattercarpet":[{"type":"scattercarpet","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}],"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"pie":[{"automargin":true,"type":"pie"}]},"layout":{"autotypenumbers":"strict","colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"hovermode":"closest","hoverlabel":{"align":"left"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"bgcolor":"#E5ECF6","angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"ternary":{"bgcolor":"#E5ECF6","aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]]},"xaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"yaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"geo":{"bgcolor":"white","landcolor":"#E5ECF6","subunitcolor":"white","showland":true,"showlakes":true,"lakecolor":"white"},"title":{"x":0.05},"mapbox":{"style":"light"}}},"shapes":[{"line":{"color":"blue","dash":"dash"},"type":"line","x0":0,"x1":1,"xref":"x domain","y0":0.05,"y1":0.05,"yref":"y"}],"annotations":[{"showarrow":false,"text":"5% Expected Rate","x":1,"xanchor":"right","xref":"x domain","y":0.05,"yanchor":"bottom","yref":"y"}],"title":{"text":"VaR Backtesting Results (Lower Violation Rate = Better)"},"xaxis":{"title":{"text":"Model"}},"yaxis":{"title":{"text":"Violation Rate"}},"height":400}};
-        Plotly.newPlot('risk-chart', risk-chart_data.data, risk-chart_data.layout);
+        // Engine Analysis Chart
+        var engineData = {"manual_models": 114, "rugarch_models": 16, "manual_avg_mse": 0.08325814551359105, "rugarch_avg_mse": 0.00016567203517837498};
+        var engineTrace = {
+            x: ['Manual Engine', 'RUGARCH Engine'],
+            y: [engineData.manual_avg_mse, engineData.rugarch_avg_mse],
+            type: 'bar',
+            marker: { color: ['#4caf50', '#ff9800'] },
+            name: 'Average MSE'
+        };
         
+        var engineLayout = {
+            title: 'Engine Analysis - Average MSE',
+            xaxis: { title: 'Engine' },
+            yaxis: { title: 'Average MSE' },
+            height: 400
+        };
+        
+        Plotly.newPlot('engine-chart', [engineTrace], engineLayout);
+        
+        // Model Comparison Chart
+        var comparisonData = [{"model": "gjrGARCH", "model_type": "Standard GARCH", "engine": "rugarch", "avg_mse": 0.0001322138869509, "rank": 1}, {"model": "eGARCH", "model_type": "Standard GARCH", "engine": "rugarch", "avg_mse": 0.000132627623623, "rank": 2}, {"model": "sGARCH", "model_type": "Standard GARCH", "engine": "rugarch", "avg_mse": 0.00017682049061406666, "rank": 3}, {"model": "TGARCH", "model_type": "Standard GARCH", "engine": "rugarch", "avg_mse": 0.000265231788437, "rank": 4}, {"model": "fGARCH", "model_type": "NF-GARCH", "engine": "manual", "avg_mse": 0.00027821647988907305, "rank": 5}, {"model": "NF_gjrGARCH", "model_type": "NF-GARCH", "engine": "manual", "avg_mse": 0.00031337600622295214, "rank": 6}, {"model": "NF_sGARCH", "model_type": "NF-GARCH", "engine": "manual", "avg_mse": 0.0004710235760764478, "rank": 7}, {"model": "NF_eGARCH", "model_type": "NF-GARCH", "engine": "manual", "avg_mse": 1.1813746906243392, "rank": 8}];
+        if (comparisonData.length > 0) {
+            var comparisonTrace = {
+                x: comparisonData.map(d => d.model),
+                y: comparisonData.map(d => d.avg_mse),
+                type: 'bar',
+                marker: {
+                    color: comparisonData.map(d => d.model_type === 'NF-GARCH' ? '#4caf50' : '#ff9800')
+                },
+                name: 'Average MSE'
+            };
+            
+            var comparisonLayout = {
+                title: 'Model Comparison - Average MSE',
+                xaxis: { title: 'Model' },
+                yaxis: { title: 'Average MSE' },
+                height: 400
+            };
+            
+            Plotly.newPlot('comparison-chart', [comparisonTrace], comparisonLayout);
+        }
     </script>
 </body>
 </html>

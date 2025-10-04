@@ -1,0 +1,2 @@
+Extraction_Date,Total_Records,Model_Types,Data_Sources,Unique_Models,Assets
+2025-10-04T16:39:03.283732,172,"{'Standard GARCH': 146, 'Other': 26}","{'NF_GARCH_Chrono': 102, 'Standard_GARCH': 60, 'NF_GARCH_Summary': 10}","['sGARCH_norm', 'sGARCH_sstd', 'eGARCH', 'gjrGARCH', 'TGARCH', 'sGARCH', 'fGARCH']","['NVDA', 'MSFT', 'PG', 'CAT', 'WMT', 'AMZN', 'EURUSD', 'GBPUSD', 'GBPCNY', 'USDZAR', 'GBPZAR', 'EURZAR', 'NF_GARCH']"
