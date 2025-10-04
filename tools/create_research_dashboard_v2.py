@@ -111,9 +111,14 @@ class ResearchDashboardV2:
     def create_model_performance_chart(self):
         """Create model performance comparison chart."""
         if "forecast_accuracy_summary" not in self.data:
+            print("No forecast_accuracy_summary data found")
             return None
             
         acc_data = self.data["forecast_accuracy_summary"]
+        print(f"Creating performance chart with {len(acc_data)} rows")
+        print(f"Columns: {list(acc_data.columns)}")
+        print(f"Models: {acc_data['Model'].unique()}")
+        print(f"Assets: {acc_data['Asset'].unique()}")
         
         # Create subplots
         fig = make_subplots(
@@ -526,8 +531,12 @@ class ResearchDashboardV2:
         if fig is None:
             return f"document.getElementById('{container_id}').innerHTML = '<p>No data available for this chart.</p>';"
         
-        js = pyo.plot(fig, output_type='div', include_plotlyjs=False)
-        return f"document.getElementById('{container_id}').innerHTML = `{js}`;"
+        # Convert to JSON and create JavaScript
+        fig_json = fig.to_json()
+        return f"""
+        var {container_id}_data = {fig_json};
+        Plotly.newPlot('{container_id}', {container_id}_data.data, {container_id}_data.layout);
+        """
     
     def run(self):
         """Generate the complete research dashboard."""
