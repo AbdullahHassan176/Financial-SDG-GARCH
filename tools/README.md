@@ -1,6 +1,6 @@
-# NF-GARCH Results Consolidation & Interactive Dashboard
+# NF-GARCH Results Consolidation Tools
 
-This directory contains tools for consolidating all NF-GARCH research results into a single Excel workbook and generating an interactive HTML dashboard.
+This directory contains tools for consolidating all NF-GARCH research results into a single Excel workbook.
 
 ## 🚀 Quick Start
 
@@ -21,9 +21,6 @@ make install
 ```bash
 # Single command to build everything
 python tools/build_results.py
-
-# Or use the Makefile
-make build
 ```
 
 ## 📁 Directory Structure
@@ -33,34 +30,14 @@ tools/
 ├── _util/
 │   └── path_parsing.py          # Path parsing utilities
 ├── collect_results.py           # Results consolidation script
-├── build_dashboard.py          # Dashboard builder
 ├── build_results.py            # Main build orchestrator
 └── README.md                   # This file
 
 artifacts/
 └── results_consolidated.xlsx   # Generated Excel workbook
-
-docs/
-├── index.html                  # Interactive dashboard
-├── notes.md                    # Methodology notes
-├── data/                       # JSON data files
-└── plots/                      # Copied plot files
 ```
 
 ## 🔧 Available Commands
-
-### Makefile Commands
-```bash
-make help          # Show all available commands
-make build         # Build Excel + dashboard
-make clean         # Clean build artifacts
-make install       # Install dependencies
-make test          # Run unit tests
-make lint          # Run code linting
-make collection    # Run only results collection
-make dashboard     # Run only dashboard build
-make serve         # Serve dashboard locally
-```
 
 ### Direct Python Commands
 ```bash
@@ -69,26 +46,16 @@ python tools/build_results.py
 
 # Collection only
 python tools/build_results.py --collection-only
-
-# Dashboard only
-python tools/build_results.py --dashboard-only
 ```
 
 ## 📊 What Gets Built
 
-### 1. Excel Consolidation (`artifacts/results_consolidated.xlsx`)
+### Excel Consolidation (`artifacts/results_consolidated.xlsx`)
 - **master**: Long-format table with all results
 - **summary_by_model**: Pivot table by model and metric
 - **summary_by_asset_model**: Pivot table by asset, model, and metric
 - **winrates**: NF-GARCH vs GARCH win rate analysis
 - **metadata**: Build information and statistics
-
-### 2. Interactive Dashboard (`docs/index.html`)
-- **Overview**: Key performance indicators and summary charts
-- **Compare Models**: Interactive model comparison with filters
-- **Win Rates**: Heatmap showing NF-GARCH vs GARCH performance
-- **Plots Gallery**: Browseable collection of all generated plots
-- **Methodology**: Research notes and methodology
 
 ## 🎯 Features
 
@@ -99,20 +66,6 @@ python tools/build_results.py --dashboard-only
 - ✅ Handles multiple data splits (chronological vs TS CV)
 - ✅ Calculates win rates between model families
 - ✅ Robust error handling and logging
-
-### Interactive Dashboard
-- ✅ Static HTML (no backend required)
-- ✅ Plotly charts for interactive visualizations
-- ✅ DataTables for searchable, exportable tables
-- ✅ Client-side routing with URL hash support
-- ✅ Responsive design with modern UI
-- ✅ Lightbox for plot viewing
-- ✅ Export functionality (CSV, Excel)
-
-### GitHub Pages Integration
-- ✅ Automatic deployment workflow
-- ✅ Hosts dashboard at `https://[username].github.io/[repository]/`
-- ✅ Updates on every push to main branch
 
 ## 🔍 Data Sources
 

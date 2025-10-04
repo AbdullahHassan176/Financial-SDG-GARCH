@@ -464,7 +464,10 @@ run_all_nfgarch_cv_models_manual <- function(returns_list, model_configs, nf_res
       possible_keys <- c(
         paste0(model_name, "_", asset_name, "_residuals_synthetic"),
         paste0(model_name, "_fx_", asset_name, "_residuals_synthetic"),
-        paste0(model_name, "_equity_", asset_name, "_residuals_synthetic")
+        paste0(model_name, "_equity_", asset_name, "_residuals_synthetic"),
+        paste0(model_name, "_", asset_name, "_residuals_synthetic.csv"),
+        paste0(model_name, "_fx_", asset_name, "_residuals_synthetic.csv"),
+        paste0(model_name, "_equity_", asset_name, "_residuals_synthetic.csv")
       )
       
       key <- NULL

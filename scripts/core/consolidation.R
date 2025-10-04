@@ -328,11 +328,29 @@ consolidate_performance_data <- function(all_data) {
   
   # Combine all performance data
   if (length(performance_data) > 0) {
-    combined_performance <- bind_rows(performance_data)
+    combined_performance <- bind_rows(performance_data) %>%
+      mutate(
+        # Derive columns
+        Model_Family = dplyr::case_when(
+          grepl("^NF|NF-GARCH|nf", Source, ignore.case = TRUE) ~ "NF-GARCH",
+          TRUE ~ "GARCH"
+        ),
+        Engine = dplyr::case_when(
+          grepl("manual", get0("Engine", ifnotfound = ""), ignore.case = TRUE) ~ "manual",
+          grepl("rugarch", get0("Engine", ifnotfound = ""), ignore.case = TRUE) ~ "rugarch",
+          grepl("manual|rugarch", Source, ignore.case = TRUE) ~ tolower(stringr::str_extract(Source, "manual|rugarch")),
+          TRUE ~ NA_character_
+        ),
+        Split_Type = dplyr::case_when(
+          grepl("Time_Series_CV|TS[_ ]?CV|Cross-Validation", Source, ignore.case = TRUE) ~ "TS_CV",
+          grepl("Chronological", Source, ignore.case = TRUE) ~ "Chrono",
+          TRUE ~ NA_character_
+        )
+      )
     
     # Calculate average metrics by model and source
     avg_performance <- combined_performance %>%
-      group_by(Model, Source) %>%
+      group_by(Model, Model_Family, Engine, Split_Type, Source) %>%
       summarise(
         Avg_AIC = mean(AIC, na.rm = TRUE),
         Avg_BIC = mean(BIC, na.rm = TRUE),

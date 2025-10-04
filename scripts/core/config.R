@@ -92,7 +92,8 @@ ASSET_METADATA <- list(
 # Excel sheet schemas for validation
 OUTPUT_SCHEMAS <- list(
   Model_Performance_Summary = c(
-    "Model", "Source", "Avg_AIC", "Avg_BIC", "Avg_LogLik", "Avg_MSE", "Avg_MAE"
+    "Model", "Model_Family", "Engine", "Split_Type", "Source", 
+    "Avg_AIC", "Avg_BIC", "Avg_LogLik", "Avg_MSE", "Avg_MAE"
   ),
   VaR_Performance_Summary = c(
     "Model", "Asset", "Confidence_Level", "Total_Obs", "Expected_Rate", 
