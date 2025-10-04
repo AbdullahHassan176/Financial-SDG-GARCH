@@ -1,0 +1,20 @@
+{
+  "metadata": {
+    "src_dir": "R",
+    "scripts_dir": ".",
+    "total_files_analyzed": 0
+  },
+  "dependencies": {
+    "static_imports": [],
+    "dynamic_imports": [],
+    "local_scripts": [],
+    "external_packages": [],
+    "reachable_scripts": []
+  },
+  "categorized": {
+    "standard_library": [],
+    "third_party": [],
+    "local_project": [],
+    "unknown": []
+  }
+}

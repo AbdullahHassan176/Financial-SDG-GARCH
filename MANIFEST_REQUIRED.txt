@@ -1,0 +1,686 @@
+NF-GARCH Repository Required Files Manifest
+==================================================
+
+Generated: C:\Experimentation\Financial-SDG-GARCH
+Total files: 304
+
+Categories:
+  source_code: 88 files
+  configs: 3 files
+  environment: 2 files
+  scripts: 21 files
+  data: 2 files
+  artifacts: 180 files
+  documentation: 9 files
+  tests: 4 files
+  tools: 33 files
+
+Required Files:
+--------------------
+.gitignore
+.pre-commit-config.yaml
+CITATION.cff
+CLEANROOM_STATUS.md
+LICENSE
+Makefile
+README.md
+artifacts\figures
+artifacts\metrics
+artifacts\models
+artifacts\reports
+artifacts\results_consolidated.xlsx
+artifacts_manifest.json
+check_fgarch_model.py
+cleanup_repository.py
+correct_model_analysis.py
+create_comprehensive_dashboard.bat
+create_working_dashboard.bat
+data\processed\raw (FX + EQ).csv
+data\raw\fx_equity_prices.csv
+debug_models.py
+docs\index.html
+docs\research_dashboard.html
+fix_all_issues.bat
+fix_and_update_dashboard.bat
+fix_final_classification.bat
+fix_final_model_count.bat
+fix_model_separation.bat
+investigate_fgarch.py
+outputs\diagnostic
+outputs\diagnostic\pipeline_diagnostic_report.csv
+outputs\eda
+outputs\eda\tables
+outputs\eda\tables\equity_summary_stats.csv
+outputs\eda\tables\fx_summary_stats.csv
+outputs\model_eval
+outputs\model_eval\figures
+outputs\model_eval\figures\AMZN_forecast_comparison.png
+outputs\model_eval\figures\CAT_forecast_comparison.png
+outputs\model_eval\figures\EURUSD_forecast_comparison.png
+outputs\model_eval\figures\EURZAR_forecast_comparison.png
+outputs\model_eval\figures\GBPCNY_forecast_comparison.png
+outputs\model_eval\figures\GBPUSD_forecast_comparison.png
+outputs\model_eval\figures\GBPZAR_forecast_comparison.png
+outputs\model_eval\figures\MSFT_forecast_comparison.png
+outputs\model_eval\figures\NVDA_forecast_comparison.png
+outputs\model_eval\figures\PG_forecast_comparison.png
+outputs\model_eval\figures\USDZAR_forecast_comparison.png
+outputs\model_eval\figures\WMT_forecast_comparison.png
+outputs\model_eval\figures\excess_kurtosis_comparison.png
+outputs\model_eval\figures\volatility_clustering_heatmap.png
+outputs\model_eval\tables
+outputs\model_eval\tables\asset_type_comparison.csv
+outputs\model_eval\tables\best_models_per_asset.csv
+outputs\model_eval\tables\forecast_accuracy_summary.csv
+outputs\model_eval\tables\model_ranking.csv
+outputs\model_eval\tables\stylized_facts_summary.csv
+outputs\standardized
+outputs\standardized\asset_performance_comparison.csv
+outputs\standardized\best_models_by_asset.csv
+outputs\standardized\complete_model_performance.csv
+outputs\standardized\corrected_model_performance.csv
+outputs\standardized\data_extraction_summary.csv
+outputs\standardized\dissertation_final_results.xlsx
+outputs\standardized\final_corrected_model_performance.csv
+outputs\standardized\fixed_model_performance.csv
+outputs\standardized\model_performance_metrics.csv
+outputs\standardized\model_rankings.csv
+outputs\standardized\model_robustness_analysis.csv
+outputs\standardized\nf_garch_complete.csv
+outputs\standardized\nf_garch_comprehensive_results.xlsx
+outputs\standardized\nf_garch_manual_results.xlsx
+outputs\standardized\nf_garch_performance.csv
+outputs\standardized\nf_garch_risk_assessment.csv
+outputs\standardized\nf_garch_scenario_analysis.csv
+outputs\standardized\nf_garch_stress_testing.csv
+outputs\standardized\renamed_model_performance.csv
+outputs\standardized\risk_assessment_results.csv
+outputs\standardized\standard_garch_complete.csv
+outputs\standardized\standardization_summary.csv
+outputs\standardized\stress_testing_results.csv
+outputs\standardized\stylized_facts_analysis.csv
+outputs\standardized\unified_model_performance.csv
+outputs\standardized\unified_risk_assessment.csv
+outputs\standardized\unified_stress_testing.csv
+outputs\standardized\var_model_performance.csv
+outputs\stress_tests
+outputs\stress_tests\figures
+outputs\stress_tests\figures\model_convergence_stress.png
+outputs\stress_tests\figures\model_performance_heatmap.png
+outputs\stress_tests\figures\volatility_stress_comparison.png
+outputs\stress_tests\tables
+outputs\stress_tests\tables\model_robustness_scores.csv
+outputs\stress_tests\tables\nfgarch_model_robustness_scores.csv
+outputs\stress_tests\tables\nfgarch_scenario_comparison.csv
+outputs\stress_tests\tables\nfgarch_stress_test_summary.csv
+outputs\stress_tests\tables\stress_test_summary.csv
+outputs\var_backtest
+outputs\var_backtest\figures
+outputs\var_backtest\figures\backtest_results_heatmap.png
+outputs\var_backtest\figures\violation_rates_comparison.png
+outputs\var_backtest\tables
+outputs\var_backtest\tables\model_performance_summary.csv
+outputs\var_backtest\tables\nfgarch_model_performance_summary.csv
+outputs\var_backtest\tables\nfgarch_var_backtest_summary.csv
+outputs\var_backtest\tables\var_backtest_summary.csv
+pyproject.toml
+quick_dashboard_update.bat
+rename_fgarch_dashboard.bat
+requirements.txt
+results\Final
+results\Final\comprehensive_results_all.xlsx
+results\Final\dissertation_final_results.xlsx
+results\Final\initial_garch_model_fitting.xlsx
+results\Final\nf_garch_comprehensive_results.xlsx
+results\Final\nf_garch_manual_results.xlsx
+results\consolidated
+results\consolidated\comprehensive_results_all.xlsx
+results\consolidated\dissertation_final_results.xlsx
+results\consolidated\initial_garch_model_fitting.xlsx
+results\consolidated\nf_garch_comprehensive_results.xlsx
+results\consolidated\nf_garch_manual_results.xlsx
+results\plots
+results\plots\exhaustive
+results\plots\exhaustive\histograms_Real_Equity
+results\plots\exhaustive\histograms_Real_Equity\AMZN_histogram.png
+results\plots\exhaustive\histograms_Real_Equity\CAT_histogram.png
+results\plots\exhaustive\histograms_Real_Equity\MSFT_histogram.png
+results\plots\exhaustive\histograms_Real_Equity\NVDA_histogram.png
+results\plots\exhaustive\histograms_Real_Equity\PG_histogram.png
+results\plots\exhaustive\histograms_Real_Equity\WMT_histogram.png
+results\plots\exhaustive\histograms_Real_FX
+results\plots\exhaustive\histograms_Real_FX\EURUSD_histogram.png
+results\plots\exhaustive\histograms_Real_FX\EURZAR_histogram.png
+results\plots\exhaustive\histograms_Real_FX\GBPCNY_histogram.png
+results\plots\exhaustive\histograms_Real_FX\GBPUSD_histogram.png
+results\plots\exhaustive\histograms_Real_FX\GBPZAR_histogram.png
+results\plots\exhaustive\histograms_Real_FX\USDZAR_histogram.png
+results\plots\exhaustive\volatility_TGARCH_equity
+results\plots\exhaustive\volatility_TGARCH_equity\AMZN_volatility.png
+results\plots\exhaustive\volatility_TGARCH_equity\CAT_volatility.png
+results\plots\exhaustive\volatility_TGARCH_equity\MSFT_volatility.png
+results\plots\exhaustive\volatility_TGARCH_equity\NVDA_volatility.png
+results\plots\exhaustive\volatility_TGARCH_equity\PG_volatility.png
+results\plots\exhaustive\volatility_TGARCH_equity\WMT_volatility.png
+results\plots\exhaustive\volatility_TGARCH_fx
+results\plots\exhaustive\volatility_TGARCH_fx\EURUSD_volatility.png
+results\plots\exhaustive\volatility_TGARCH_fx\EURZAR_volatility.png
+results\plots\exhaustive\volatility_TGARCH_fx\GBPCNY_volatility.png
+results\plots\exhaustive\volatility_TGARCH_fx\GBPUSD_volatility.png
+results\plots\exhaustive\volatility_TGARCH_fx\GBPZAR_volatility.png
+results\plots\exhaustive\volatility_TGARCH_fx\USDZAR_volatility.png
+results\plots\exhaustive\volatility_eGARCH_equity
+results\plots\exhaustive\volatility_eGARCH_equity\AMZN_volatility.png
+results\plots\exhaustive\volatility_eGARCH_equity\CAT_volatility.png
+results\plots\exhaustive\volatility_eGARCH_equity\MSFT_volatility.png
+results\plots\exhaustive\volatility_eGARCH_equity\NVDA_volatility.png
+results\plots\exhaustive\volatility_eGARCH_equity\PG_volatility.png
+results\plots\exhaustive\volatility_eGARCH_equity\WMT_volatility.png
+results\plots\exhaustive\volatility_eGARCH_fx
+results\plots\exhaustive\volatility_eGARCH_fx\EURUSD_volatility.png
+results\plots\exhaustive\volatility_eGARCH_fx\EURZAR_volatility.png
+results\plots\exhaustive\volatility_eGARCH_fx\GBPCNY_volatility.png
+results\plots\exhaustive\volatility_eGARCH_fx\GBPUSD_volatility.png
+results\plots\exhaustive\volatility_eGARCH_fx\GBPZAR_volatility.png
+results\plots\exhaustive\volatility_eGARCH_fx\USDZAR_volatility.png
+results\plots\exhaustive\volatility_gjrGARCH_equity
+results\plots\exhaustive\volatility_gjrGARCH_equity\AMZN_volatility.png
+results\plots\exhaustive\volatility_gjrGARCH_equity\CAT_volatility.png
+results\plots\exhaustive\volatility_gjrGARCH_equity\MSFT_volatility.png
+results\plots\exhaustive\volatility_gjrGARCH_equity\NVDA_volatility.png
+results\plots\exhaustive\volatility_gjrGARCH_equity\PG_volatility.png
+results\plots\exhaustive\volatility_gjrGARCH_equity\WMT_volatility.png
+results\plots\exhaustive\volatility_gjrGARCH_fx
+results\plots\exhaustive\volatility_gjrGARCH_fx\EURUSD_volatility.png
+results\plots\exhaustive\volatility_gjrGARCH_fx\EURZAR_volatility.png
+results\plots\exhaustive\volatility_gjrGARCH_fx\GBPCNY_volatility.png
+results\plots\exhaustive\volatility_gjrGARCH_fx\GBPUSD_volatility.png
+results\plots\exhaustive\volatility_gjrGARCH_fx\GBPZAR_volatility.png
+results\plots\exhaustive\volatility_gjrGARCH_fx\USDZAR_volatility.png
+results\plots\exhaustive\volatility_sGARCH_norm_equity
+results\plots\exhaustive\volatility_sGARCH_norm_equity\AMZN_volatility.png
+results\plots\exhaustive\volatility_sGARCH_norm_equity\CAT_volatility.png
+results\plots\exhaustive\volatility_sGARCH_norm_equity\MSFT_volatility.png
+results\plots\exhaustive\volatility_sGARCH_norm_equity\NVDA_volatility.png
+results\plots\exhaustive\volatility_sGARCH_norm_equity\PG_volatility.png
+results\plots\exhaustive\volatility_sGARCH_norm_equity\WMT_volatility.png
+results\plots\exhaustive\volatility_sGARCH_norm_fx
+results\plots\exhaustive\volatility_sGARCH_norm_fx\EURUSD_volatility.png
+results\plots\exhaustive\volatility_sGARCH_norm_fx\EURZAR_volatility.png
+results\plots\exhaustive\volatility_sGARCH_norm_fx\GBPCNY_volatility.png
+results\plots\exhaustive\volatility_sGARCH_norm_fx\GBPUSD_volatility.png
+results\plots\exhaustive\volatility_sGARCH_norm_fx\GBPZAR_volatility.png
+results\plots\exhaustive\volatility_sGARCH_norm_fx\USDZAR_volatility.png
+results\plots\exhaustive\volatility_sGARCH_sstd_equity
+results\plots\exhaustive\volatility_sGARCH_sstd_equity\AMZN_volatility.png
+results\plots\exhaustive\volatility_sGARCH_sstd_equity\CAT_volatility.png
+results\plots\exhaustive\volatility_sGARCH_sstd_equity\MSFT_volatility.png
+results\plots\exhaustive\volatility_sGARCH_sstd_equity\NVDA_volatility.png
+results\plots\exhaustive\volatility_sGARCH_sstd_equity\PG_volatility.png
+results\plots\exhaustive\volatility_sGARCH_sstd_equity\WMT_volatility.png
+results\plots\exhaustive\volatility_sGARCH_sstd_fx
+results\plots\exhaustive\volatility_sGARCH_sstd_fx\EURUSD_volatility.png
+results\plots\exhaustive\volatility_sGARCH_sstd_fx\EURZAR_volatility.png
+results\plots\exhaustive\volatility_sGARCH_sstd_fx\GBPCNY_volatility.png
+results\plots\exhaustive\volatility_sGARCH_sstd_fx\GBPUSD_volatility.png
+results\plots\exhaustive\volatility_sGARCH_sstd_fx\GBPZAR_volatility.png
+results\plots\exhaustive\volatility_sGARCH_sstd_fx\USDZAR_volatility.png
+run_all.bat
+run_complete_analysis.bat
+run_comprehensive_dashboard.bat
+run_modular.bat
+scripts\core\config.R
+scripts\core\consolidation.R
+scripts\core\create_comprehensive_results.py
+scripts\core\enhanced_consolidation.R
+scripts\core\simulation.R
+scripts\core\utils.R
+scripts\eda\eda_summary_stats.R
+scripts\engines\engine_selector.R
+scripts\evaluation\nfgarch_stress_testing.R
+scripts\evaluation\nfgarch_var_backtesting.R
+scripts\evaluation\stylized_fact_tests.R
+scripts\evaluation\var_backtesting.R
+scripts\evaluation\wilcoxon_winrate_analysis.R
+scripts\manual_garch\fit_egarch_manual.R
+scripts\manual_garch\fit_gjr_manual.R
+scripts\manual_garch\fit_sgarch_manual.R
+scripts\manual_garch\fit_tgarch_manual.R
+scripts\manual_garch\forecast_manual.R
+scripts\manual_garch\manual_garch_core.R
+scripts\model_fitting\evaluate_nf_fit.py
+scripts\model_fitting\extract_residuals.R
+scripts\model_fitting\fit_garch_models.R
+scripts\model_fitting\generate_missing_nf_residuals.py
+scripts\model_fitting\train_nf_models.py
+scripts\models\garch_manual.R
+scripts\modular_pipeline\run_modular_pipeline.R
+scripts\simulation_forecasting\forecast_garch_variants.R
+scripts\simulation_forecasting\simulate_nf_garch_engine.R
+scripts\simulation_forecasting\simulate_nf_garch_tscv.R
+scripts\simulation_forecasting\test_nf_garch_simple.R
+scripts\stress_tests\evaluate_under_stress.R
+scripts\utils\add_missing_classical_models.R
+scripts\utils\add_nf_model_prefixes.R
+scripts\utils\cli_parser.R
+scripts\utils\conflict_resolution.R
+scripts\utils\consolidate_results.R
+scripts\utils\enhanced_plotting.R
+scripts\utils\fill_missing_values.R
+scripts\utils\fix_na_values.R
+scripts\utils\fix_python_env.py
+scripts\utils\fix_remaining_missing_values.R
+scripts\utils\generate_appendix_log.py
+scripts\utils\generate_missing_summaries.R
+scripts\utils\pipeline_diagnostic.R
+scripts\utils\safety_functions.R
+scripts\utils\utils_nf_garch.R
+scripts\utils\validate_pipeline.py
+start_research_dashboard.bat
+start_results_viewer.bat
+tests\test_collect_results.py
+tests\test_manifests.py
+tests\test_metrics_baseline.py
+tests\test_seeds.py
+tools\_util\path_parsing.py
+tools\archive_nonessential.py
+tools\build_manifest.py
+tools\build_results.py
+tools\build_results_site.sh
+tools\check_artifact_hashes.py
+tools\check_regression.py
+tools\collect_results.py
+tools\create_complete_analysis_dashboard.py
+tools\create_complete_nf_garch_dashboard.py
+tools\create_comprehensive_dashboard.py
+tools\create_comprehensive_evaluation_dashboard.py
+tools\create_comprehensive_final_dashboard.py
+tools\create_final_nf_garch_dashboard.py
+tools\create_nf_garch_dashboard.py
+tools\create_research_dashboard.py
+tools\create_research_dashboard_v2.py
+tools\create_simple_dashboard.py
+tools\create_standardized_dashboard.py
+tools\create_working_dashboard.py
+tools\extract_nf_garch_data.py
+tools\fix_all_issues.py
+tools\fix_correct_model_count.py
+tools\fix_final_model_classification.py
+tools\fix_model_separation.py
+tools\fix_nf_garch_classification.py
+tools\generate_results_site.py
+tools\rename_fgarch_to_nf_tgarch.py
+tools\sanitize_repo.py
+tools\snapshot_artifacts.py
+tools\standardize_outputs.py
+tools\trace_python_deps.py
+tools\trace_r_deps.R
+update_complete_dashboard.bat
+update_comprehensive_dashboard.bat
+update_final_dashboard.bat
+update_nf_dashboard.bat
+update_research_dashboard.bat
+update_standardized_dashboard.bat
+
+Files by Category:
+--------------------
+
+SOURCE_CODE:
+  check_fgarch_model.py
+  cleanup_repository.py
+  correct_model_analysis.py
+  debug_models.py
+  investigate_fgarch.py
+  scripts\core\config.R
+  scripts\core\consolidation.R
+  scripts\core\create_comprehensive_results.py
+  scripts\core\enhanced_consolidation.R
+  scripts\core\simulation.R
+  scripts\core\utils.R
+  scripts\eda\eda_summary_stats.R
+  scripts\engines\engine_selector.R
+  scripts\evaluation\nfgarch_stress_testing.R
+  scripts\evaluation\nfgarch_var_backtesting.R
+  scripts\evaluation\stylized_fact_tests.R
+  scripts\evaluation\var_backtesting.R
+  scripts\evaluation\wilcoxon_winrate_analysis.R
+  scripts\manual_garch\fit_egarch_manual.R
+  scripts\manual_garch\fit_gjr_manual.R
+  scripts\manual_garch\fit_sgarch_manual.R
+  scripts\manual_garch\fit_tgarch_manual.R
+  scripts\manual_garch\forecast_manual.R
+  scripts\manual_garch\manual_garch_core.R
+  scripts\model_fitting\evaluate_nf_fit.py
+  scripts\model_fitting\extract_residuals.R
+  scripts\model_fitting\fit_garch_models.R
+  scripts\model_fitting\generate_missing_nf_residuals.py
+  scripts\model_fitting\train_nf_models.py
+  scripts\models\garch_manual.R
+  scripts\modular_pipeline\run_modular_pipeline.R
+  scripts\simulation_forecasting\forecast_garch_variants.R
+  scripts\simulation_forecasting\simulate_nf_garch_engine.R
+  scripts\simulation_forecasting\simulate_nf_garch_tscv.R
+  scripts\simulation_forecasting\test_nf_garch_simple.R
+  scripts\stress_tests\evaluate_under_stress.R
+  scripts\utils\add_missing_classical_models.R
+  scripts\utils\add_nf_model_prefixes.R
+  scripts\utils\cli_parser.R
+  scripts\utils\conflict_resolution.R
+  scripts\utils\consolidate_results.R
+  scripts\utils\enhanced_plotting.R
+  scripts\utils\fill_missing_values.R
+  scripts\utils\fix_na_values.R
+  scripts\utils\fix_python_env.py
+  scripts\utils\fix_remaining_missing_values.R
+  scripts\utils\generate_appendix_log.py
+  scripts\utils\generate_missing_summaries.R
+  scripts\utils\pipeline_diagnostic.R
+  scripts\utils\safety_functions.R
+  scripts\utils\utils_nf_garch.R
+  scripts\utils\validate_pipeline.py
+  tests\test_collect_results.py
+  tests\test_manifests.py
+  tests\test_metrics_baseline.py
+  tests\test_seeds.py
+  tools\_util\path_parsing.py
+  tools\archive_nonessential.py
+  tools\build_manifest.py
+  tools\build_results.py
+  tools\check_artifact_hashes.py
+  tools\check_regression.py
+  tools\collect_results.py
+  tools\create_complete_analysis_dashboard.py
+  tools\create_complete_nf_garch_dashboard.py
+  tools\create_comprehensive_dashboard.py
+  tools\create_comprehensive_evaluation_dashboard.py
+  tools\create_comprehensive_final_dashboard.py
+  tools\create_final_nf_garch_dashboard.py
+  tools\create_nf_garch_dashboard.py
+  tools\create_research_dashboard.py
+  tools\create_research_dashboard_v2.py
+  tools\create_simple_dashboard.py
+  tools\create_standardized_dashboard.py
+  tools\create_working_dashboard.py
+  tools\extract_nf_garch_data.py
+  tools\fix_all_issues.py
+  tools\fix_correct_model_count.py
+  tools\fix_final_model_classification.py
+  tools\fix_model_separation.py
+  tools\fix_nf_garch_classification.py
+  tools\generate_results_site.py
+  tools\rename_fgarch_to_nf_tgarch.py
+  tools\sanitize_repo.py
+  tools\snapshot_artifacts.py
+  tools\standardize_outputs.py
+  tools\trace_python_deps.py
+  tools\trace_r_deps.R
+
+CONFIGS:
+  .pre-commit-config.yaml
+  artifacts_manifest.json
+  pyproject.toml
+
+ENVIRONMENT:
+  pyproject.toml
+  requirements.txt
+
+SCRIPTS:
+  create_comprehensive_dashboard.bat
+  create_working_dashboard.bat
+  fix_all_issues.bat
+  fix_and_update_dashboard.bat
+  fix_final_classification.bat
+  fix_final_model_count.bat
+  fix_model_separation.bat
+  quick_dashboard_update.bat
+  rename_fgarch_dashboard.bat
+  run_all.bat
+  run_complete_analysis.bat
+  run_comprehensive_dashboard.bat
+  run_modular.bat
+  start_research_dashboard.bat
+  start_results_viewer.bat
+  update_complete_dashboard.bat
+  update_comprehensive_dashboard.bat
+  update_final_dashboard.bat
+  update_nf_dashboard.bat
+  update_research_dashboard.bat
+  update_standardized_dashboard.bat
+
+DATA:
+  data\processed\raw (FX + EQ).csv
+  data\raw\fx_equity_prices.csv
+
+ARTIFACTS:
+  artifacts\figures
+  artifacts\metrics
+  artifacts\models
+  artifacts\reports
+  artifacts\results_consolidated.xlsx
+  outputs\diagnostic
+  outputs\diagnostic\pipeline_diagnostic_report.csv
+  outputs\eda
+  outputs\eda\tables
+  outputs\eda\tables\equity_summary_stats.csv
+  outputs\eda\tables\fx_summary_stats.csv
+  outputs\model_eval
+  outputs\model_eval\figures
+  outputs\model_eval\figures\AMZN_forecast_comparison.png
+  outputs\model_eval\figures\CAT_forecast_comparison.png
+  outputs\model_eval\figures\EURUSD_forecast_comparison.png
+  outputs\model_eval\figures\EURZAR_forecast_comparison.png
+  outputs\model_eval\figures\GBPCNY_forecast_comparison.png
+  outputs\model_eval\figures\GBPUSD_forecast_comparison.png
+  outputs\model_eval\figures\GBPZAR_forecast_comparison.png
+  outputs\model_eval\figures\MSFT_forecast_comparison.png
+  outputs\model_eval\figures\NVDA_forecast_comparison.png
+  outputs\model_eval\figures\PG_forecast_comparison.png
+  outputs\model_eval\figures\USDZAR_forecast_comparison.png
+  outputs\model_eval\figures\WMT_forecast_comparison.png
+  outputs\model_eval\figures\excess_kurtosis_comparison.png
+  outputs\model_eval\figures\volatility_clustering_heatmap.png
+  outputs\model_eval\tables
+  outputs\model_eval\tables\asset_type_comparison.csv
+  outputs\model_eval\tables\best_models_per_asset.csv
+  outputs\model_eval\tables\forecast_accuracy_summary.csv
+  outputs\model_eval\tables\model_ranking.csv
+  outputs\model_eval\tables\stylized_facts_summary.csv
+  outputs\standardized
+  outputs\standardized\asset_performance_comparison.csv
+  outputs\standardized\best_models_by_asset.csv
+  outputs\standardized\complete_model_performance.csv
+  outputs\standardized\corrected_model_performance.csv
+  outputs\standardized\data_extraction_summary.csv
+  outputs\standardized\dissertation_final_results.xlsx
+  outputs\standardized\final_corrected_model_performance.csv
+  outputs\standardized\fixed_model_performance.csv
+  outputs\standardized\model_performance_metrics.csv
+  outputs\standardized\model_rankings.csv
+  outputs\standardized\model_robustness_analysis.csv
+  outputs\standardized\nf_garch_complete.csv
+  outputs\standardized\nf_garch_comprehensive_results.xlsx
+  outputs\standardized\nf_garch_manual_results.xlsx
+  outputs\standardized\nf_garch_performance.csv
+  outputs\standardized\nf_garch_risk_assessment.csv
+  outputs\standardized\nf_garch_scenario_analysis.csv
+  outputs\standardized\nf_garch_stress_testing.csv
+  outputs\standardized\renamed_model_performance.csv
+  outputs\standardized\risk_assessment_results.csv
+  outputs\standardized\standard_garch_complete.csv
+  outputs\standardized\standardization_summary.csv
+  outputs\standardized\stress_testing_results.csv
+  outputs\standardized\stylized_facts_analysis.csv
+  outputs\standardized\unified_model_performance.csv
+  outputs\standardized\unified_risk_assessment.csv
+  outputs\standardized\unified_stress_testing.csv
+  outputs\standardized\var_model_performance.csv
+  outputs\stress_tests
+  outputs\stress_tests\figures
+  outputs\stress_tests\figures\model_convergence_stress.png
+  outputs\stress_tests\figures\model_performance_heatmap.png
+  outputs\stress_tests\figures\volatility_stress_comparison.png
+  outputs\stress_tests\tables
+  outputs\stress_tests\tables\model_robustness_scores.csv
+  outputs\stress_tests\tables\nfgarch_model_robustness_scores.csv
+  outputs\stress_tests\tables\nfgarch_scenario_comparison.csv
+  outputs\stress_tests\tables\nfgarch_stress_test_summary.csv
+  outputs\stress_tests\tables\stress_test_summary.csv
+  outputs\var_backtest
+  outputs\var_backtest\figures
+  outputs\var_backtest\figures\backtest_results_heatmap.png
+  outputs\var_backtest\figures\violation_rates_comparison.png
+  outputs\var_backtest\tables
+  outputs\var_backtest\tables\model_performance_summary.csv
+  outputs\var_backtest\tables\nfgarch_model_performance_summary.csv
+  outputs\var_backtest\tables\nfgarch_var_backtest_summary.csv
+  outputs\var_backtest\tables\var_backtest_summary.csv
+  results\Final
+  results\Final\comprehensive_results_all.xlsx
+  results\Final\dissertation_final_results.xlsx
+  results\Final\initial_garch_model_fitting.xlsx
+  results\Final\nf_garch_comprehensive_results.xlsx
+  results\Final\nf_garch_manual_results.xlsx
+  results\consolidated
+  results\consolidated\comprehensive_results_all.xlsx
+  results\consolidated\dissertation_final_results.xlsx
+  results\consolidated\initial_garch_model_fitting.xlsx
+  results\consolidated\nf_garch_comprehensive_results.xlsx
+  results\consolidated\nf_garch_manual_results.xlsx
+  results\plots
+  results\plots\exhaustive
+  results\plots\exhaustive\histograms_Real_Equity
+  results\plots\exhaustive\histograms_Real_Equity\AMZN_histogram.png
+  results\plots\exhaustive\histograms_Real_Equity\CAT_histogram.png
+  results\plots\exhaustive\histograms_Real_Equity\MSFT_histogram.png
+  results\plots\exhaustive\histograms_Real_Equity\NVDA_histogram.png
+  results\plots\exhaustive\histograms_Real_Equity\PG_histogram.png
+  results\plots\exhaustive\histograms_Real_Equity\WMT_histogram.png
+  results\plots\exhaustive\histograms_Real_FX
+  results\plots\exhaustive\histograms_Real_FX\EURUSD_histogram.png
+  results\plots\exhaustive\histograms_Real_FX\EURZAR_histogram.png
+  results\plots\exhaustive\histograms_Real_FX\GBPCNY_histogram.png
+  results\plots\exhaustive\histograms_Real_FX\GBPUSD_histogram.png
+  results\plots\exhaustive\histograms_Real_FX\GBPZAR_histogram.png
+  results\plots\exhaustive\histograms_Real_FX\USDZAR_histogram.png
+  results\plots\exhaustive\volatility_TGARCH_equity
+  results\plots\exhaustive\volatility_TGARCH_equity\AMZN_volatility.png
+  results\plots\exhaustive\volatility_TGARCH_equity\CAT_volatility.png
+  results\plots\exhaustive\volatility_TGARCH_equity\MSFT_volatility.png
+  results\plots\exhaustive\volatility_TGARCH_equity\NVDA_volatility.png
+  results\plots\exhaustive\volatility_TGARCH_equity\PG_volatility.png
+  results\plots\exhaustive\volatility_TGARCH_equity\WMT_volatility.png
+  results\plots\exhaustive\volatility_TGARCH_fx
+  results\plots\exhaustive\volatility_TGARCH_fx\EURUSD_volatility.png
+  results\plots\exhaustive\volatility_TGARCH_fx\EURZAR_volatility.png
+  results\plots\exhaustive\volatility_TGARCH_fx\GBPCNY_volatility.png
+  results\plots\exhaustive\volatility_TGARCH_fx\GBPUSD_volatility.png
+  results\plots\exhaustive\volatility_TGARCH_fx\GBPZAR_volatility.png
+  results\plots\exhaustive\volatility_TGARCH_fx\USDZAR_volatility.png
+  results\plots\exhaustive\volatility_eGARCH_equity
+  results\plots\exhaustive\volatility_eGARCH_equity\AMZN_volatility.png
+  results\plots\exhaustive\volatility_eGARCH_equity\CAT_volatility.png
+  results\plots\exhaustive\volatility_eGARCH_equity\MSFT_volatility.png
+  results\plots\exhaustive\volatility_eGARCH_equity\NVDA_volatility.png
+  results\plots\exhaustive\volatility_eGARCH_equity\PG_volatility.png
+  results\plots\exhaustive\volatility_eGARCH_equity\WMT_volatility.png
+  results\plots\exhaustive\volatility_eGARCH_fx
+  results\plots\exhaustive\volatility_eGARCH_fx\EURUSD_volatility.png
+  results\plots\exhaustive\volatility_eGARCH_fx\EURZAR_volatility.png
+  results\plots\exhaustive\volatility_eGARCH_fx\GBPCNY_volatility.png
+  results\plots\exhaustive\volatility_eGARCH_fx\GBPUSD_volatility.png
+  results\plots\exhaustive\volatility_eGARCH_fx\GBPZAR_volatility.png
+  results\plots\exhaustive\volatility_eGARCH_fx\USDZAR_volatility.png
+  results\plots\exhaustive\volatility_gjrGARCH_equity
+  results\plots\exhaustive\volatility_gjrGARCH_equity\AMZN_volatility.png
+  results\plots\exhaustive\volatility_gjrGARCH_equity\CAT_volatility.png
+  results\plots\exhaustive\volatility_gjrGARCH_equity\MSFT_volatility.png
+  results\plots\exhaustive\volatility_gjrGARCH_equity\NVDA_volatility.png
+  results\plots\exhaustive\volatility_gjrGARCH_equity\PG_volatility.png
+  results\plots\exhaustive\volatility_gjrGARCH_equity\WMT_volatility.png
+  results\plots\exhaustive\volatility_gjrGARCH_fx
+  results\plots\exhaustive\volatility_gjrGARCH_fx\EURUSD_volatility.png
+  results\plots\exhaustive\volatility_gjrGARCH_fx\EURZAR_volatility.png
+  results\plots\exhaustive\volatility_gjrGARCH_fx\GBPCNY_volatility.png
+  results\plots\exhaustive\volatility_gjrGARCH_fx\GBPUSD_volatility.png
+  results\plots\exhaustive\volatility_gjrGARCH_fx\GBPZAR_volatility.png
+  results\plots\exhaustive\volatility_gjrGARCH_fx\USDZAR_volatility.png
+  results\plots\exhaustive\volatility_sGARCH_norm_equity
+  results\plots\exhaustive\volatility_sGARCH_norm_equity\AMZN_volatility.png
+  results\plots\exhaustive\volatility_sGARCH_norm_equity\CAT_volatility.png
+  results\plots\exhaustive\volatility_sGARCH_norm_equity\MSFT_volatility.png
+  results\plots\exhaustive\volatility_sGARCH_norm_equity\NVDA_volatility.png
+  results\plots\exhaustive\volatility_sGARCH_norm_equity\PG_volatility.png
+  results\plots\exhaustive\volatility_sGARCH_norm_equity\WMT_volatility.png
+  results\plots\exhaustive\volatility_sGARCH_norm_fx
+  results\plots\exhaustive\volatility_sGARCH_norm_fx\EURUSD_volatility.png
+  results\plots\exhaustive\volatility_sGARCH_norm_fx\EURZAR_volatility.png
+  results\plots\exhaustive\volatility_sGARCH_norm_fx\GBPCNY_volatility.png
+  results\plots\exhaustive\volatility_sGARCH_norm_fx\GBPUSD_volatility.png
+  results\plots\exhaustive\volatility_sGARCH_norm_fx\GBPZAR_volatility.png
+  results\plots\exhaustive\volatility_sGARCH_norm_fx\USDZAR_volatility.png
+  results\plots\exhaustive\volatility_sGARCH_sstd_equity
+  results\plots\exhaustive\volatility_sGARCH_sstd_equity\AMZN_volatility.png
+  results\plots\exhaustive\volatility_sGARCH_sstd_equity\CAT_volatility.png
+  results\plots\exhaustive\volatility_sGARCH_sstd_equity\MSFT_volatility.png
+  results\plots\exhaustive\volatility_sGARCH_sstd_equity\NVDA_volatility.png
+  results\plots\exhaustive\volatility_sGARCH_sstd_equity\PG_volatility.png
+  results\plots\exhaustive\volatility_sGARCH_sstd_equity\WMT_volatility.png
+  results\plots\exhaustive\volatility_sGARCH_sstd_fx
+  results\plots\exhaustive\volatility_sGARCH_sstd_fx\EURUSD_volatility.png
+  results\plots\exhaustive\volatility_sGARCH_sstd_fx\EURZAR_volatility.png
+  results\plots\exhaustive\volatility_sGARCH_sstd_fx\GBPCNY_volatility.png
+  results\plots\exhaustive\volatility_sGARCH_sstd_fx\GBPUSD_volatility.png
+  results\plots\exhaustive\volatility_sGARCH_sstd_fx\GBPZAR_volatility.png
+  results\plots\exhaustive\volatility_sGARCH_sstd_fx\USDZAR_volatility.png
+
+DOCUMENTATION:
+  .gitignore
+  .pre-commit-config.yaml
+  CITATION.cff
+  CLEANROOM_STATUS.md
+  LICENSE
+  Makefile
+  README.md
+  docs\index.html
+  docs\research_dashboard.html
+
+TESTS:
+  tests\test_collect_results.py
+  tests\test_manifests.py
+  tests\test_metrics_baseline.py
+  tests\test_seeds.py
+
+TOOLS:
+  tools\_util\path_parsing.py
+  tools\archive_nonessential.py
+  tools\build_manifest.py
+  tools\build_results.py
+  tools\build_results_site.sh
+  tools\check_artifact_hashes.py
+  tools\check_regression.py
+  tools\collect_results.py
+  tools\create_complete_analysis_dashboard.py
+  tools\create_complete_nf_garch_dashboard.py
+  tools\create_comprehensive_dashboard.py
+  tools\create_comprehensive_evaluation_dashboard.py
+  tools\create_comprehensive_final_dashboard.py
+  tools\create_final_nf_garch_dashboard.py
+  tools\create_nf_garch_dashboard.py
+  tools\create_research_dashboard.py
+  tools\create_research_dashboard_v2.py
+  tools\create_simple_dashboard.py
+  tools\create_standardized_dashboard.py
+  tools\create_working_dashboard.py
+  tools\extract_nf_garch_data.py
+  tools\fix_all_issues.py
+  tools\fix_correct_model_count.py
+  tools\fix_final_model_classification.py
+  tools\fix_model_separation.py
+  tools\fix_nf_garch_classification.py
+  tools\generate_results_site.py
+  tools\rename_fgarch_to_nf_tgarch.py
+  tools\sanitize_repo.py
+  tools\snapshot_artifacts.py
+  tools\standardize_outputs.py
+  tools\trace_python_deps.py
+  tools\trace_r_deps.R
