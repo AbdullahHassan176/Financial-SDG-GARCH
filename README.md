@@ -112,6 +112,57 @@ run_all.bat
 - **Complete risk assessment**: NF-GARCH shows superior VaR and stress testing performance
 - **Comprehensive evaluation**: Both chronological and time-series CV splits analyzed
 
+## 📊 Results Viewer
+
+The repository includes a **static HTML results viewer** that provides easy access to all generated results and plots:
+
+### Features
+- **Results Browser**: View and download all CSV, JSON, Excel, and text files
+- **Plots Gallery**: Browse all generated plots with lightbox viewing
+- **Auto-updating**: Automatically discovers new files in `/results` and `/outputs`
+- **GitHub Pages Ready**: Deploy directly to GitHub Pages
+- **No Dependencies**: Pure HTML/CSS/JavaScript, works offline
+
+### Usage
+
+#### Local Development
+```bash
+# Generate the manifest and build the site
+python tools/generate_results_site.py
+
+# View locally
+open docs/index.html
+```
+
+#### GitHub Pages Deployment
+1. Go to repository **Settings** → **Pages**
+2. Set **Source** to "Deploy from a branch"
+3. Select **Branch**: `main` and **Folder**: `/docs`
+4. Save
+
+The results viewer will be available at: `https://[username].github.io/[repository]/`
+
+#### Manual Updates
+```bash
+# Regenerate manifest after adding new results
+python tools/generate_results_site.py
+
+# Or use the build script
+bash tools/build_results_site.sh
+```
+
+### File Discovery
+The viewer automatically scans:
+- **Results**: `results/` directory (CSV, JSON, TXT, HTML, XLSX files)
+- **Plots**: `outputs/` and `results/plots/` directories (PNG, JPG, SVG, GIF files)
+
+### Optional: Clean Up Remote Branches
+If you had previous dashboard branches, you can delete them:
+```bash
+git push origin --delete dashboard
+git push origin --delete gh-pages
+```
+
 ## 🏗️ Repository Structure
 
 ```
@@ -138,6 +189,13 @@ Financial-SDG-GARCH/
 │   ├── outputs/                             # Generated outputs
 │   ├── nf_generated_residuals/              # NF-generated residuals
 │   └── modular_results/                     # Modular pipeline cache
+├── Results Viewer/
+│   ├── docs/                                # Static HTML results viewer
+│   │   ├── index.html                       # Results viewer interface
+│   │   └── manifest.json                    # File manifest (auto-generated)
+│   └── tools/                               # Build tools
+│       ├── generate_results_site.py         # Manifest generator
+│       └── build_results_site.sh            # Build script
 ├── Documentation/
 │   ├── README.md                            # This file
 │   ├── ai.md                               # AI assistant guide
