@@ -230,12 +230,28 @@
         async function loadManifest() {
             try {
                 const response = await fetch('manifest.json');
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
                 manifest = await response.json();
                 initializeViewer();
             } catch (error) {
                 console.error('Error loading manifest:', error);
-                document.getElementById('results-list').innerHTML = '<div class="error">Error loading manifest. Make sure manifest.json exists.</div>';
-                document.getElementById('plots-gallery').innerHTML = '<div class="error">Error loading manifest. Make sure manifest.json exists.</div>';
+                const errorMessage = `
+                    <div class="error">
+                        <h3>Error loading manifest.json</h3>
+                        <p><strong>Possible solutions:</strong></p>
+                        <ul style="text-align: left; margin: 10px 0;">
+                            <li>Make sure you're serving the files from a web server (not opening directly)</li>
+                            <li>Run: <code>python -m http.server 8000</code> in the docs directory</li>
+                            <li>Then visit: <code>http://localhost:8000</code></li>
+                            <li>Or use GitHub Pages deployment</li>
+                        </ul>
+                        <p><strong>Error details:</strong> ${error.message}</p>
+                    </div>
+                `;
+                document.getElementById('results-list').innerHTML = errorMessage;
+                document.getElementById('plots-gallery').innerHTML = errorMessage;
             }
         }
         

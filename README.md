@@ -130,7 +130,16 @@ The repository includes a **static HTML results viewer** that provides easy acce
 # Generate the manifest and build the site
 python tools/generate_results_site.py
 
-# View locally
+# Option 1: Use the provided batch script (Windows)
+start_results_viewer.bat
+
+# Option 2: Manual server (any OS)
+cd docs
+python -m http.server 8000
+# Then visit: http://localhost:8000
+
+# Option 3: Direct file opening (limited functionality)
+# Note: This may not work due to CORS restrictions
 open docs/index.html
 ```
 
@@ -193,6 +202,7 @@ Financial-SDG-GARCH/
 │   ├── docs/                                # Static HTML results viewer
 │   │   ├── index.html                       # Results viewer interface
 │   │   └── manifest.json                    # File manifest (auto-generated)
+│   ├── start_results_viewer.bat            # Local server launcher (Windows)
 │   └── tools/                               # Build tools
 │       ├── generate_results_site.py         # Manifest generator
 │       └── build_results_site.sh            # Build script
