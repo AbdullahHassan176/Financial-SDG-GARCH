@@ -1,7 +1,11 @@
 # === utils/garch_utils.py ===
+# NOTE: This file is in the unused_scripts directory and contains incorrect imports
+# rugarch is an R package, not a Python package
+# This file should not be used in the main pipeline
+
 import pandas as pd
 import numpy as np
-from rugarch import ugarchspec, ugarchfit, ugarchpath
+# from rugarch import ugarchspec, ugarchfit, ugarchpath  # INCORRECT - rugarch is R package
 
 def inject_residuals_into_garch(asset_returns_path, synthetic_residuals,
                                 model="sGARCH", distribution="sstd",

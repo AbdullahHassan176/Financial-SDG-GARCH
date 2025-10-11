@@ -125,7 +125,7 @@ model_configs <- list(
   sGARCH_sstd  = list(model = "sGARCH", distribution = "sstd", submodel = NULL),
   gjrGARCH     = list(model = "gjrGARCH", distribution = "sstd", submodel = NULL),
   eGARCH       = list(model = "eGARCH", distribution = "sstd", submodel = NULL),
-  TGARCH       = list(model = "fGARCH", distribution = "sstd", submodel = "TGARCH")
+  TGARCH       = list(model = "NF_tGARCH", distribution = "sstd", submodel = "TGARCH")
 )
 
 # Time Series Cross-Validation Implementation

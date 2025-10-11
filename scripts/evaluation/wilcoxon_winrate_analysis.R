@@ -153,7 +153,7 @@ fit_models <- function(returns_list, model_type, dist_type = "sstd", submodel = 
                         sGARCH_sstd  = list(model = "sGARCH", dist = "sstd", submodel = NULL),
                         gjrGARCH     = list(model = "gjrGARCH", dist = "sstd", submodel = NULL),
                         eGARCH       = list(model = "eGARCH", dist = "sstd", submodel = NULL),
-                        TGARCH       = list(model = "fGARCH", dist = "sstd", submodel = "TGARCH")
+                        TGARCH       = list(model = "NF_tGARCH", dist = "sstd", submodel = "TGARCH")
                         )  # Change the distributional assumptions of the ARCH and GARCH parameters here
 
 

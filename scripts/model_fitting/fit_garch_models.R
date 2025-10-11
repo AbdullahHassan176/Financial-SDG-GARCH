@@ -8,6 +8,7 @@ set.seed(123)  # Ensure reproducibility
 source("scripts/utils/conflict_resolution.R")
 initialize_pipeline()
 source("./scripts/utils/safety_functions.R")
+source("scripts/engines/engine_selector.R")  # Load engine selector for manual engine support
 
 # Data Import and Preprocessing
 # Load the combined FX and equity price dataset
@@ -93,14 +94,16 @@ generate_spec <- function(model, dist = "sstd", submodel = NULL) {
 # Automated Model Fitting Function
 # Fits GARCH models to a list of return series with consistent specifications
 
-fit_models <- function(returns_list, model_type, dist_type = "sstd", submodel = NULL) {
-  # Generate specifications for all series
-  specs <- lapply(returns_list, function(x) generate_spec(model_type, dist_type, submodel))
-  
-  # Fit models with 20 observations reserved for out-of-sample evaluation
-  fits <- mapply(function(ret, spec) ugarchfit(data = ret, spec = spec, out.sample = 20, 
-                                               solver = "hybrid", solver.control = list(tol = 1e-6, maxiter = 1000)),
-                 returns_list, specs, SIMPLIFY = FALSE)
+fit_models <- function(returns_list, model_type, dist_type = "sstd", submodel = NULL, engine = "manual") {
+  # Use engine_fit for consistent engine support (manual or rugarch)
+  fits <- lapply(returns_list, function(ret) {
+    tryCatch({
+      engine_fit(model = model_type, returns = ret, dist = dist_type, submodel = submodel, engine = engine)
+    }, error = function(e) {
+      message("Fit error for ", model_type, ": ", e$message)
+      return(NULL)
+    })
+  })
   return(fits)
 }
 
@@ -112,7 +115,7 @@ model_configs <- list(
   sGARCH_sstd  = list(model = "sGARCH", distribution = "sstd", submodel = NULL),    # Standard GARCH with skewed Student-t
   gjrGARCH     = list(model = "gjrGARCH", distribution = "sstd", submodel = NULL),   # GJR-GARCH for leverage effects
   eGARCH       = list(model = "eGARCH", distribution = "sstd", submodel = NULL),     # Exponential GARCH for asymmetric effects
-  TGARCH       = list(model = "fGARCH", distribution = "sstd", submodel = "TGARCH")  # Threshold GARCH for regime-dependent effects
+  TGARCH       = list(model = "TGARCH", distribution = "sstd", submodel = NULL)      # Threshold GARCH for regime-dependent effects
 )
 
 
@@ -138,7 +141,7 @@ equity_test_returns  <- lapply(equity_returns, function(x) x[(get_split_index(x)
 # Implement sliding window approach for robust model evaluation across time
 
 ts_cross_validate <- function(returns, model_type, dist_type = "sstd", submodel = NULL, 
-                              window_size = 500, step_size = 50, forecast_horizon = 20) {
+                              window_size = 500, step_size = 50, forecast_horizon = 20, engine = "manual") {
   # Perform sliding window time-series cross-validation
   # This approach respects temporal ordering and provides robust performance estimates
   
@@ -156,21 +159,18 @@ ts_cross_validate <- function(returns, model_type, dist_type = "sstd", submodel 
             " | Test size: ", nrow(test_set),
             " | Train SD: ", round(sd(train_set, na.rm = TRUE), 6))
     
-    spec <- generate_spec(model_type, dist_type, submodel)
-    
-    # Fit GARCH model with error handling
+    # Fit GARCH model using specified engine for consistency
     fit <- tryCatch({
-      ugarchfit(data = train_set, spec = spec, solver = "hybrid", 
-                solver.control = list(tol = 1e-6, maxiter = 1000))
+      engine_fit(model = model_type, returns = train_set, dist = dist_type, submodel = submodel, engine = engine)
     }, error = function(e) {
       message("Fit error at index ", start_idx, ": ", e$message)
       return(NULL)
     })
     
     if (!is.null(fit)) {
-      # Generate forecasts
+      # Generate forecasts using engine_forecast
       forecast <- tryCatch({
-        ugarchforecast(fit, n.ahead = forecast_horizon)
+        engine_forecast(fit, h = forecast_horizon, engine = engine)
       }, error = function(e) {
         message("Forecast error at index ", start_idx, ": ", e$message)
         return(NULL)
@@ -205,7 +205,15 @@ ts_cross_validate <- function(returns, model_type, dist_type = "sstd", submodel 
 evaluate_model <- function(fit, forecast, actual_returns, forecast_horizon = 40) 
 {
   actual <- head(actual_returns, forecast_horizon)
-  pred   <- fitted(forecast)
+  
+  # Handle different forecast formats (manual engine vs rugarch)
+  if (is.list(forecast) && "mean" %in% names(forecast)) {
+    # Manual engine forecast format
+    pred <- forecast$mean
+  } else {
+    # Rugarch forecast format (fallback)
+    pred <- fitted(forecast)
+  }
   
   # Ensure same length
   actual <- actual[1:min(NROW(actual), NROW(pred))]
@@ -214,19 +222,33 @@ evaluate_model <- function(fit, forecast, actual_returns, forecast_horizon = 40)
   mse <- mean((actual - pred)^2, na.rm = TRUE)
   mae <- mean(abs(actual - pred), na.rm = TRUE)
   
-  q_stat_p <- tryCatch(Box.test(residuals(fit), lag = 10, type = "Ljung-Box")$p.value, error = function(e) NA)
-  arch_p   <- tryCatch(ArchTest(residuals(fit), lags = 10)$p.value, error = function(e) NA)
+  # Handle different fit formats
+  if (is.list(fit) && "residuals" %in% names(fit)) {
+    # Manual engine fit format
+    residuals_vec <- fit$residuals
+    aic <- fit$aic
+    bic <- fit$bic
+    loglik <- fit$loglik
+  } else {
+    # Rugarch fit format (fallback)
+    residuals_vec <- residuals(fit)
+    aic <- infocriteria(fit)[1]
+    bic <- infocriteria(fit)[2]
+    loglik <- likelihood(fit)
+  }
   
-  return(data.frame
-         (
-           AIC = infocriteria(fit)[1],
-           BIC = infocriteria(fit)[2],
-           LogLikelihood = likelihood(fit),
-           `MSE (Forecast vs Actual)` = mse,
-           `MAE (Forecast vs Actual)` = mae,
-           `Q-Stat (p>0.05)` = q_stat_p,
-           `ARCH LM (p>0.05)` = arch_p
-         ))
+  q_stat_p <- tryCatch(Box.test(residuals_vec, lag = 10, type = "Ljung-Box")$p.value, error = function(e) NA)
+  arch_p   <- tryCatch(ArchTest(residuals_vec, lags = 10)$p.value, error = function(e) NA)
+  
+  return(data.frame(
+    AIC = aic,
+    BIC = bic,
+    LogLikelihood = loglik,
+    `MSE (Forecast vs Actual)` = mse,
+    `MAE (Forecast vs Actual)` = mae,
+    `Q-Stat (p>0.05)` = q_stat_p,
+    `ARCH LM (p>0.05)` = arch_p
+  ))
 } 
 
 
@@ -239,8 +261,8 @@ for (config_name in names(model_configs))
 {
   cfg <- model_configs[[config_name]]
   
-  equity_chrono_split_fit <- fit_models(equity_train_returns, model_type = cfg$model, dist_type = cfg$dist, submodel = cfg$submodel)
-  fx_chrono_split_fit     <- fit_models(fx_train_returns, model_type = cfg$model, dist_type = cfg$dist, submodel = cfg$submodel)
+  equity_chrono_split_fit <- fit_models(equity_train_returns, model_type = cfg$model, dist_type = cfg$dist, submodel = cfg$submodel, engine = "manual")
+  fx_chrono_split_fit     <- fit_models(fx_train_returns, model_type = cfg$model, dist_type = cfg$dist, submodel = cfg$submodel, engine = "manual")
   
   Fitted_Chrono_Split_models[[paste0("equity_", config_name)]] <- equity_chrono_split_fit
   Fitted_Chrono_Split_models[[paste0("fx_", config_name)]]     <- fx_chrono_split_fit
@@ -261,7 +283,8 @@ run_all_cv_models <- function(returns_list, model_configs, window_size = 500, fo
                         dist_type  = cfg$dist, 
                         submodel   = cfg$submodel,
                         window_size = window_size,
-                        forecast_horizon = forecast_horizon)
+                        forecast_horizon = forecast_horizon,
+                        engine = "manual")
     })
     
     # Label by asset names

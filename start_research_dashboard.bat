@@ -1,24 +1,35 @@
 @echo off
-echo Starting NF-GARCH Research Dashboard...
+echo ========================================
+echo CREATING COMPREHENSIVE DASHBOARD
+echo ========================================
 echo.
-
-REM Check if we're in the right directory
-if not exist "docs\research_dashboard.html" (
-    echo Generating research dashboard...
-    python tools\create_research_dashboard.py
-    if %errorlevel% neq 0 (
-        echo ERROR: Failed to generate research dashboard
-        pause
-        exit /b 1
-    )
-)
-
-echo Starting local web server...
+echo This will create a comprehensive dashboard with ALL analysis components:
+echo - Model Performance Analysis
+echo - Risk Assessment Results
+echo - Stress Testing Analysis
+echo - Stylized Facts Analysis
+echo - Quantitative Metrics
+echo - Distributional Metrics
+echo - Engine Analysis
+echo - Model Comparison
 echo.
+echo Running comprehensive dashboard creation...
+python tools/create_comprehensive_final_dashboard.py
+echo.
+echo ========================================
+echo COMPREHENSIVE DASHBOARD CREATED!
+echo ========================================
+echo.
+echo The dashboard now includes:
+echo - 9 comprehensive analysis tabs
+echo - Complete data coverage
+echo - Interactive charts and tables
+echo - Tabbed interface for easy navigation
+echo.
+echo Opening comprehensive dashboard...
 echo Navigate to: http://localhost:8000/research_dashboard.html
 echo.
 echo Press Ctrl+C to stop the server
 echo.
-
-cd docs
-python -m http.server 8000
+cd /d "%~dp0docs"
+python -m http.server 8000 --directory .

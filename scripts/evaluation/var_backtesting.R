@@ -71,7 +71,7 @@ models <- list(
   sGARCH_sstd = list(model = "sGARCH", dist = "sstd"),      # Standard GARCH with skewed Student-t
   eGARCH = list(model = "eGARCH", dist = "sstd"),           # Exponential GARCH for asymmetric effects
   gjrGARCH = list(model = "gjrGARCH", dist = "sstd"),       # GJR-GARCH for leverage effects
-  TGARCH = list(model = "fGARCH", dist = "sstd", submodel = "TGARCH")  # Threshold GARCH for regime effects
+  TGARCH = list(model = "NF_tGARCH", dist = "sstd", submodel = "TGARCH")  # Threshold GARCH for regime effects
 )
 
 # Define confidence levels for VaR calculation (95% and 99% levels)

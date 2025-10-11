@@ -93,22 +93,26 @@ cat("Generating histograms...\n")
 
 # FX Histograms
 for (asset in fx_cols) {
+  # Create data frame for histogram function
+  hist_data <- data.frame(Returns = fx_returns[[asset]])
   p <- create_enhanced_histogram(
-    fx_returns[[asset]], 
+    hist_data, 
+    x_var = "Returns",
     title = paste("Return Distribution -", asset),
-    xlab = "Returns",
-    ylab = "Density"
+    color = "#1f77b4"
   )
   ggsave(paste0("outputs/eda/figures/", asset, "_histogram.png"), p, width = 10, height = 6, dpi = 300)
 }
 
 # Equity Histograms
 for (asset in equity_cols) {
+  # Create data frame for histogram function
+  hist_data <- data.frame(Returns = equity_returns[[asset]])
   p <- create_enhanced_histogram(
-    equity_returns[[asset]], 
+    hist_data, 
+    x_var = "Returns",
     title = paste("Return Distribution -", asset),
-    xlab = "Returns",
-    ylab = "Density"
+    color = "#2ca02c"
   )
   ggsave(paste0("outputs/eda/figures/", asset, "_histogram.png"), p, width = 10, height = 6, dpi = 300)
 }
@@ -121,14 +125,12 @@ fx_returns_long <- fx_returns %>%
   mutate(Date = data$Date[-1]) %>%
   gather(key = "Asset", value = "Returns", -Date)
 
-p <- create_enhanced_time_series(
+p <- create_enhanced_timeseries(
   fx_returns_long,
   x_var = "Date",
   y_var = "Returns",
-  group_var = "Asset",
   title = "FX Returns Time Series",
-  xlab = "Date",
-  ylab = "Returns"
+  color = "#1f77b4"
 )
 ggsave("outputs/eda/figures/fx_returns_timeseries.png", p, width = 12, height = 8, dpi = 300)
 
@@ -137,14 +139,12 @@ equity_returns_long <- equity_returns %>%
   mutate(Date = data$Date[-1]) %>%
   gather(key = "Asset", value = "Returns", -Date)
 
-p <- create_enhanced_time_series(
+p <- create_enhanced_timeseries(
   equity_returns_long,
   x_var = "Date",
   y_var = "Returns",
-  group_var = "Asset",
   title = "Equity Returns Time Series",
-  xlab = "Date",
-  ylab = "Returns"
+  color = "#2ca02c"
 )
 ggsave("outputs/eda/figures/equity_returns_timeseries.png", p, width = 12, height = 8, dpi = 300)
 
@@ -176,14 +176,12 @@ fx_vol <- fx_returns %>%
   mutate(Date = data$Date[-1]) %>%
   gather(key = "Asset", value = "Absolute_Returns", -Date)
 
-p <- create_enhanced_time_series(
+p <- create_enhanced_timeseries(
   fx_vol,
   x_var = "Date",
   y_var = "Absolute_Returns",
-  group_var = "Asset",
   title = "FX Volatility Clustering",
-  xlab = "Date",
-  ylab = "Absolute Returns"
+  color = "#1f77b4"
 )
 ggsave("outputs/eda/figures/fx_volatility_clustering.png", p, width = 12, height = 8, dpi = 300)
 
@@ -193,14 +191,12 @@ equity_vol <- equity_returns %>%
   mutate(Date = data$Date[-1]) %>%
   gather(key = "Asset", value = "Absolute_Returns", -Date)
 
-p <- create_enhanced_time_series(
+p <- create_enhanced_timeseries(
   equity_vol,
   x_var = "Date",
   y_var = "Absolute_Returns",
-  group_var = "Asset",
   title = "Equity Volatility Clustering",
-  xlab = "Date",
-  ylab = "Absolute Returns"
+  color = "#2ca02c"
 )
 ggsave("outputs/eda/figures/equity_volatility_clustering.png", p, width = 12, height = 8, dpi = 300)
 
@@ -225,8 +221,7 @@ p <- create_enhanced_boxplot(
   y_var = "Returns",
   fill_var = "Asset_Type",
   title = "Return Distribution Comparison: FX vs Equity",
-  xlab = "Asset Type",
-  ylab = "Returns"
+  color_scheme = c("FX" = "#1f77b4", "Equity" = "#2ca02c")
 )
 ggsave("outputs/eda/figures/fx_vs_equity_comparison.png", p, width = 10, height = 6, dpi = 300)
 

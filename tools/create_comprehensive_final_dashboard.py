@@ -457,15 +457,15 @@ def create_comprehensive_html(analysis_data):
         <div class="content">
             <!-- Tab Navigation -->
             <div class="tabs">
-                <button class="tab active" onclick="showTab('overview')">📊 Overview</button>
-                <button class="tab" onclick="showTab('performance')">🎯 Model Performance</button>
-                <button class="tab" onclick="showTab('risk')">⚠️ Risk Assessment</button>
-                <button class="tab" onclick="showTab('stress')">💪 Stress Testing</button>
-                <button class="tab" onclick="showTab('stylized')">🔬 Stylized Facts</button>
-                <button class="tab" onclick="showTab('quantitative')">📈 Quantitative Metrics</button>
-                <button class="tab" onclick="showTab('distributional')">📊 Distributional Metrics</button>
-                <button class="tab" onclick="showTab('engine')">⚙️ Engine Analysis</button>
-                <button class="tab" onclick="showTab('comparison')">🔄 Model Comparison</button>
+                <button class="tab active" onclick="showTab('overview')">Overview</button>
+                <button class="tab" onclick="showTab('performance')">Model Performance</button>
+                <button class="tab" onclick="showTab('risk')">Risk Assessment</button>
+                <button class="tab" onclick="showTab('stress')">Stress Testing</button>
+                <button class="tab" onclick="showTab('stylized')">Stylized Facts</button>
+                <button class="tab" onclick="showTab('quantitative')">Quantitative Metrics</button>
+                <button class="tab" onclick="showTab('distributional')">Distributional Metrics</button>
+                <button class="tab" onclick="showTab('engine')">Engine Analysis</button>
+                <button class="tab" onclick="showTab('comparison')">Model Comparison</button>
             </div>
             
             <!-- Overview Tab -->
@@ -503,14 +503,14 @@ def create_comprehensive_html(analysis_data):
                         <h3>✅ Complete Analysis Dashboard</h3>
                         <p><strong>This dashboard includes ALL analysis components:</strong></p>
                         <ul>
-                            <li>📊 Model Performance Analysis</li>
-                            <li>⚠️ Risk Assessment Results</li>
-                            <li>💪 Stress Testing Analysis</li>
-                            <li>🔬 Stylized Facts Analysis</li>
-                            <li>📈 Quantitative Metrics</li>
-                            <li>📊 Distributional Metrics</li>
-                            <li>⚙️ Engine Analysis</li>
-                            <li>🔄 Model Comparison</li>
+                            <li>Model Performance Analysis</li>
+                            <li>Risk Assessment Results</li>
+                            <li>Stress Testing Analysis</li>
+                            <li>Stylized Facts Analysis</li>
+                            <li>Quantitative Metrics</li>
+                            <li>Distributional Metrics</li>
+                            <li>Engine Analysis</li>
+                            <li>Model Comparison</li>
                         </ul>
                     </div>
                 </div>
@@ -519,7 +519,7 @@ def create_comprehensive_html(analysis_data):
             <!-- Model Performance Tab -->
             <div id="performance" class="tab-content">
                 <div class="section">
-                    <h2>🎯 Model Performance Analysis</h2>
+                    <h2>Model Performance Analysis</h2>
                     <div class="chart-container" id="performance-chart"></div>
                     <table class="data-table">
                         <tr><th>Model</th><th>Type</th><th>Engine</th><th>MSE</th><th>MAE</th><th>Rank</th></tr>
@@ -567,7 +567,7 @@ def create_comprehensive_html(analysis_data):
             <!-- Quantitative Metrics Tab -->
             <div id="quantitative" class="tab-content">
                 <div class="section">
-                    <h2>📈 Quantitative Metrics</h2>
+                    <h2>Quantitative Metrics</h2>
                     <div class="chart-container" id="quantitative-chart"></div>
                     <table class="data-table">
                         <tr><th>Model</th><th>Type</th><th>RMSE</th><th>MAE</th><th>AIC</th><th>BIC</th></tr>
@@ -579,7 +579,7 @@ def create_comprehensive_html(analysis_data):
             <!-- Distributional Metrics Tab -->
             <div id="distributional" class="tab-content">
                 <div class="section">
-                    <h2>📊 Distributional Metrics</h2>
+                    <h2>Distributional Metrics</h2>
                     <div class="chart-container" id="distributional-chart"></div>
                     <table class="data-table">
                         <tr><th>Model</th><th>Type</th><th>KS Distance</th><th>Wasserstein Distance</th><th>KL Divergence</th><th>JS Divergence</th></tr>

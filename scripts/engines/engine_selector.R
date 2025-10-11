@@ -59,7 +59,9 @@ engine_fit <- function(model, returns, dist, submodel = NULL, engine = "rugarch"
       fit <- fit_gjr_manual(returns, dist = manual_dist)
     } else if (model == "eGARCH") {
       fit <- fit_egarch_manual(returns, dist = manual_dist)
-    } else if (model == "fGARCH" && submodel == "TGARCH") {
+    } else if (model == "TGARCH") {
+      fit <- fit_tgarch_manual(returns, dist = manual_dist)
+    } else if (model == "NF_tGARCH" && submodel == "TGARCH") {
       fit <- fit_tgarch_manual(returns, dist = manual_dist)
     } else {
       stop("Manual engine does not support model: ", model, " with submodel: ", submodel)
@@ -238,7 +240,7 @@ standardize_rugarch_params <- function(param_names, model, distribution) {
       standardized[param_names == "nu"] <- "shape"
       standardized[param_names == "skew"] <- "skew"
     }
-  } else if (model == "fGARCH" && submodel == "TGARCH") {
+  } else if (model == "NF_tGARCH" && submodel == "TGARCH") {
     if (distribution == "norm") {
       # Expected: mu, omega, alpha1, beta1, eta11
       standardized[param_names == "mu"] <- "mu"

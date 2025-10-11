@@ -1,12 +1,12 @@
 # Utilities and Scripts Documentation
 
-## 🎯 **Overview**
+## **Overview**
 
 This document provides comprehensive documentation for the utility functions and scripts in the Financial-SDG-GARCH pipeline. These utilities support data processing, model evaluation, plotting, and pipeline management with rigorous mathematical foundations and academic references.
 
 ---
 
-## **📊 Data Processing Utilities**
+## **Data Processing Utilities**
 
 ### **Price to Returns Conversion**
 
@@ -64,7 +64,7 @@ rolling_stats <- function(data, window = 252, fun = "mean") {
 
 ---
 
-## **📈 Risk Management Utilities**
+## **Risk Management Utilities**
 
 ### **Value at Risk (VaR) Calculation**
 

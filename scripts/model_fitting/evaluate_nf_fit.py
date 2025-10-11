@@ -37,7 +37,7 @@ if args.asset_group and not args.asset_subset:
 
 # === Run Model Training Pipeline ===
 if args.train_models:
-    print("🚀 Running model training pipeline...")
+    print("Running model training pipeline...")
     run_training_pipeline(
         window_size=args.window_size,
         forecast_horizon=args.forecast_horizon,
@@ -89,7 +89,7 @@ def main():
 
     # === Train NF on each model's residuals ===
     for model_key, residuals in residual_map.items():
-        print(f"🚀 Training NF for {model_key}...")
+        print(f"Training NF for {model_key}...")
 
         flow = build_flow_model(
             num_layers=CONFIG["flow_config"]["num_layers"],
@@ -112,12 +112,12 @@ def main():
         print(f"\tKS: {ks:.4f}, Wasserstein: {wass:.4f}")
 
     # === Run NF-GARCH simulations ===
-    print("📊 Running NF-GARCH simulations...")
+    print("Running NF-GARCH simulations...")
     all_results = []
 
     for model_key, innovations in nf_results.items():
         for asset in CONFIG["assets"]:
-            print(f"🔁 Simulating {model_key} on {asset}")
+            print(f"Simulating {model_key} on {asset}")
 
             sim_result = run_nf_garch_simulation(
                 asset_name=asset,
@@ -158,7 +158,7 @@ print("✅ All statistical tests complete.")
 
 # === Statistical Comparison Tests ===
 if args.run_tests:
-    print("📊 Running statistical tests...")
+    print("Running statistical tests...")
 
     dm_results = evaluate_dm_test(Fitted_TS_CV_models_df, nf_cv_results_df, metric="MSE")
     dm_results.to_csv("results/stat_tests/diebold_mariano_results.csv", index=False)

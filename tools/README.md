@@ -2,7 +2,7 @@
 
 This directory contains tools for consolidating all NF-GARCH research results into a single Excel workbook.
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 - Python 3.8+ with pip
@@ -37,7 +37,7 @@ artifacts/
 └── results_consolidated.xlsx   # Generated Excel workbook
 ```
 
-## 🔧 Available Commands
+## Available Commands
 
 ### Direct Python Commands
 ```bash
@@ -48,7 +48,7 @@ python tools/build_results.py
 python tools/build_results.py --collection-only
 ```
 
-## 📊 What Gets Built
+## What Gets Built
 
 ### Excel Consolidation (`artifacts/results_consolidated.xlsx`)
 - **master**: Long-format table with all results
@@ -57,7 +57,7 @@ python tools/build_results.py --collection-only
 - **winrates**: NF-GARCH vs GARCH win rate analysis
 - **metadata**: Build information and statistics
 
-## 🎯 Features
+## Features
 
 ### Data Consolidation
 - ✅ Recursively scans for CSV, JSON, and Excel files
@@ -85,7 +85,7 @@ The system automatically discovers and processes:
 - `outputs/stress_tests/figures/*.png` - Stress testing plots
 - `results/plots/**/*.png` - Additional plot collections
 
-## 📈 Metrics Supported
+## Metrics Supported
 
 ### Model Fit Metrics
 - AIC, BIC, Log-Likelihood
@@ -145,7 +145,7 @@ make test
 - File scanning and processing
 - Error handling
 
-## 🚀 Deployment
+## Deployment
 
 ### Local Development
 ```bash
@@ -162,7 +162,7 @@ make serve
 4. Select branch "main" and folder "/docs"
 5. Dashboard will be available at `https://[username].github.io/[repository]/`
 
-## 🔧 Configuration
+## Configuration
 
 ### Customizing Data Sources
 Edit `collect_results.py` to modify:

@@ -67,7 +67,7 @@ models <- list(
   sGARCH_sstd = list(model = "sGARCH", dist = "sstd"),
   eGARCH = list(model = "eGARCH", dist = "sstd"),
   gjrGARCH = list(model = "gjrGARCH", dist = "sstd"),
-  TGARCH = list(model = "fGARCH", dist = "sstd", submodel = "TGARCH")
+  TGARCH = list(model = "NF_tGARCH", dist = "sstd", submodel = "TGARCH")
 )
 
 #### Forecasting Function ####

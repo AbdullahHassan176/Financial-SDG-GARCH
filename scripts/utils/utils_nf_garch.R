@@ -61,12 +61,12 @@
 
 
 # ---- Manual NF-GARCH simulator ----------------------------------------------
-# Works for: sGARCH, gjrGARCH, eGARCH, fGARCH(submodel="TGARCH")
+# Works for: sGARCH, gjrGARCH, eGARCH, NF_tGARCH(submodel="TGARCH")
 # Assumes z_nf are pre-standardized innovations: mean ≈ 0, var ≈ 1
 simulate_nf_garch <- function(fit,
                               z_nf,
                               horizon = 40,
-                              model = c("sGARCH","gjrGARCH","eGARCH","fGARCH"),
+                              model = c("sGARCH","gjrGARCH","eGARCH","NF_tGARCH"),
                               submodel = NULL,
                               var_floor = 1e-12) {
   stopifnot(horizon > 0)
@@ -197,7 +197,7 @@ simulate_nf_garch <- function(fit,
       eps_tm1    <- eps_t
       z_tm1      <- z_t
 
-    } else if (model == "fGARCH" && identical(submodel, "TGARCH")) {
+    } else if (model == "NF_tGARCH" && identical(submodel, "TGARCH")) {
       # rugarch TGARCH parameterization (absolute residual form):
       # sigma_t = omega + alpha*|eps_{t-1}| + eta11*I(eps_{t-1}<0)*|eps_{t-1}| + beta*sigma_{t-1}
       sigma_t <- omega + alpha1*abs(eps_tm1) + eta11*as.numeric(eps_tm1 < 0)*abs(eps_tm1) + beta1*sqrt(pmax(sigma2_tm1, var_floor))

@@ -4,7 +4,7 @@
 
 This repository implements and evaluates **Normalizing Flows (NF) integrated with GARCH-family volatility models** for enhanced financial return modelling. The research demonstrates that NF-GARCH models significantly outperform traditional GARCH models in capturing complex volatility patterns in FX and equity time series.
 
-## 🚀 Recent Improvements
+## Recent Improvements
 
 ### ✅ **Pipeline Alignment Fixed**
 - **Full alignment** between `run_all.bat` and modular pipeline
@@ -88,7 +88,7 @@ run_all.bat
 # Results are saved in separate files for comparison
 ```
 
-## 📊 Results & Outputs
+## Results & Outputs
 
 ### Main Results File
 - **`Dissertation_Consolidated_Results.xlsx`** - Complete consolidated results
@@ -112,12 +112,12 @@ run_all.bat
 - **Complete risk assessment**: NF-GARCH shows superior VaR and stress testing performance
 - **Comprehensive evaluation**: Both chronological and time-series CV splits analyzed
 
-## 📊 Results Viewer
+## Results Viewer
 
 The repository includes a **static HTML results viewer** that provides easy access to all generated results and plots:
 
 ### Features
-- **📊 Research Dashboard**: Comprehensive analysis with key findings, statistical significance, and reviewer concerns addressed
+- **Research Dashboard**: Comprehensive analysis with key findings, statistical significance, and reviewer concerns addressed
 - **Results Browser**: View and download all CSV, JSON, Excel, and text files
 - **Plots Gallery**: Browse all generated plots with lightbox viewing
 - **Auto-updating**: Automatically discovers new files in `/results` and `/outputs`
@@ -189,7 +189,7 @@ Financial-SDG-GARCH/
 │   ├── NF_GARCH_Results_manual.xlsx          # Manual engine results
 │   ├── NF_GARCH_Results_rugarch.xlsx         # rugarch engine results
 │   └── Initial_GARCH_Model_Fitting.xlsx      # Standard GARCH baseline
-├── 🔧 Pipeline/
+├── Pipeline/
 │   ├── scripts/                              # All pipeline components
 │   │   ├── data_prep/                        # Data preparation
 │   │   ├── model_fitting/                    # GARCH and NF model fitting
@@ -281,7 +281,7 @@ for dataset in dataset1 dataset2 dataset3; do
 done
 ```
 
-## 🔧 Troubleshooting
+## Troubleshooting
 
 ### Common Issues
 
@@ -355,4 +355,4 @@ This research was conducted as part of an MSc in Mathematical Statistics at the 
 - [ ] **Analysis**: Review performance metrics and model comparisons
 - [ ] **Customize**: Modify parameters or add new models as needed
 
-**Ready to explore enhanced financial return modelling with NF-GARCH! 🚀**
+**Ready to explore enhanced financial return modelling with NF-GARCH!**

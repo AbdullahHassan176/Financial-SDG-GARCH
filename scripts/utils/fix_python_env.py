@@ -63,7 +63,7 @@ def verify_dependencies():
     results.append(_check("torch"))
     results.append(_check("torchvision"))
     results.append(_check("yaml"))     # not pyyaml
-    results.append(_check("pathlib2"))
+    # results.append(_check("pathlib2"))  # pathlib2 is deprecated, use pathlib instead
     
     if all(results):
         print("✓ All required packages are available")

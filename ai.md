@@ -98,7 +98,7 @@ model_configs <- list(
   sGARCH_sstd  = list(model = "sGARCH", distribution = "sstd", submodel = NULL),
   gjrGARCH     = list(model = "gjrGARCH", distribution = "sstd", submodel = NULL),
   eGARCH       = list(model = "eGARCH", distribution = "sstd", submodel = NULL),
-  TGARCH       = list(model = "fGARCH", distribution = "sstd", submodel = "TGARCH")
+  TGARCH       = list(model = "NF_tGARCH", distribution = "sstd", submodel = "TGARCH")
 )
 ```
 
@@ -220,19 +220,19 @@ Always implement:
 - **Robust Error Handling**: Manual simulation fallbacks and convergence checks
 - **Cross-Platform Support**: Windows batch scripts and Unix makefiles
 
-### 🔧 Recent Fixes
+### Recent Fixes
 - **Naming Convention Resolution**: Fixed missing eGARCH, gjrGARCH, and TGARCH residuals
 - **Manual Simulation**: Replaced problematic `ugarchpath` with custom implementation
 - **Quick Testing**: Added comprehensive testing framework for pipeline validation
 
-### 📊 Pipeline Coverage
+### Pipeline Coverage
 - **Models**: 5 GARCH variants (sGARCH_norm, sGARCH_sstd, eGARCH, gjrGARCH, TGARCH)
 - **Assets**: 12 total (6 FX + 6 Equity)
 - **Splits**: Chronological and Time-Series Cross-Validation
 - **NF Residuals**: ~240 files covering all combinations
 - **Evaluation**: 4 comprehensive analysis stages
 
-### 🚀 Ready for Production
+### Ready for Production
 The pipeline is now fully functional and ready for:
 - Complete synthetic data generation
 - Comprehensive model comparison
