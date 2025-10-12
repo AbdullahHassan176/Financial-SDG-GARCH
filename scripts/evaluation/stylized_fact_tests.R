@@ -20,7 +20,10 @@ library(moments)
 library(lmtest)
 library(forecast)
 
-cat("Starting Stylized Fact Tests Analysis...\n")
+# Source utilities
+source("scripts/utils/safety_functions.R")
+
+cat("Starting Stylized Fact Tests Analysis with Dual Splits...\n")
 
 #### Import and Prepare Data ####
 
@@ -215,8 +218,8 @@ test_heavy_tails <- function(returns) {
 
 #### Perform Stylized Fact Tests ####
 
-perform_stylized_tests <- function(returns_data, asset_name, asset_type) {
-  cat("Testing stylized facts for", asset_name, "(", asset_type, ")\n")
+perform_stylized_tests_dual_splits <- function(returns_data, asset_name, asset_type) {
+  cat("Testing stylized facts with dual splits for", asset_name, "(", asset_type, ")\n")
   
   # Remove any NA values
   clean_returns <- na.omit(returns_data)
@@ -226,26 +229,40 @@ perform_stylized_tests <- function(returns_data, asset_name, asset_type) {
     return(NULL)
   }
   
-  # Perform all tests
-  fat_tails_test <- test_fat_tails(clean_returns)
-  clustering_test <- test_volatility_clustering(clean_returns)
-  leverage_test <- test_leverage_effects(clean_returns)
-  autocorr_test <- test_return_autocorrelation(clean_returns)
-  long_memory_test <- test_long_memory(clean_returns)
-  heavy_tails_test <- test_heavy_tails(clean_returns)
+  # Function to perform stylized fact tests for a given split
+  stylized_analysis_function <- function(train_data, test_data, split_type) {
+    cat("    Running stylized fact tests on", split_type, "split for", asset_name, "\n")
+    
+    # Use combined data for stylized fact tests (they need full series)
+    combined_data <- c(train_data, test_data)
+    
+    # Perform all tests
+    fat_tails_test <- test_fat_tails(combined_data)
+    clustering_test <- test_volatility_clustering(combined_data)
+    leverage_test <- test_leverage_effects(combined_data)
+    autocorr_test <- test_return_autocorrelation(combined_data)
+    long_memory_test <- test_long_memory(combined_data)
+    heavy_tails_test <- test_heavy_tails(combined_data)
   
-  # Compile results
-  results <- list(
-    asset = asset_name,
-    asset_type = asset_type,
-    n_observations = length(clean_returns),
-    fat_tails = fat_tails_test,
-    volatility_clustering = clustering_test,
-    leverage_effects = leverage_test,
-    autocorrelation = autocorr_test,
-    long_memory = long_memory_test,
-    heavy_tails = heavy_tails_test
-  )
+    # Compile results
+    results <- list(
+      asset = asset_name,
+      asset_type = asset_type,
+      split_type = split_type,
+      n_observations = length(combined_data),
+      fat_tails = fat_tails_test,
+      volatility_clustering = clustering_test,
+      leverage_effects = leverage_test,
+      autocorrelation = autocorr_test,
+      long_memory = long_memory_test,
+      heavy_tails = heavy_tails_test
+    )
+    
+    return(results)
+  }
+  
+  # Apply dual split analysis
+  results <- apply_dual_split_analysis(clean_returns, stylized_analysis_function, paste("Stylized", asset_name))
   
   return(results)
 }
@@ -257,14 +274,14 @@ dir.create(output_dir, recursive = TRUE, showWarnings = FALSE)
 # Process all assets
 all_results <- list()
 
-# Process equity assets
+# Process equity assets with dual splits
 for (ticker in names(equity_returns)) {
-  all_results[[ticker]] <- perform_stylized_tests(equity_returns[[ticker]], ticker, "Equity")
+  all_results[[ticker]] <- perform_stylized_tests_dual_splits(equity_returns[[ticker]], ticker, "Equity")
 }
 
-# Process FX assets
+# Process FX assets with dual splits
 for (fx in names(fx_returns)) {
-  all_results[[fx]] <- perform_stylized_tests(fx_returns[[fx]], fx, "FX")
+  all_results[[fx]] <- perform_stylized_tests_dual_splits(fx_returns[[fx]], fx, "FX")
 }
 
 #### Create Summary Tables ####

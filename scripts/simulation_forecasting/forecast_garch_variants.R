@@ -18,7 +18,10 @@ library(stringr)
 library(ggplot2)
 library(forecast)
 
-cat("Starting GARCH Variants Forecasting Analysis...\n")
+# Source utilities
+source("scripts/utils/safety_functions.R")
+
+cat("Starting GARCH Variants Forecasting Analysis with Dual Splits...\n")
 
 #### Import and Prepare Data ####
 
@@ -72,26 +75,24 @@ models <- list(
 
 #### Forecasting Function ####
 
-perform_forecasting <- function(returns_data, asset_name, asset_type) {
-  cat("Processing", asset_name, "(", asset_type, ")\n")
+perform_forecasting_dual_splits <- function(returns_data, asset_name, asset_type) {
+  cat("Processing", asset_name, "(", asset_type, ") with dual splits...\n")
   
   # Remove any NA values
   clean_returns <- na.omit(returns_data)
   
-  # Split data: 80% for training, 20% for testing
-  n <- length(clean_returns)
-  train_size <- floor(0.8 * n)
-  train_data <- clean_returns[1:train_size]
-  test_data <- clean_returns[(train_size + 1):n]
-  
-  forecast_results <- list()
-  
-  for (model_name in names(models)) {
-    tryCatch({
-      cat("  Fitting", model_name, "...\n")
-      
-      # Generate specification
-      spec <- do.call(generate_spec, models[[model_name]])
+  # Function to perform forecasting for a given split
+  forecast_analysis_function <- function(train_data, test_data, split_type) {
+    cat("    Running forecasting on", split_type, "split for", asset_name, "\n")
+    
+    forecast_results <- list()
+    
+    for (model_name in names(models)) {
+      tryCatch({
+        cat("      Fitting", model_name, "on", split_type, "split...\n")
+        
+        # Generate specification
+        spec <- do.call(generate_spec, models[[model_name]])
       
       # Fit model
       fit <- ugarchfit(spec, data = train_data, solver = "hybrid")
@@ -130,15 +131,21 @@ perform_forecasting <- function(returns_data, asset_name, asset_type) {
         mae = mae,
         mape = mape,
         model_fit = fit
-      )
-      
-    }, error = function(e) {
-      cat("  Error fitting", model_name, ":", e$message, "\n")
-      forecast_results[[model_name]] <<- NULL
-    })
+        )
+        
+      }, error = function(e) {
+        cat("      Error fitting", model_name, "on", split_type, ":", e$message, "\n")
+        forecast_results[[model_name]] <<- NULL
+      })
+    }
+    
+    return(forecast_results)
   }
   
-  return(forecast_results)
+  # Apply dual split analysis
+  results <- apply_dual_split_analysis(clean_returns, forecast_analysis_function, paste("Forecast", asset_name))
+  
+  return(results)
 }
 
 #### Perform Forecasting Analysis ####
@@ -147,16 +154,16 @@ perform_forecasting <- function(returns_data, asset_name, asset_type) {
 output_dir <- "outputs/model_eval/figures"
 dir.create(output_dir, recursive = TRUE, showWarnings = FALSE)
 
-# Process equity assets
+# Process equity assets with dual splits
 equity_forecasts <- list()
 for (ticker in names(equity_returns)) {
-  equity_forecasts[[ticker]] <- perform_forecasting(equity_returns[[ticker]], ticker, "Equity")
+  equity_forecasts[[ticker]] <- perform_forecasting_dual_splits(equity_returns[[ticker]], ticker, "Equity")
 }
 
-# Process FX assets
+# Process FX assets with dual splits
 fx_forecasts <- list()
 for (fx in names(fx_returns)) {
-  fx_forecasts[[fx]] <- perform_forecasting(fx_returns[[fx]], fx, "FX")
+  fx_forecasts[[fx]] <- perform_forecasting_dual_splits(fx_returns[[fx]], fx, "FX")
 }
 
 #### Create Forecast Comparison Plots ####

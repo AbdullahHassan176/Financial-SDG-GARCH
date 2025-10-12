@@ -19,7 +19,10 @@ library(stringr)
 library(ggplot2)
 library(forecast)
 
-cat("Starting NFGARCH VaR Backtesting Analysis...\n")
+# Source utilities
+source("scripts/utils/safety_functions.R")
+
+cat("Starting NFGARCH VaR Backtesting Analysis with Dual Splits...\n")
 
 #### Import and Prepare Data ####
 

@@ -18,7 +18,10 @@ library(stringr)
 library(ggplot2)
 library(forecast)
 
-cat("Starting Value-at-Risk Backtesting Analysis...\n")
+# Source utilities
+source("scripts/utils/safety_functions.R")
+
+cat("Starting Value-at-Risk Backtesting Analysis with Dual Splits...\n")
 
 # Data Import and Preprocessing
 # Load financial time series data and prepare for VaR analysis
@@ -245,8 +248,8 @@ dynamic_quantile_test <- function(actual_returns, var_forecasts, lags = 4) {
 
 #### Perform VaR Analysis ####
 
-perform_var_analysis <- function(returns_data, asset_name, asset_type) {
-  cat("Performing VaR analysis for", asset_name, "(", asset_type, ")\n")
+perform_var_analysis_dual_splits <- function(returns_data, asset_name, asset_type) {
+  cat("Performing VaR analysis with dual splits for", asset_name, "(", asset_type, ")\n")
   
   # Remove any NA values
   clean_returns <- na.omit(returns_data)
@@ -256,21 +259,19 @@ perform_var_analysis <- function(returns_data, asset_name, asset_type) {
     return(NULL)
   }
   
-  # Split data: 80% for training, 20% for testing
-  n <- length(clean_returns)
-  train_size <- floor(0.8 * n)
-  train_data <- clean_returns[1:train_size]
-  test_data <- clean_returns[(train_size + 1):n]
-  
-  var_results <- list()
-  
-  # Test each model
-  for (model_name in names(models)) {
-    cat("  Testing", model_name, "...\n")
+  # Function to perform VaR analysis for a given split
+  var_analysis_function <- function(train_data, test_data, split_type) {
+    cat("    Running VaR analysis on", split_type, "split for", asset_name, "\n")
     
-    model_results <- list()
+    var_results <- list()
     
-    for (conf_level in confidence_levels) {
+    # Test each model
+    for (model_name in names(models)) {
+      cat("      Testing", model_name, "on", split_type, "split...\n")
+      
+      model_results <- list()
+      
+      for (conf_level in confidence_levels) {
       # Calculate different VaR methods
       historical_var <- calculate_historical_var(train_data, conf_level)
       parametric_var <- calculate_parametric_var(train_data, conf_level)
@@ -316,10 +317,16 @@ perform_var_analysis <- function(returns_data, asset_name, asset_type) {
       )
     }
     
-    var_results[[model_name]] <- model_results
+      var_results[[model_name]] <- model_results
+    }
+    
+    return(var_results)
   }
   
-  return(var_results)
+  # Apply dual split analysis
+  results <- apply_dual_split_analysis(clean_returns, var_analysis_function, paste("VaR", asset_name))
+  
+  return(results)
 }
 
 # Create output directories
@@ -329,14 +336,14 @@ dir.create(output_dir, recursive = TRUE, showWarnings = FALSE)
 # Process all assets
 all_var_results <- list()
 
-# Process equity assets
+# Process equity assets with dual splits
 for (ticker in names(equity_returns)) {
-  all_var_results[[ticker]] <- perform_var_analysis(equity_returns[[ticker]], ticker, "Equity")
+  all_var_results[[ticker]] <- perform_var_analysis_dual_splits(equity_returns[[ticker]], ticker, "Equity")
 }
 
-# Process FX assets
+# Process FX assets with dual splits
 for (fx in names(fx_returns)) {
-  all_var_results[[fx]] <- perform_var_analysis(fx_returns[[fx]], fx, "FX")
+  all_var_results[[fx]] <- perform_var_analysis_dual_splits(fx_returns[[fx]], fx, "FX")
 }
 
 #### Create Summary Tables ####

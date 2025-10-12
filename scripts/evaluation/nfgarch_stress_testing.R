@@ -19,7 +19,10 @@ library(stringr)
 library(ggplot2)
 library(forecast)
 
-cat("Starting NFGARCH Stress Testing Analysis...\n")
+# Source utilities
+source("scripts/utils/safety_functions.R")
+
+cat("Starting NFGARCH Stress Testing Analysis with Dual Splits...\n")
 
 #### Import and Prepare Data ####
 

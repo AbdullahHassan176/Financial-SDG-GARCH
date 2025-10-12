@@ -12,6 +12,7 @@ library(viridis)
 # Source utilities
 source("scripts/utils/conflict_resolution.R")
 source("scripts/utils/enhanced_plotting.R")
+source("scripts/utils/safety_functions.R")
 
 # Initialize pipeline
 initialize_pipeline()
@@ -53,40 +54,120 @@ equity_returns <- equity_data %>%
 dir.create("outputs/eda/figures", showWarnings = FALSE, recursive = TRUE)
 dir.create("outputs/eda/tables", showWarnings = FALSE, recursive = TRUE)
 
-# Generate summary statistics
-cat("Generating summary statistics...\n")
+# Generate summary statistics with dual splits
+cat("Generating summary statistics with chronological and TS CV splits...\n")
 
-# FX Summary
-fx_summary <- fx_returns %>%
-  summarise_all(list(
-    mean = ~mean(., na.rm = TRUE),
-    sd = ~sd(., na.rm = TRUE),
-    min = ~min(., na.rm = TRUE),
-    max = ~max(., na.rm = TRUE),
-    skewness = ~skewness(., na.rm = TRUE),
-    kurtosis = ~kurtosis(., na.rm = TRUE)
-  )) %>%
-  gather(key = "stat", value = "value") %>%
-  separate(stat, into = c("asset", "statistic"), sep = "_") %>%
-  spread(statistic, value)
+# Function to calculate summary statistics for a given split
+calculate_summary_stats <- function(train_data, test_data, split_type) {
+  # Combine train and test for overall stats, but also calculate split-specific stats
+  all_data <- rbind(train_data, test_data)
+  
+  summary_stats <- all_data %>%
+    summarise_all(list(
+      mean = ~mean(., na.rm = TRUE),
+      sd = ~sd(., na.rm = TRUE),
+      min = ~min(., na.rm = TRUE),
+      max = ~max(., na.rm = TRUE),
+      skewness = ~skewness(., na.rm = TRUE),
+      kurtosis = ~kurtosis(., na.rm = TRUE)
+    )) %>%
+    gather(key = "stat", value = "value") %>%
+    separate(stat, into = c("asset", "statistic"), sep = "_") %>%
+    spread(statistic, value)
+  
+  # Add split information
+  summary_stats$Split_Type <- split_type
+  summary_stats$Train_Size <- nrow(train_data)
+  summary_stats$Test_Size <- nrow(test_data)
+  
+  return(summary_stats)
+}
 
-# Equity Summary
-equity_summary <- equity_returns %>%
-  summarise_all(list(
-    mean = ~mean(., na.rm = TRUE),
-    sd = ~sd(., na.rm = TRUE),
-    min = ~min(., na.rm = TRUE),
-    max = ~max(., na.rm = TRUE),
-    skewness = ~skewness(., na.rm = TRUE),
-    kurtosis = ~kurtosis(., na.rm = TRUE)
-  )) %>%
-  gather(key = "stat", value = "value") %>%
-  separate(stat, into = c("asset", "statistic"), sep = "_") %>%
-  spread(statistic, value)
+# Apply dual split analysis to FX data
+fx_analysis_function <- function(train_data, test_data, split_type) {
+  return(calculate_summary_stats(train_data, test_data, split_type))
+}
+
+# Apply dual split analysis to Equity data  
+equity_analysis_function <- function(train_data, test_data, split_type) {
+  return(calculate_summary_stats(train_data, test_data, split_type))
+}
+
+# Run dual split analysis for FX
+cat("Running dual split analysis for FX data...\n")
+fx_results <- list()
+for (asset in fx_cols) {
+  asset_data <- fx_returns[, asset, drop = FALSE]
+  fx_results[[asset]] <- apply_dual_split_analysis(asset_data, fx_analysis_function, paste("FX", asset))
+}
+
+# Run dual split analysis for Equity
+cat("Running dual split analysis for Equity data...\n")
+equity_results <- list()
+for (asset in equity_cols) {
+  asset_data <- equity_returns[, asset, drop = FALSE]
+  equity_results[[asset]] <- apply_dual_split_analysis(asset_data, equity_analysis_function, paste("Equity", asset))
+}
+
+# Combine all results
+all_fx_summaries <- list()
+all_equity_summaries <- list()
+
+# Process FX results
+for (asset in names(fx_results)) {
+  # Chronological results
+  chrono_result <- fx_results[[asset]]$chronological
+  chrono_result$Asset <- asset
+  chrono_result$Asset_Type <- "FX"
+  all_fx_summaries[[paste0(asset, "_chronological")]] <- chrono_result
+  
+  # TS CV results (average across windows)
+  if (length(fx_results[[asset]]$tscv) > 0) {
+    tscv_avg <- fx_results[[asset]]$tscv[[1]]  # Use first window as template
+    for (i in 2:length(fx_results[[asset]]$tscv)) {
+      tscv_avg[, c("mean", "sd", "min", "max", "skewness", "kurtosis")] <- 
+        tscv_avg[, c("mean", "sd", "min", "max", "skewness", "kurtosis")] + 
+        fx_results[[asset]]$tscv[[i]][, c("mean", "sd", "min", "max", "skewness", "kurtosis")]
+    }
+    tscv_avg[, c("mean", "sd", "min", "max", "skewness", "kurtosis")] <- 
+      tscv_avg[, c("mean", "sd", "min", "max", "skewness", "kurtosis")] / length(fx_results[[asset]]$tscv)
+    tscv_avg$Asset <- asset
+    tscv_avg$Asset_Type <- "FX"
+    all_fx_summaries[[paste0(asset, "_tscv")]] <- tscv_avg
+  }
+}
+
+# Process Equity results
+for (asset in names(equity_results)) {
+  # Chronological results
+  chrono_result <- equity_results[[asset]]$chronological
+  chrono_result$Asset <- asset
+  chrono_result$Asset_Type <- "Equity"
+  all_equity_summaries[[paste0(asset, "_chronological")]] <- chrono_result
+  
+  # TS CV results (average across windows)
+  if (length(equity_results[[asset]]$tscv) > 0) {
+    tscv_avg <- equity_results[[asset]]$tscv[[1]]  # Use first window as template
+    for (i in 2:length(equity_results[[asset]]$tscv)) {
+      tscv_avg[, c("mean", "sd", "min", "max", "skewness", "kurtosis")] <- 
+        tscv_avg[, c("mean", "sd", "min", "max", "skewness", "kurtosis")] + 
+        equity_results[[asset]]$tscv[[i]][, c("mean", "sd", "min", "max", "skewness", "kurtosis")]
+    }
+    tscv_avg[, c("mean", "sd", "min", "max", "skewness", "kurtosis")] <- 
+      tscv_avg[, c("mean", "sd", "min", "max", "skewness", "kurtosis")] / length(equity_results[[asset]]$tscv)
+    tscv_avg$Asset <- asset
+    tscv_avg$Asset_Type <- "Equity"
+    all_equity_summaries[[paste0(asset, "_tscv")]] <- tscv_avg
+  }
+}
+
+# Combine and save results
+fx_summary <- do.call(rbind, all_fx_summaries)
+equity_summary <- do.call(rbind, all_equity_summaries)
 
 # Save summary tables
-write.csv(fx_summary, "outputs/eda/tables/fx_summary_stats.csv", row.names = FALSE)
-write.csv(equity_summary, "outputs/eda/tables/equity_summary_stats.csv", row.names = FALSE)
+write.csv(fx_summary, "outputs/eda/tables/fx_summary_stats_dual_splits.csv", row.names = FALSE)
+write.csv(equity_summary, "outputs/eda/tables/equity_summary_stats_dual_splits.csv", row.names = FALSE)
 
 # Generate histograms
 cat("Generating histograms...\n")

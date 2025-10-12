@@ -50,6 +50,76 @@ safe_ugarchforecast <- function(fit, n.ahead = 1, ...) {
   })
 }
 
+# =============================================================================
+# DATA SPLITTING UTILITIES
+# =============================================================================
+
+# Chronological split function (65/35 split)
+get_chronological_split <- function(data, split_ratio = 0.65) {
+  n <- length(data)
+  split_idx <- floor(n * split_ratio)
+  
+  return(list(
+    train = data[1:split_idx],
+    test = data[(split_idx + 1):n],
+    split_index = split_idx,
+    split_ratio = split_ratio
+  ))
+}
+
+# Time Series Cross-Validation function
+get_tscv_splits <- function(data, window_size = 500, step_size = 50, forecast_horizon = 20) {
+  n <- length(data)
+  splits <- list()
+  
+  for (start_idx in seq(1, n - window_size - forecast_horizon, by = step_size)) {
+    train_end <- start_idx + window_size - 1
+    test_start <- start_idx + window_size
+    test_end <- start_idx + window_size + forecast_horizon - 1
+    
+    if (test_end <= n) {
+      splits[[length(splits) + 1]] <- list(
+        train = data[start_idx:train_end],
+        test = data[test_start:test_end],
+        window_start = start_idx,
+        window_end = train_end,
+        test_start = test_start,
+        test_end = test_end
+      )
+    }
+  }
+  
+  return(splits)
+}
+
+# Apply analysis to both splits
+apply_dual_split_analysis <- function(data, analysis_function, split_name = "analysis", 
+                                     window_size = 500, step_size = 50, forecast_horizon = 20) {
+  results <- list()
+  
+  # Chronological split analysis
+  cat("Running chronological split analysis for", split_name, "...\n")
+  chrono_split <- get_chronological_split(data)
+  results$chronological <- analysis_function(chrono_split$train, chrono_split$test, "chronological")
+  
+  # Time Series Cross-Validation analysis
+  cat("Running time series cross-validation analysis for", split_name, "...\n")
+  tscv_splits <- get_tscv_splits(data, window_size, step_size, forecast_horizon)
+  
+  if (length(tscv_splits) > 0) {
+    tscv_results <- lapply(tscv_splits, function(split) {
+      analysis_function(split$train, split$test, "tscv")
+    })
+    results$tscv <- tscv_results
+    cat("Completed", length(tscv_results), "TS CV windows for", split_name, "\n")
+  } else {
+    cat("Warning: No valid TS CV splits found for", split_name, "\n")
+    results$tscv <- list()
+  }
+  
+  return(results)
+}
+
 # Safe directory creation
 safe_create_dir <- function(dir_path) {
   tryCatch({

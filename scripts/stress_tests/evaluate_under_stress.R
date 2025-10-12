@@ -18,7 +18,10 @@ library(stringr)
 library(ggplot2)
 library(forecast)
 
-cat("Starting Stress Testing Analysis...\n")
+# Source utilities
+source("scripts/utils/safety_functions.R")
+
+cat("Starting Stress Testing Analysis with Dual Splits...\n")
 
 #### Import and Prepare Data ####
 
@@ -298,8 +301,8 @@ apply_hypothetical_shocks <- function(returns, model_spec, scenarios) {
 
 #### Perform Stress Testing ####
 
-perform_stress_testing <- function(returns_data, asset_name, asset_type) {
-  cat("Performing stress testing for", asset_name, "(", asset_type, ")\n")
+perform_stress_testing_dual_splits <- function(returns_data, asset_name, asset_type) {
+  cat("Performing stress testing with dual splits for", asset_name, "(", asset_type, ")\n")
   
   # Remove any NA values
   clean_returns <- na.omit(returns_data)
@@ -309,27 +312,38 @@ perform_stress_testing <- function(returns_data, asset_name, asset_type) {
     return(NULL)
   }
   
-  stress_results <- list()
-  
-  # Test each model
-  for (model_name in names(models)) {
-    cat("  Testing", model_name, "...\n")
+  # Function to perform stress testing for a given split
+  stress_analysis_function <- function(train_data, test_data, split_type) {
+    cat("    Running stress testing on", split_type, "split for", asset_name, "\n")
     
-    spec <- do.call(generate_spec, models[[model_name]])
+    stress_results <- list()
     
-    # Historical crisis testing
-    historical_results <- test_model_stability(clean_returns, spec, historical_crises)
+    # Test each model
+    for (model_name in names(models)) {
+      cat("      Testing", model_name, "on", split_type, "split...\n")
+      
+      spec <- do.call(generate_spec, models[[model_name]])
+      
+      # Historical crisis testing (use full data for crisis periods)
+      historical_results <- test_model_stability(clean_returns, spec, historical_crises)
     
     # Hypothetical scenario testing
     hypothetical_results <- apply_hypothetical_shocks(clean_returns, spec, hypothetical_scenarios)
     
-    stress_results[[model_name]] <- list(
-      historical = historical_results,
-      hypothetical = hypothetical_results
-    )
+      stress_results[[model_name]] <- list(
+        historical = historical_results,
+        hypothetical = hypothetical_results,
+        split_type = split_type
+      )
+    }
+    
+    return(stress_results)
   }
   
-  return(stress_results)
+  # Apply dual split analysis
+  results <- apply_dual_split_analysis(clean_returns, stress_analysis_function, paste("Stress", asset_name))
+  
+  return(results)
 }
 
 # Create output directories
@@ -339,14 +353,14 @@ dir.create(output_dir, recursive = TRUE, showWarnings = FALSE)
 # Process all assets
 all_stress_results <- list()
 
-# Process equity assets
+# Process equity assets with dual splits
 for (ticker in names(equity_returns)) {
-  all_stress_results[[ticker]] <- perform_stress_testing(equity_returns[[ticker]], ticker, "Equity")
+  all_stress_results[[ticker]] <- perform_stress_testing_dual_splits(equity_returns[[ticker]], ticker, "Equity")
 }
 
-# Process FX assets
+# Process FX assets with dual splits
 for (fx in names(fx_returns)) {
-  all_stress_results[[fx]] <- perform_stress_testing(fx_returns[[fx]], fx, "FX")
+  all_stress_results[[fx]] <- perform_stress_testing_dual_splits(fx_returns[[fx]], fx, "FX")
 }
 
 #### Create Summary Tables ####
