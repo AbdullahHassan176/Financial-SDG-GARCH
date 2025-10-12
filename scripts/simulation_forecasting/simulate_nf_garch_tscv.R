@@ -61,7 +61,7 @@ tryCatch({
   rownames(raw_price_data) <- NULL
   raw_price_data <- raw_price_data %>% dplyr::select(Date, everything())
   
-  cat("✅ Data loaded successfully\n")
+  cat("OK: Data loaded successfully\n")
   cat("   Rows:", nrow(raw_price_data), "\n")
   cat("   Columns:", ncol(raw_price_data), "\n")
   
@@ -101,7 +101,7 @@ fx_xts <- lapply(fx_names, function(ticker) {
 names(fx_xts) <- fx_names
 fx_xts <- fx_xts[!sapply(fx_xts, is.null)]
 
-cat("✅ Asset data prepared\n")
+cat("OK: Asset data prepared\n")
 cat("   Equity assets:", length(equity_xts), "\n")
 cat("   FX assets:", length(fx_xts), "\n")
 
@@ -169,7 +169,7 @@ ts_cross_validate_nfgarch <- function(returns, model_type, dist_type = "sstd", s
       # Setup NF-GARCH simulation
       n_sim <- min(length(nf_residuals), length(test_set))
       if (n_sim < length(test_set)) {
-        message("⚠️ NF residuals too short for window ", start_idx)
+        message("WARNING: NF residuals too short for window ", start_idx)
         next
       }
       
@@ -264,7 +264,7 @@ tryCatch({
     }
   }
   
-  cat("✅ Loaded", length(nf_residuals_map), "NF residual files\n")
+  cat("OK: Loaded", length(nf_residuals_map), "NF residual files\n")
   
 }, error = function(e) {
   cat("ERROR: Failed to load NF residuals:", e$message, "\n")
@@ -278,7 +278,7 @@ run_all_nfgarch_cv_models <- function(returns_list, model_configs, nf_residuals_
   
   for (model_name in names(model_configs)) {
     cfg <- model_configs[[model_name]]
-    message("⚙️ Running NF-GARCH CV for model: ", model_name)
+    message("Running NF-GARCH CV for model: ", model_name)
     
     result <- lapply(names(returns_list), function(asset_name) {
       # Find corresponding NF residuals
@@ -297,7 +297,7 @@ run_all_nfgarch_cv_models <- function(returns_list, model_configs, nf_residuals_
       }
       
       if (is.null(key)) {
-        message("❌ No NF residuals found for ", asset_name, " - ", model_name)
+        message("ERROR: No NF residuals found for ", asset_name, " - ", model_name)
         return(NULL)
       }
       
@@ -318,7 +318,7 @@ run_all_nfgarch_cv_models <- function(returns_list, model_configs, nf_residuals_
     # Remove nulls
     result <- result[!sapply(result, is.null)]
     
-    message("✅ NF-GARCH CV fits found for assets: ", paste(names(result), collapse = ", "))
+    message("OK: NF-GARCH CV fits found for assets: ", paste(names(result), collapse = ", "))
     
     cv_results_all[[model_name]] <- result
   }
@@ -352,14 +352,14 @@ for (model_name in names(Fitted_FX_NFGARCH_TS_CV_models)) {
   fx_results <- tryCatch({
     do.call(rbind, Fitted_FX_NFGARCH_TS_CV_models[[model_name]])
   }, error = function(e) {
-    message("⚠️ FX NF-GARCH CV results failed for: ", model_name, " - ", e$message)
+    message("WARNING: FX NF-GARCH CV results failed for: ", model_name, " - ", e$message)
     return(NULL)
   })
   
   eq_results <- tryCatch({
     do.call(rbind, Fitted_EQ_NFGARCH_TS_CV_models[[model_name]])
   }, error = function(e) {
-    message("⚠️ EQ NF-GARCH CV results failed for: ", model_name, " - ", e$message)
+    message("WARNING: EQ NF-GARCH CV results failed for: ", model_name, " - ", e$message)
     return(NULL)
   })
   
@@ -408,7 +408,7 @@ if (nrow(Fitted_NFGARCH_TS_CV_models) > 0) {
     # Save workbook
     saveWorkbook(wb, output_file, overwrite = TRUE)
     
-    cat("✅ NF-GARCH TS CV results saved to:", output_file, "\n")
+    cat("OK: NF-GARCH TS CV results saved to:", output_file, "\n")
     cat("   Total windows processed:", nrow(Fitted_NFGARCH_TS_CV_models), "\n")
     cat("   Models evaluated:", length(unique(Fitted_NFGARCH_TS_CV_models$Model)), "\n")
     cat("   Assets processed:", length(unique(Fitted_NFGARCH_TS_CV_models$Asset)), "\n")
@@ -418,7 +418,7 @@ if (nrow(Fitted_NFGARCH_TS_CV_models) > 0) {
   })
   
 } else {
-  cat("❌ No NF-GARCH TS CV results generated\n")
+  cat("ERROR: No NF-GARCH TS CV results generated\n")
 }
 
 cat("\n=== NF-GARCH TIME SERIES CROSS-VALIDATION COMPLETE ===\n")

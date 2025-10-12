@@ -808,7 +808,7 @@ fit_nf_garch <- function(asset_name, asset_returns, model_config, nf_resid) {
        MAE = mae
      ))
   }, error = function(e) {
-    message(paste("❌ Error for", asset_name, model_config$model, ":", e$message))
+    message(paste("ERROR: Error for", asset_name, model_config$model, ":", e$message))
     return(NULL)
   })
 }
@@ -827,7 +827,7 @@ for (config_name in names(model_configs)) {
   for (asset in names(fx_returns)) {
     key <- find_nf_key(config_name, "fx", asset, names(nf_residuals_map))
     if (is.null(key)) {
-      cat("⚠️ Missing NF residuals for", asset, config_name, "\n")
+      cat("WARNING: Missing NF residuals for", asset, config_name, "\n")
       next
     }
     
@@ -840,7 +840,7 @@ for (config_name in names(model_configs)) {
   for (asset in names(equity_returns)) {
     key <- find_nf_key(config_name, "equity", asset, names(nf_residuals_map))
     if (is.null(key)) {
-      cat("⚠️ Missing NF residuals for", asset, config_name, "\n")
+      cat("WARNING: Missing NF residuals for", asset, config_name, "\n")
       next
     }
     

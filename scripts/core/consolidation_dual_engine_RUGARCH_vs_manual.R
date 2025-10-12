@@ -45,7 +45,7 @@ consolidate_dual_engine_results <- function() {
   # Save consolidated results
   save_dual_engine_results(all_results)
   
-  cat("✅ Dual engine consolidation completed\n")
+  cat("OK: Dual engine consolidation completed\n")
   return(all_results)
 }
 
@@ -77,9 +77,9 @@ load_engine_results <- function(engine) {
         data$Model_Type <- "Standard_GARCH"
         results[[paste0("garch_", sheet)]] <- data
       }
-      cat("✓ Loaded", engine, "GARCH results\n")
+      cat("OK: Loaded", engine, "GARCH results\n")
     }, error = function(e) {
-      cat("⚠️ Could not load", engine, "GARCH results:", e$message, "\n")
+      cat("WARNING: Could not load", engine, "GARCH results:", e$message, "\n")
     })
   }
   
@@ -94,9 +94,9 @@ load_engine_results <- function(engine) {
         data$Model_Type <- "NF_GARCH"
         results[[paste0("nf_garch_", sheet)]] <- data
       }
-      cat("✓ Loaded", engine, "NF-GARCH results\n")
+      cat("OK: Loaded", engine, "NF-GARCH results\n")
     }, error = function(e) {
-      cat("⚠️ Could not load", engine, "NF-GARCH results:", e$message, "\n")
+      cat("WARNING: Could not load", engine, "NF-GARCH results:", e$message, "\n")
     })
   }
   
@@ -113,7 +113,7 @@ load_engine_results <- function(engine) {
           data$Engine <- engine
           results[[paste0("eval_", basename(file))]] <- data
         }, error = function(e) {
-          cat("⚠️ Could not load evaluation file", file, ":", e$message, "\n")
+          cat("WARNING: Could not load evaluation file", file, ":", e$message, "\n")
         })
       }
     }
@@ -128,7 +128,7 @@ load_engine_results <- function(engine) {
           data$Engine <- engine
           results[[paste0("var_", basename(file))]] <- data
         }, error = function(e) {
-          cat("⚠️ Could not load VaR file", file, ":", e$message, "\n")
+          cat("WARNING: Could not load VaR file", file, ":", e$message, "\n")
         })
       }
     }
@@ -143,7 +143,7 @@ load_engine_results <- function(engine) {
           data$Engine <- engine
           results[[paste0("stress_", basename(file))]] <- data
         }, error = function(e) {
-          cat("⚠️ Could not load stress file", file, ":", e$message, "\n")
+          cat("WARNING: Could not load stress file", file, ":", e$message, "\n")
         })
       }
     }
@@ -463,7 +463,7 @@ save_dual_engine_results <- function(all_results) {
   output_file <- file.path(output_dir, "Dissertation_Consolidated_Results_Dual_Engine.xlsx")
   saveWorkbook(wb, output_file, overwrite = TRUE)
   
-  cat("✅ Dual engine results saved to:", output_file, "\n")
+  cat("OK: Dual engine results saved to:", output_file, "\n")
   return(output_file)
 }
 
