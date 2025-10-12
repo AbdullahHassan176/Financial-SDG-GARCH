@@ -158,11 +158,11 @@ def generate_appendix_log():
                             df = pd.read_excel(excel_file, sheet_name=sheet)
                             row_count = len(df)
                             col_count = len(df.columns)
-                            print(f"    ✓ {sheet}: {row_count} rows, {col_count} columns")
+                            print(f"    OK: {sheet}: {row_count} rows, {col_count} columns")
                         except Exception as e:
-                            print(f"    ⚠️ {sheet}: Error reading ({e})")
+                            print(f"    WARNING: {sheet}: Error reading ({e})")
                     else:
-                        print(f"    ❌ {sheet}: Missing")
+                        print(f"    ERROR: {sheet}: Missing")
                 
                 # Count total records
                 total_records = 0
@@ -186,9 +186,9 @@ def generate_appendix_log():
     print("-" * 40)
     print("Schema Compliance: ✓ All required sheets have correct column names")
     print("Sheet Existence: ✓ All 10 required sheets present")
-    print("Deterministic Behavior: ✓ Seeds set correctly")
-    print("LaTeX Generation: ✓ All tables generated successfully")
-    print("Data Quality: ⚠️ 75% complete (needs actual metrics)")
+    print("Deterministic Behavior: OK: Seeds set correctly")
+    print("LaTeX Generation: OK: All tables generated successfully")
+    print("Data Quality: WARNING: 75% complete (needs actual metrics)")
     print()
     
     # Pipeline Coverage
