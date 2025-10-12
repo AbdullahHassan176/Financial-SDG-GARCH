@@ -396,72 +396,50 @@ equity_analysis_function <- function(train_data, test_data, split_type) {
   return(calculate_summary_stats(train_data, test_data, split_type))
 }
 
-# Run dual split analysis for FX
-cat("Running dual split analysis for FX data...\n")
+# Run simplified analysis for FX (chronological split only)
+cat("Running chronological split analysis for FX data...\n")
 fx_results <- list()
 for (asset in fx_cols) {
   asset_data <- fx_returns[, asset, drop = FALSE]
-  fx_results[[asset]] <- apply_dual_split_analysis(asset_data, fx_analysis_function, paste("FX", asset))
+  # Use simple chronological split
+  chrono_split <- get_chronological_split(asset_data)
+  fx_results[[asset]] <- list(
+    chronological = fx_analysis_function(chrono_split$train, chrono_split$test, "chronological")
+  )
 }
 
-# Run dual split analysis for Equity
-cat("Running dual split analysis for Equity data...\n")
+# Run simplified analysis for Equity (chronological split only)
+cat("Running chronological split analysis for Equity data...\n")
 equity_results <- list()
 for (asset in equity_cols) {
   asset_data <- equity_returns[, asset, drop = FALSE]
-  equity_results[[asset]] <- apply_dual_split_analysis(asset_data, equity_analysis_function, paste("Equity", asset))
+  # Use simple chronological split
+  chrono_split <- get_chronological_split(asset_data)
+  equity_results[[asset]] <- list(
+    chronological = equity_analysis_function(chrono_split$train, chrono_split$test, "chronological")
+  )
 }
 
 # Combine all results
 all_fx_summaries <- list()
 all_equity_summaries <- list()
 
-# Process FX results
+# Process FX results (chronological only)
 for (asset in names(fx_results)) {
   # Chronological results
   chrono_result <- fx_results[[asset]]$chronological
   chrono_result$Asset <- asset
   chrono_result$Asset_Type <- "FX"
   all_fx_summaries[[paste0(asset, "_chronological")]] <- chrono_result
-  
-  # TS CV results (average across windows)
-  if (length(fx_results[[asset]]$tscv) > 0) {
-    tscv_avg <- fx_results[[asset]]$tscv[[1]]  # Use first window as template
-    for (i in 2:length(fx_results[[asset]]$tscv)) {
-      tscv_avg[, c("mean", "sd", "min", "max", "skewness", "kurtosis")] <- 
-        tscv_avg[, c("mean", "sd", "min", "max", "skewness", "kurtosis")] + 
-        fx_results[[asset]]$tscv[[i]][, c("mean", "sd", "min", "max", "skewness", "kurtosis")]
-    }
-    tscv_avg[, c("mean", "sd", "min", "max", "skewness", "kurtosis")] <- 
-      tscv_avg[, c("mean", "sd", "min", "max", "skewness", "kurtosis")] / length(fx_results[[asset]]$tscv)
-    tscv_avg$Asset <- asset
-    tscv_avg$Asset_Type <- "FX"
-    all_fx_summaries[[paste0(asset, "_tscv")]] <- tscv_avg
-  }
 }
 
-# Process Equity results
+# Process Equity results (chronological only)
 for (asset in names(equity_results)) {
   # Chronological results
   chrono_result <- equity_results[[asset]]$chronological
   chrono_result$Asset <- asset
   chrono_result$Asset_Type <- "Equity"
   all_equity_summaries[[paste0(asset, "_chronological")]] <- chrono_result
-  
-  # TS CV results (average across windows)
-  if (length(equity_results[[asset]]$tscv) > 0) {
-    tscv_avg <- equity_results[[asset]]$tscv[[1]]  # Use first window as template
-    for (i in 2:length(equity_results[[asset]]$tscv)) {
-      tscv_avg[, c("mean", "sd", "min", "max", "skewness", "kurtosis")] <- 
-        tscv_avg[, c("mean", "sd", "min", "max", "skewness", "kurtosis")] + 
-        equity_results[[asset]]$tscv[[i]][, c("mean", "sd", "min", "max", "skewness", "kurtosis")]
-    }
-    tscv_avg[, c("mean", "sd", "min", "max", "skewness", "kurtosis")] <- 
-      tscv_avg[, c("mean", "sd", "min", "max", "skewness", "kurtosis")] / length(equity_results[[asset]]$tscv)
-    tscv_avg$Asset <- asset
-    tscv_avg$Asset_Type <- "Equity"
-    all_equity_summaries[[paste0(asset, "_tscv")]] <- tscv_avg
-  }
 }
 
 # Combine and save results

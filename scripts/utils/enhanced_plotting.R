@@ -152,8 +152,9 @@ create_enhanced_correlation_heatmap <- function(correlation_matrix, title = NULL
                                                subtitle = NULL, show_values = TRUE,
                                                value_size = 2.5) {
   
-  correlation_long <- as.data.frame(correlation_matrix) %>%
-    rownames_to_column("Var1") %>%
+  correlation_df <- as.data.frame(correlation_matrix)
+  correlation_df$Var1 <- rownames(correlation_df)
+  correlation_long <- correlation_df %>%
     gather(key = "Var2", value = "Correlation", -Var1)
   
   p <- ggplot(correlation_long, aes(x = Var1, y = Var2, fill = Correlation)) +
