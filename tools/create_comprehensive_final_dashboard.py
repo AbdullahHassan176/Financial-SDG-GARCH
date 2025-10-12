@@ -86,24 +86,40 @@ def process_all_analysis(df):
     }
 
 def process_model_performance(df):
-    """Process model performance data."""
+    """Process model performance data with dual split analysis."""
     if df.empty:
-        return {'models': [], 'mse_values': [], 'model_types': [], 'engines': []}
+        return {'models': [], 'mse_values': [], 'model_types': [], 'engines': [], 'split_analysis': {}}
+    
+    # Check if Split_Type column exists for dual split analysis
+    has_split_data = 'Split_Type' in df.columns
     
     models = df['Model'].unique()
     mse_values = []
     model_types = []
     engines = []
+    split_analysis = {}
     
     for model in models:
         model_data = df[df['Model'] == model]
         avg_mse = model_data['MSE'].mean()
-        model_type = model_data['Model_Type'].iloc[0]
-        engine = model_data['Engine'].iloc[0]
+        model_type = model_data['Model_Type'].iloc[0] if 'Model_Type' in model_data.columns else 'Unknown'
+        engine = model_data['Engine'].iloc[0] if 'Engine' in model_data.columns else 'Unknown'
         
         mse_values.append(avg_mse)
         model_types.append(model_type)
         engines.append(engine)
+        
+        # Process split analysis if available
+        if has_split_data:
+            split_data = {}
+            for split_type in model_data['Split_Type'].unique():
+                split_model_data = model_data[model_data['Split_Type'] == split_type]
+                split_data[split_type] = {
+                    'mse': split_model_data['MSE'].mean(),
+                    'aic': split_model_data['AIC'].mean() if 'AIC' in split_model_data.columns else None,
+                    'bic': split_model_data['BIC'].mean() if 'BIC' in split_model_data.columns else None
+                }
+            split_analysis[model] = split_data
     
     # Calculate statistics
     nf_garch_models = len([t for t in model_types if t == 'NF-GARCH'])
@@ -125,7 +141,9 @@ def process_model_performance(df):
         'standard_garch_models': standard_garch_models,
         'manual_engine_models': manual_engine_models,
         'rugarch_engine_models': rugarch_engine_models,
-        'best_model': best_model
+        'best_model': best_model,
+        'has_split_analysis': has_split_data,
+        'split_analysis': split_analysis
     }
 
 def process_risk_assessment(df):
@@ -429,6 +447,65 @@ def create_comprehensive_html(analysis_data):
             font-weight: bold;
             margin-left: 8px;
         }}
+        
+        /* Split Analysis Styles */
+        .split-comparison {{
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }}
+        
+        .model-split-card {{
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            background-color: #f9f9f9;
+        }}
+        
+        .model-split-card h4 {{
+            margin: 0 0 15px 0;
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 5px;
+        }}
+        
+        .split-metrics {{
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }}
+        
+        .split-metric {{
+            flex: 1;
+            min-width: 120px;
+            background-color: white;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #e0e0e0;
+        }}
+        
+        .split-metric h5 {{
+            margin: 0 0 10px 0;
+            color: #34495e;
+            font-size: 14px;
+        }}
+        
+        .metric-row {{
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 12px;
+        }}
+        
+        .metric-row span:first-child {{
+            font-weight: bold;
+            color: #7f8c8d;
+        }}
+        
+        .metric-row span:last-child {{
+            color: #2c3e50;
+        }}
         .standard-garch {{
             background: #ff9800;
             color: #000;
@@ -525,6 +602,7 @@ def create_comprehensive_html(analysis_data):
                         <tr><th>Model</th><th>Type</th><th>Engine</th><th>MSE</th><th>MAE</th><th>Rank</th></tr>
                         {create_performance_table(analysis_data['model_performance'])}
                     </table>
+                    {create_split_analysis_section(analysis_data['model_performance'])}
                 </div>
             </div>
             
@@ -837,6 +915,61 @@ def create_comprehensive_html(analysis_data):
 </html>"""
     
     return html_content
+
+def create_split_analysis_section(model_performance):
+    """Create dual split analysis section."""
+    if not model_performance.get('has_split_analysis', False):
+        return ""
+    
+    split_analysis = model_performance.get('split_analysis', {})
+    if not split_analysis:
+        return ""
+    
+    html = """
+    <div class="section">
+        <h3>Dual Split Analysis</h3>
+        <p>This section shows how model performance varies between chronological and time series cross-validation splits.</p>
+        <div class="split-comparison">
+    """
+    
+    for model, splits in split_analysis.items():
+        html += f"""
+        <div class="model-split-card">
+            <h4>{model}</h4>
+            <div class="split-metrics">
+        """
+        
+        for split_type, metrics in splits.items():
+            split_display = "Chronological" if "Chrono" in split_type else "Time Series CV"
+            html += f"""
+            <div class="split-metric">
+                <h5>{split_display}</h5>
+                <div class="metric-row">
+                    <span>MSE:</span>
+                    <span>{metrics.get('mse', 'N/A'):.4f}</span>
+                </div>
+                <div class="metric-row">
+                    <span>AIC:</span>
+                    <span>{metrics.get('aic', 'N/A'):.2f if metrics.get('aic') else 'N/A'}</span>
+                </div>
+                <div class="metric-row">
+                    <span>BIC:</span>
+                    <span>{metrics.get('bic', 'N/A'):.2f if metrics.get('bic') else 'N/A'}</span>
+                </div>
+            </div>
+            """
+        
+        html += """
+            </div>
+        </div>
+        """
+    
+    html += """
+        </div>
+    </div>
+    """
+    
+    return html
 
 def create_performance_table(model_performance):
     """Create performance table."""
