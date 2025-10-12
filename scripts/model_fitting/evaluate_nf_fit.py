@@ -153,7 +153,7 @@ with pd.ExcelWriter("GARCH_Model_Evaluation_Summary.xlsx", engine="openpyxl", mo
     dm_results.to_excel(writer, sheet_name="DM_Test_MSE_CV", index=False)
     wilcoxon_results.to_excel(writer, sheet_name="Wilcoxon_MSE_CV", index=False)
 
-print("✅ All statistical tests complete.")
+print("All statistical tests complete.")
 
 
 # === Statistical Comparison Tests ===

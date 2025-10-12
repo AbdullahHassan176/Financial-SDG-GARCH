@@ -353,5 +353,5 @@ if (length(stress_results) > 0) {
   cat("  - outputs/stress_tests/tables/nfgarch_scenario_comparison.csv\n")
   
 } else {
-  cat("⚠️ No NFGARCH stress test results generated. Check if NF residuals are available.\n")
+  cat("WARNING: No NFGARCH stress test results generated. Check if NF residuals are available.\n")
 }

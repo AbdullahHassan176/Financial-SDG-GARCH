@@ -62,7 +62,7 @@ Rscript -e "install.packages(c('rugarch', 'xts', 'dplyr', 'ggplot2', 'quantmod',
 pip install numpy pandas torch scikit-learn matplotlib seaborn
 ```
 
-## 🏃‍♂️ Running the Pipeline
+## Running the Pipeline
 
 ### Option 1: Full Pipeline (Recommended)
 ```cmd
@@ -192,7 +192,7 @@ git push origin --delete dashboard
 git push origin --delete gh-pages
 ```
 
-## 🏗️ Repository Structure
+## Repository Structure
 
 ```
 Financial-SDG-GARCH/

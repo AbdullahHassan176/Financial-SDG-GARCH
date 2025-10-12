@@ -369,5 +369,5 @@ if (length(var_results) > 0) {
   cat("  - outputs/var_backtest/tables/nfgarch_model_performance_summary.csv\n")
   
 } else {
-  cat("⚠️ No NFGARCH VaR results generated. Check if NF residuals are available.\n")
+  cat("WARNING: No NFGARCH VaR results generated. Check if NF residuals are available.\n")
 }

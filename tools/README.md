@@ -60,14 +60,14 @@ python tools/build_results.py --collection-only
 ## Features
 
 ### Data Consolidation
-- ✅ Recursively scans for CSV, JSON, and Excel files
-- ✅ Extracts metadata from file paths and content
-- ✅ Normalizes data into long-format schema
-- ✅ Handles multiple data splits (chronological vs TS CV)
-- ✅ Calculates win rates between model families
-- ✅ Robust error handling and logging
+- Recursively scans for CSV, JSON, and Excel files
+- Extracts metadata from file paths and content
+- Normalizes data into long-format schema
+- Handles multiple data splits (chronological vs TS CV)
+- Calculates win rates between model families
+- Robust error handling and logging
 
-## 🔍 Data Sources
+## Data Sources
 
 The system automatically discovers and processes:
 
@@ -101,7 +101,7 @@ The system automatically discovers and processes:
 - Leverage effects
 - Excess kurtosis
 
-## 🏗️ Architecture
+## Architecture
 
 ### Path Parsing (`_util/path_parsing.py`)
 - Extracts asset, model, split type, and fold from file paths

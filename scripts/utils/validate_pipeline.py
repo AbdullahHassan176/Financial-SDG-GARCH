@@ -78,7 +78,7 @@ def check_schema_compliance(excel_file, sheet_name, expected_schema):
             print(f"✗ Schema violation in {sheet_name}: missing columns {missing_cols}")
             return False
         elif extra_cols:
-            print(f"⚠️ Schema warning in {sheet_name}: extra columns {extra_cols}")
+            print(f"WARNING: Schema warning in {sheet_name}: extra columns {extra_cols}")
             return True
         else:
             print(f"✓ Schema compliant: {sheet_name}")
@@ -214,14 +214,14 @@ def check_deterministic_behavior():
         if actual_value == expected_value:
             print(f"✓ Environment variable set: {var}={expected_value}")
         else:
-            print(f"⚠️ Environment variable not set: {var} (expected: {expected_value})")
+            print(f"WARNING: Environment variable not set: {var} (expected: {expected_value})")
     
     # Check numpy seed
     np_seed = np.random.get_state()[1][0]
     if np_seed == 123:
         print(f"✓ NumPy seed set correctly: {np_seed}")
     else:
-        print(f"⚠️ NumPy seed not set correctly: {np_seed} (expected: 123)")
+        print(f"WARNING: NumPy seed not set correctly: {np_seed} (expected: 123)")
     
     return True
 
@@ -301,7 +301,7 @@ def main():
             file_passed = validate_excel_file(excel_file)
             all_passed = all_passed and file_passed
         else:
-            print(f"\n⚠️ File not found: {excel_file}")
+            print(f"\nWARNING: File not found: {excel_file}")
             all_passed = False
     
     # Final summary

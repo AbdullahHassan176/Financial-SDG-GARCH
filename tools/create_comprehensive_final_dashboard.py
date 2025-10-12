@@ -669,7 +669,7 @@ def create_comprehensive_html(analysis_data):
             <!-- Engine Analysis Tab -->
             <div id="engine" class="tab-content">
                 <div class="section">
-                    <h2>⚙️ Engine Analysis</h2>
+                    <h2>Engine Analysis</h2>
                     <div class="chart-container" id="engine-chart"></div>
                     <div class="metrics-grid">
                         <div class="metric-card">
@@ -695,7 +695,7 @@ def create_comprehensive_html(analysis_data):
             <!-- Model Comparison Tab -->
             <div id="comparison" class="tab-content">
                 <div class="section">
-                    <h2>🔄 Model Comparison</h2>
+                    <h2>Model Comparison</h2>
                     <div class="chart-container" id="comparison-chart"></div>
                     <table class="data-table">
                         <tr><th>Rank</th><th>Model</th><th>Type</th><th>Engine</th><th>Avg MSE</th></tr>

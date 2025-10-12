@@ -163,7 +163,7 @@ ts_cross_validate <- function(returns, model_type, dist_type = "sstd", submodel 
     fit <- tryCatch({
       ugarchfit(data = train_set, spec = spec, solver = "hybrid")
     }, error = function(e) {
-      message("❌ Fit error at index ", start_idx, ": ", e$message)
+      message("ERROR: Fit error at index ", start_idx, ": ", e$message)
       return(NULL)
     })
     
@@ -171,7 +171,7 @@ ts_cross_validate <- function(returns, model_type, dist_type = "sstd", submodel 
       forecast <- tryCatch({
         ugarchforecast(fit, n.ahead = forecast_horizon)
       }, error = function(e) {
-        message("❌ Forecast error at index ", start_idx, ": ", e$message)
+        message("ERROR: Forecast error at index ", start_idx, ": ", e$message)
         return(NULL)
       })
       
@@ -179,7 +179,7 @@ ts_cross_validate <- function(returns, model_type, dist_type = "sstd", submodel 
         eval <- tryCatch({
           evaluate_model(fit, forecast, test_set)
         }, error = function(e) {
-          message("❌ Evaluation error at index ", start_idx, ": ", e$message)
+          message("ERROR: Evaluation error at index ", start_idx, ": ", e$message)
           return(NULL)
         })
         
@@ -192,7 +192,7 @@ ts_cross_validate <- function(returns, model_type, dist_type = "sstd", submodel 
   }
   
   if (length(results) == 0) {
-    message("⚠️ No successful CV results for this series.")
+    message("WARNING: No successful CV results for this series.")
     return(NULL)
   }
   
@@ -352,14 +352,14 @@ for (model_name in names(Fitted_FX_TS_CV_models)) {
   fx_results <- tryCatch({
     compare_results(Fitted_FX_TS_CV_models[[model_name]], model_name, is_cv = TRUE)
   }, error = function(e) {
-    message("⚠️ FX compare_results failed for: ", model_name, " - ", e$message)
+    message("WARNING: FX compare_results failed for: ", model_name, " - ", e$message)
     return(NULL)
   })
   
   eq_results <- tryCatch({
     compare_results(Fitted_EQ_TS_CV_models[[model_name]], model_name, is_cv = TRUE)
   }, error = function(e) {
-    message("⚠️ EQ compare_results failed for: ", model_name, " - ", e$message)
+    message("WARNING: EQ compare_results failed for: ", model_name, " - ", e$message)
     return(NULL)
   })
   

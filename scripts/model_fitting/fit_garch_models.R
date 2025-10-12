@@ -275,7 +275,7 @@ run_all_cv_models <- function(returns_list, model_configs, window_size = 500, fo
   
   for (model_name in names(model_configs)) {
     cfg <- model_configs[[model_name]]
-    message("⚙️ Running CV for model: ", model_name)
+    message("Running CV for model: ", model_name)
     
     result <- lapply(returns_list, function(ret) {
       ts_cross_validate(ret, 

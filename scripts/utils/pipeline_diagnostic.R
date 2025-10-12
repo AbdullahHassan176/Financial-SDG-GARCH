@@ -59,9 +59,9 @@ missing_files <- c()
 for (file in required_files) {
   if (!file.exists(file)) {
     missing_files <- c(missing_files, file)
-    cat("❌ Missing file:", file, "\n")
+    cat("ERROR: Missing file:", file, "\n")
   } else {
-    cat("✅ File exists:", file, "\n")
+    cat("OK: File exists:", file, "\n")
   }
 }
 
@@ -70,9 +70,9 @@ missing_dirs <- c()
 for (dir in required_dirs) {
   if (!dir.exists(dir)) {
     missing_dirs <- c(missing_dirs, dir)
-    cat("❌ Missing directory:", dir, "\n")
+    cat("ERROR: Missing directory:", dir, "\n")
   } else {
-    cat("✅ Directory exists:", dir, "\n")
+    cat("OK: Directory exists:", dir, "\n")
   }
 }
 
@@ -81,7 +81,7 @@ if (length(missing_dirs) > 0) {
   cat("\nCreating missing directories...\n")
   for (dir in missing_dirs) {
     dir.create(dir, recursive = TRUE, showWarnings = FALSE)
-    cat("✅ Created directory:", dir, "\n")
+    cat("OK: Created directory:", dir, "\n")
   }
 }
 
@@ -99,9 +99,9 @@ missing_packages <- c()
 for (pkg in required_packages) {
   if (!require(pkg, character.only = TRUE, quietly = TRUE)) {
     missing_packages <- c(missing_packages, pkg)
-    cat("❌ Missing package:", pkg, "\n")
+    cat("ERROR: Missing package:", pkg, "\n")
   } else {
-    cat("✅ Package loaded:", pkg, "\n")
+    cat("OK: Package loaded:", pkg, "\n")
   }
 }
 
@@ -110,9 +110,9 @@ if (length(missing_packages) > 0) {
   for (pkg in missing_packages) {
     tryCatch({
       install.packages(pkg, dependencies = TRUE)
-      cat("✅ Installed package:", pkg, "\n")
+      cat("OK: Installed package:", pkg, "\n")
     }, error = function(e) {
-      cat("❌ Failed to install package:", pkg, "-", e$message, "\n")
+      cat("ERROR: Failed to install package:", pkg, "-", e$message, "\n")
     })
   }
 }
@@ -122,7 +122,7 @@ cat("\n3. Checking data files...\n")
 
 if (file.exists("data/processed/raw (FX + EQ).csv")) {
   data <- read.csv("data/processed/raw (FX + EQ).csv", stringsAsFactors = FALSE)
-  cat("✅ Data file loaded successfully\n")
+  cat("OK: Data file loaded successfully\n")
   cat("   Rows:", nrow(data), "\n")
   cat("   Columns:", ncol(data), "\n")
   cat("   Date range:", min(data$Date), "to", max(data$Date), "\n")
@@ -134,7 +134,7 @@ if (file.exists("data/processed/raw (FX + EQ).csv")) {
   cat("   FX assets:", length(fx_cols), "-", paste(fx_cols, collapse = ", "), "\n")
   cat("   Equity assets:", length(equity_cols), "-", paste(equity_cols, collapse = ", "), "\n")
 } else {
-  cat("❌ Data file not found\n")
+  cat("ERROR: Data file not found\n")
 }
 
 # 4. Check NF Residual Files
@@ -142,7 +142,7 @@ cat("\n4. Checking NF residual files...\n")
 
 if (dir.exists("nf_generated_residuals")) {
   nf_files <- list.files("nf_generated_residuals", pattern = "*.csv", full.names = TRUE)
-  cat("✅ NF residual directory exists\n")
+  cat("OK: NF residual directory exists\n")
   cat("   NF residual files:", length(nf_files), "\n")
   
   if (length(nf_files) > 0) {
@@ -152,14 +152,14 @@ if (dir.exists("nf_generated_residuals")) {
         nf_data <- read.csv(nf_files[i])
         cat("   ", basename(nf_files[i]), ": ", nrow(nf_data), " rows\n")
       }, error = function(e) {
-        cat("   ❌ Error reading", basename(nf_files[i]), ":", e$message, "\n")
+        cat("   ERROR: Error reading", basename(nf_files[i]), ":", e$message, "\n")
       })
     }
   } else {
-    cat("   ⚠️ No NF residual files found\n")
+    cat("   WARNING: No NF residual files found\n")
   }
 } else {
-  cat("❌ NF residual directory not found\n")
+  cat("ERROR: NF residual directory not found\n")
 }
 
 # 5. Check Output Files
@@ -171,7 +171,7 @@ for (dir in output_dirs) {
     files <- list.files(dir, recursive = TRUE, full.names = TRUE)
     cat("   ", dir, ": ", length(files), " files\n")
   } else {
-    cat("   ❌ Directory not found:", dir, "\n")
+    cat("   ERROR: Directory not found:", dir, "\n")
   }
 }
 
@@ -182,25 +182,25 @@ cat("\n6. Testing engine functions...\n")
 tryCatch({
   source("scripts/utils/cli_parser.R")
   engine <- get_engine()
-  cat("✅ CLI parser working, default engine:", engine, "\n")
+  cat("OK: CLI parser working, default engine:", engine, "\n")
 }, error = function(e) {
-  cat("❌ CLI parser failed:", e$message, "\n")
+  cat("ERROR: CLI parser failed:", e$message, "\n")
 })
 
 # Test engine selector
 tryCatch({
   source("scripts/engines/engine_selector.R")
-  cat("✅ Engine selector loaded\n")
+  cat("OK: Engine selector loaded\n")
 }, error = function(e) {
-  cat("❌ Engine selector failed:", e$message, "\n")
+  cat("ERROR: Engine selector failed:", e$message, "\n")
 })
 
 # Test manual GARCH functions
 tryCatch({
   source("scripts/manual_garch/manual_garch_core.R")
-  cat("✅ Manual GARCH core loaded\n")
+  cat("OK: Manual GARCH core loaded\n")
 }, error = function(e) {
-  cat("❌ Manual GARCH core failed:", e$message, "\n")
+  cat("ERROR: Manual GARCH core failed:", e$message, "\n")
 })
 
 # 7. Test Data Processing
@@ -216,12 +216,12 @@ if (file.exists("data/processed/raw (FX + EQ).csv")) {
     if (length(fx_cols) > 0) {
       test_asset <- fx_cols[1]
       test_returns <- c(NA, diff(log(data[[test_asset]])))
-      cat("✅ Return calculation working for", test_asset, "\n")
+      cat("OK: Return calculation working for", test_asset, "\n")
       cat("   Mean return:", mean(test_returns, na.rm = TRUE), "\n")
       cat("   SD return:", sd(test_returns, na.rm = TRUE), "\n")
     }
   }, error = function(e) {
-    cat("❌ Data processing failed:", e$message, "\n")
+    cat("ERROR: Data processing failed:", e$message, "\n")
   })
 }
 
@@ -242,16 +242,16 @@ diagnostic_report <- data.frame(
     "Data Processing"
   ),
   Status = c(
-    ifelse(length(missing_files) == 0, "✅ OK", paste("❌", length(missing_files), "missing")),
-    ifelse(length(missing_dirs) == 0, "✅ OK", paste("❌", length(missing_dirs), "missing")),
-    ifelse(length(missing_packages) == 0, "✅ OK", paste("❌", length(missing_packages), "missing")),
-    ifelse(file.exists("data/processed/raw (FX + EQ).csv"), "✅ OK", "❌ Missing"),
-    ifelse(dir.exists("nf_generated_residuals") && length(list.files("nf_generated_residuals")) > 0, "✅ OK", "❌ Missing/Empty"),
-    ifelse(all(sapply(output_dirs, dir.exists)), "✅ OK", "❌ Some missing"),
-    "✅ OK",  # CLI parser
-    "✅ OK",  # Engine selector
-    "✅ OK",  # Manual GARCH
-    "✅ OK"   # Data processing
+    ifelse(length(missing_files) == 0, "OK", paste("ERROR:", length(missing_files), "missing")),
+    ifelse(length(missing_dirs) == 0, "OK", paste("ERROR:", length(missing_dirs), "missing")),
+    ifelse(length(missing_packages) == 0, "OK", paste("ERROR:", length(missing_packages), "missing")),
+    ifelse(file.exists("data/processed/raw (FX + EQ).csv"), "OK", "Missing"),
+    ifelse(dir.exists("nf_generated_residuals") && length(list.files("nf_generated_residuals")) > 0, "OK", "Missing/Empty"),
+    ifelse(all(sapply(output_dirs, dir.exists)), "OK", "Some missing"),
+    "OK",  # CLI parser
+    "OK",  # Engine selector
+    "OK",  # Manual GARCH
+    "OK"   # Data processing
   ),
   Details = c(
     paste("Checked", length(required_files), "files"),
@@ -278,17 +278,17 @@ if (!dir.exists("outputs/diagnostic")) {
 }
 
 write.csv(diagnostic_report, "outputs/diagnostic/pipeline_diagnostic_report.csv", row.names = FALSE)
-cat("✅ Diagnostic report saved: outputs/diagnostic/pipeline_diagnostic_report.csv\n")
+cat("OK: Diagnostic report saved: outputs/diagnostic/pipeline_diagnostic_report.csv\n")
 
 # Print summary
 cat("\n=== DIAGNOSTIC SUMMARY ===\n")
 cat("Total components checked:", nrow(diagnostic_report), "\n")
-cat("Components OK:", sum(grepl("✅", diagnostic_report$Status)), "\n")
-cat("Components with issues:", sum(grepl("❌", diagnostic_report$Status)), "\n")
+cat("Components OK:", sum(grepl("OK", diagnostic_report$Status)), "\n")
+cat("Components with issues:", sum(grepl("ERROR", diagnostic_report$Status)), "\n")
 
-if (sum(grepl("❌", diagnostic_report$Status)) > 0) {
+if (sum(grepl("ERROR", diagnostic_report$Status)) > 0) {
   cat("\nIssues found:\n")
-  issues <- diagnostic_report[grepl("❌", diagnostic_report$Status), ]
+  issues <- diagnostic_report[grepl("ERROR", diagnostic_report$Status), ]
   for (i in 1:nrow(issues)) {
     cat("  -", issues$Component[i], ":", issues$Details[i], "\n")
   }
@@ -307,7 +307,7 @@ if (sum(grepl("❌", diagnostic_report$Status)) > 0) {
     cat("  4. Run NF residual generation step\n")
   }
 } else {
-  cat("\n✅ All components are working correctly!\n")
+  cat("\nOK: All components are working correctly!\n")
   cat("The pipeline should run successfully.\n")
 }
 
