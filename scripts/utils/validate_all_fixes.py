@@ -22,7 +22,7 @@ def check_eda_script_fixes():
     
     eda_script = "scripts/eda/eda_summary_stats.R"
     if not os.path.exists(eda_script):
-        print("❌ EDA script not found")
+        print("EDA script not found")
         return False
     
     with open(eda_script, 'r') as f:

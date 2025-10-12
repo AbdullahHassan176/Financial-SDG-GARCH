@@ -6,19 +6,19 @@ This repository implements and evaluates **Normalizing Flows (NF) integrated wit
 
 ## Recent Improvements
 
-### ✅ **Pipeline Alignment Fixed**
+### **Pipeline Alignment Fixed**
 - **Full alignment** between `run_all.bat` and modular pipeline
 - **NFGARCH scripts included** in both pipelines
 - **Complete risk assessment coverage** for both standard and NF-GARCH models
 - **16 modular components** with checkpointing support
 
-### ✅ **Enhanced Analysis Coverage**
+### **Enhanced Analysis Coverage**
 - **NFGARCH VaR Backtesting**: Kupiec, Christoffersen, Dynamic Quantile tests
 - **NFGARCH Stress Testing**: Market crash, volatility spike, correlation breakdown scenarios
 - **Comprehensive comparison**: Standard GARCH vs NF-GARCH performance
 - **Dissertation-ready results**: All analysis components included
 
-### ✅ **Repository Cleanup**
+### **Repository Cleanup**
 - **Removed unused files**: Manual scripts, legacy EDA, redundant documentation
 - **Streamlined structure**: Only active pipeline components
 - **Improved navigation**: Clear separation between active and archived code
@@ -216,7 +216,7 @@ Financial-SDG-GARCH/
 │       └── build_results_site.sh            # Build script
 ├── Documentation/
 │   ├── README.md                            # This file
-│   ├── ai.md                               # AI assistant guide
+│   ├── ai.md                               # Assistant guide
 │   ├── MODULAR_PIPELINE_GUIDE.md           # Modular pipeline guide
 │   ├── PIPELINE_FIXES_SUMMARY.md           # Pipeline fixes summary
 │   ├── UNUSED_FILES_ANALYSIS.md            # Unused files analysis
@@ -313,7 +313,7 @@ run_all.bat --engine rugarch
 
 ### Getting Help
 - Review `MODULAR_PIPELINE_GUIDE.md` for pipeline troubleshooting
-- Examine `ai.md` for AI assistant guidance
+- Examine `ai.md` for assistant guidance
 - Check `PIPELINE_FIXES_SUMMARY.md` for recent fixes and improvements
 - Review `UNUSED_FILES_ANALYSIS.md` for repository cleanup information
 

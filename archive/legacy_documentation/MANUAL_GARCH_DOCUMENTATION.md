@@ -1,6 +1,6 @@
 # Manual GARCH Implementation Documentation
 
-## 🎯 **Overview**
+## **Overview**
 
 This document provides comprehensive documentation for the manual GARCH implementation in the Financial-SDG-GARCH pipeline. The implementation includes four GARCH model variants with rigorous mathematical foundations, parameter estimation, and forecasting capabilities.
 
@@ -379,7 +379,7 @@ t_stats <- parameters / se
 
 ---
 
-## **🎯 Research Contributions**
+## **Research Contributions**
 
 ### **Implementation Innovations**
 

@@ -500,7 +500,7 @@ def create_comprehensive_html(analysis_data):
                     </div>
                     
                     <div class="success-box">
-                        <h3>✅ Complete Analysis Dashboard</h3>
+                        <h3>Complete Analysis Dashboard</h3>
                         <p><strong>This dashboard includes ALL analysis components:</strong></p>
                         <ul>
                             <li>Model Performance Analysis</li>
@@ -531,7 +531,7 @@ def create_comprehensive_html(analysis_data):
             <!-- Risk Assessment Tab -->
             <div id="risk" class="tab-content">
                 <div class="section">
-                    <h2>⚠️ Risk Assessment Results</h2>
+                    <h2>Risk Assessment Results</h2>
                     <div class="chart-container" id="risk-chart"></div>
                     <table class="data-table">
                         <tr><th>Model</th><th>Type</th><th>VaR 95%</th><th>VaR 99%</th><th>Violation Rate 95%</th><th>Violation Rate 99%</th><th>Kupiec P-Value</th></tr>
@@ -543,7 +543,7 @@ def create_comprehensive_html(analysis_data):
             <!-- Stress Testing Tab -->
             <div id="stress" class="tab-content">
                 <div class="section">
-                    <h2>💪 Stress Testing Analysis</h2>
+                    <h2>Stress Testing Analysis</h2>
                     <div class="chart-container" id="stress-chart"></div>
                     <table class="data-table">
                         <tr><th>Model</th><th>Type</th><th>Convergence Rate</th><th>Robustness Score</th><th>Max Drawdown</th></tr>
@@ -555,7 +555,7 @@ def create_comprehensive_html(analysis_data):
             <!-- Stylized Facts Tab -->
             <div id="stylized" class="tab-content">
                 <div class="section">
-                    <h2>🔬 Stylized Facts Analysis</h2>
+                    <h2>Stylized Facts Analysis</h2>
                     <div class="chart-container" id="stylized-chart"></div>
                     <table class="data-table">
                         <tr><th>Model</th><th>Type</th><th>Tail Index</th><th>Autocorr Decay</th><th>Volatility Clustering</th><th>Asymmetry</th><th>Hurst Exponent</th><th>Kurtosis</th></tr>
@@ -930,10 +930,10 @@ def main():
     create_comprehensive_dashboard()
     
     print("\n=== COMPREHENSIVE DASHBOARD CREATED ===")
-    print("✅ All 9 analysis components included")
-    print("✅ Tabbed interface for easy navigation")
-    print("✅ Complete data coverage")
-    print("✅ Interactive charts and tables")
+    print("All 9 analysis components included")
+    print("Tabbed interface for easy navigation")
+    print("Complete data coverage")
+    print("Interactive charts and tables")
 
 if __name__ == "__main__":
     main()

@@ -269,7 +269,7 @@ run_all_cv_models <- function(returns_list, model_configs, window_size = 500, fo
     # Remove nulls
     result <- result[!sapply(result, is.null)]
     
-    message("✅ CV fits found for assets: ", paste(names(result), collapse = ", "))
+    message("CV fits found for assets: ", paste(names(result), collapse = ", "))
     
     cv_results_all[[model_name]] <- result
   }
@@ -327,14 +327,14 @@ for (model_name in names(Fitted_FX_TS_CV_models)) {
   fx_results <- tryCatch({
     compare_results(Fitted_FX_TS_CV_models[[model_name]], model_name, is_cv = TRUE)
   }, error = function(e) {
-    message("⚠️ FX compare_results failed for: ", model_name, " - ", e$message)
+    message("FX compare_results failed for: ", model_name, " - ", e$message)
     return(NULL)
   })
   
   eq_results <- tryCatch({
     compare_results(Fitted_EQ_TS_CV_models[[model_name]], model_name, is_cv = TRUE)
   }, error = function(e) {
-    message("⚠️ EQ compare_results failed for: ", model_name, " - ", e$message)
+    message("EQ compare_results failed for: ", model_name, " - ", e$message)
     return(NULL)
   })
   
@@ -421,7 +421,7 @@ for (key in names(Fitted_Chrono_Split_models))
     return(NULL)
   }))
   
-  # ✅ If comparison exists, inject model and type info
+  # If comparison exists, inject model and type info
   if (!is.null(comparison)) {
     # Append to final results
     All_Results_Chrono_Split <- bind_rows(All_Results_Chrono_Split, comparison_df)
@@ -501,7 +501,7 @@ if (!dir.exists("results/manual_results/consolidated")) {
 }
 saveWorkbook(wb, "results/manual_results/consolidated/Initial_GARCH_Model_Fitting_Manual.xlsx", overwrite = TRUE)
 
-cat("✅ Manual engine GARCH fitting completed\n")
+cat("Manual engine GARCH fitting completed\n")
 cat("   Results saved to: results/manual_results/consolidated/Initial_GARCH_Model_Fitting_Manual.xlsx\n")
 cat("   Plots saved to: results/manual_results/plots/\n")
 

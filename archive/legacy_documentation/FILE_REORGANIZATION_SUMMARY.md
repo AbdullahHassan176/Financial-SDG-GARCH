@@ -40,7 +40,7 @@ The pipeline has been reorganized to remove "_fixed" file names and properly int
 - ✅ Updated `generate_appendix_log.py` to reference correct files
 - ✅ Maintained all technical improvements and fixes
 
-## **🚀 CURRENT PIPELINE STRUCTURE**
+## **CURRENT PIPELINE STRUCTURE**
 
 ### **Main Pipeline (`run_all.bat`)**
 ```
@@ -129,7 +129,7 @@ archive/
 - ✅ **Diagnostic system functional**
 - ✅ **Modular pipeline updated**
 
-## **🎯 NEXT STEPS**
+## **NEXT STEPS**
 
 1. **Test the reorganized pipeline**:
    ```bash

@@ -1,6 +1,6 @@
 # Financial-SDG-GARCH Stress Testing Summary
 
-## 🎯 **Overview**
+## **Overview**
 
 This document provides a comprehensive explanation of the stress testing framework implemented in the Financial-SDG-GARCH pipeline. The stress testing methodology evaluates both classical GARCH models and NF-GARCH models under extreme market conditions to assess their robustness and reliability.
 
@@ -345,7 +345,7 @@ outputs/stress_tests/
 
 ---
 
-## **🎯 Academic and Regulatory Context**
+## **Academic and Regulatory Context**
 
 ### **Academic Significance**
 

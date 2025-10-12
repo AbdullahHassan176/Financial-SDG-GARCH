@@ -483,7 +483,7 @@ def create_comprehensive_html(analysis_data):
             <!-- Tab Navigation -->
             <div class="tabs">
                 <button class="tab active" onclick="showTab('overview')">📊 Overview</button>
-                <button class="tab" onclick="showTab('performance')">🎯 Model Performance</button>
+                <button class="tab" onclick="showTab('performance')">Model Performance</button>
                 <button class="tab" onclick="showTab('risk')">⚠️ Risk Assessment</button>
                 <button class="tab" onclick="showTab('stress')">💪 Stress Testing</button>
                 <button class="tab" onclick="showTab('stylized')">🔬 Stylized Facts</button>
@@ -540,7 +540,7 @@ def create_comprehensive_html(analysis_data):
             <!-- Model Performance Tab -->
             <div id="performance" class="tab-content">
                 <div class="section">
-                    <h2>🎯 Model Performance Analysis</h2>
+                    <h2>Model Performance Analysis</h2>
                     <div class="chart-container" id="performance-chart"></div>
                     <table class="data-table">
                         <tr><th>Model</th><th>Type</th><th>Engine</th><th>MSE</th><th>MAE</th><th>Rank</th></tr>

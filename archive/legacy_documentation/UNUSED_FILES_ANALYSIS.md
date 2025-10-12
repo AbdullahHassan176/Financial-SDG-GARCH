@@ -1,6 +1,6 @@
 # 📋 **UNUSED FILES ANALYSIS: Financial-SDG-GARCH Pipeline**
 
-## 🎯 **Overview**
+## **Overview**
 
 This analysis identifies files in the repository that are **NOT** being used in the current active pipeline for your NF-GARCH research. These files can be safely removed or archived to clean up the repository.
 
@@ -119,7 +119,7 @@ This analysis identifies files in the repository that are **NOT** being used in 
 - `scripts/eda/tests/` - Test files only
 - `scripts/eda/configs/` - Configuration files only
 
-## 🎯 **RECOMMENDATIONS**
+## **RECOMMENDATIONS**
 
 ### **Safe to Delete (Unused)**
 1. **Complete `scripts/Manual Scripts/` directory** - All files are unused
@@ -135,7 +135,7 @@ This analysis identifies files in the repository that are **NOT** being used in 
 ### **Archive (Already Done)**
 1. **Archive directory** - Already properly archived
 
-## 🚀 **CLEANUP ACTION PLAN**
+## **CLEANUP ACTION PLAN**
 
 ### **Phase 1: Remove Completely Unused Files**
 ```bash

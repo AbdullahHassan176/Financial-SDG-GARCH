@@ -213,7 +213,7 @@ Always implement:
 
 ## Current Status (Updated)
 
-### ✅ Completed Components
+### Completed Components
 - **Full 5-Model GARCH Pipeline**: All GARCH variants implemented and tested
 - **Complete NF Residual Coverage**: All model-asset combinations have synthetic residuals
 - **Comprehensive Evaluation**: Forecasting, stylized facts, VaR, and stress testing

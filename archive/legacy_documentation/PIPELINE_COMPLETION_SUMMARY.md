@@ -48,7 +48,7 @@ NF--eGARCH & NF-GARCH & 0.001501 & 0.0169 & -5.24 \\
 eGARCH & Classical & 0.001877 & 0.0211 & -5.82 \\
 ```
 
-## 🎯 **KEY ACHIEVEMENTS**
+## **KEY ACHIEVEMENTS**
 
 ### 1. **Realistic NF-GARCH Performance**
 - NF-GARCH models show 10-20% improvement over classical models
@@ -84,7 +84,7 @@ eGARCH & Classical & 0.001877 & 0.0211 & -5.82 \\
 - **Impact**: Low - validation still works, just one check fails
 - **Fix**: Minor type conversion in validation script
 
-## 🚀 **READY FOR FINAL RERUN**
+## **READY FOR FINAL RERUN**
 
 ### **Pipeline Status: PRODUCTION READY**
 - ✅ **93% validation success rate** (26/28 checks passed)
@@ -117,7 +117,7 @@ eGARCH & Classical & 0.001877 & 0.0211 & -5.82 \\
 - **Convergence Rate**: 95%+ for both model families
 - **VaR Violation Rate**: 5.0% (exactly as expected for 95% confidence)
 
-## 🎉 **CONCLUSION**
+## **CONCLUSION**
 
 The data extraction improvements have been **successfully completed**. The pipeline now contains:
 

@@ -33,7 +33,7 @@ consolidate_all_results <- function(output_dir = "results/consolidated") {
     # Run the main consolidation
     consolidate_results(output_type = "all", output_format = "excel")
     
-    cat("✅ Consolidated results saved to:", output_dir, "\n")
+    cat("Consolidated results saved to:", output_dir, "\n")
   }, finally = {
     # Restore original working directory
     setwd(original_wd)
@@ -135,7 +135,7 @@ load_all_pipeline_data <- function() {
       }
     }
   }, error = function(e) {
-    cat("⚠️ Could not load GARCH fitting results:", e$message, "\n")
+    cat("Could not load GARCH fitting results:", e$message, "\n")
   })
   
   # 2. Load NF-GARCH Results
@@ -160,7 +160,7 @@ load_all_pipeline_data <- function() {
       }
       cat("✓ Loaded NF-GARCH results for", engine_name, "engine\n")
     }, error = function(e) {
-      cat("⚠️ Could not load NF-GARCH results from", file, ":", e$message, "\n")
+      cat("Could not load NF-GARCH results from", file, ":", e$message, "\n")
     })
   }
   
@@ -201,11 +201,11 @@ load_all_pipeline_data <- function() {
         }
         cat("✓ Loaded NF-GARCH TS CV results for", engine_name, "engine\n")
       }, error = function(e) {
-        cat("⚠️ Could not load NF-GARCH TS CV results from", file, ":", e$message, "\n")
+        cat("Could not load NF-GARCH TS CV results from", file, ":", e$message, "\n")
       })
     }
   }, error = function(e) {
-    cat("⚠️ Could not load TS CV results:", e$message, "\n")
+    cat("Could not load TS CV results:", e$message, "\n")
   })
   
   # 3. Load Forecasting Results
@@ -219,7 +219,7 @@ load_all_pipeline_data <- function() {
     }
     cat("✓ Loaded forecasting results\n")
   }, error = function(e) {
-    cat("⚠️ Could not load forecasting results:", e$message, "\n")
+    cat("Could not load forecasting results:", e$message, "\n")
   })
   
   # 4. Load VaR Backtesting Results
@@ -233,7 +233,7 @@ load_all_pipeline_data <- function() {
     }
     cat("✓ Loaded VaR backtesting results\n")
   }, error = function(e) {
-    cat("⚠️ Could not load VaR backtesting results:", e$message, "\n")
+    cat("Could not load VaR backtesting results:", e$message, "\n")
   })
   
   # 5. Load Stress Testing Results
@@ -247,7 +247,7 @@ load_all_pipeline_data <- function() {
     }
     cat("✓ Loaded stress testing results\n")
   }, error = function(e) {
-    cat("⚠️ Could not load stress testing results:", e$message, "\n")
+    cat("Could not load stress testing results:", e$message, "\n")
   })
   
   return(all_data)

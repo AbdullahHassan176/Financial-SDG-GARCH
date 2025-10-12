@@ -19,9 +19,9 @@ def fix_pip_warnings():
         if result.returncode == 0:
             print(f"✓ Pip is available: {result.stdout.strip()}")
         else:
-            print("⚠️  Pip check failed, but continuing...")
+            print("Pip check failed, but continuing...")
     except Exception as e:
-        print(f"⚠️  Pip check failed: {e}")
+        print(f"Pip check failed: {e}")
         print("Continuing anyway...")
 
 def check_python_encoding():
@@ -38,7 +38,7 @@ def check_python_encoding():
         
         return True
     except Exception as e:
-        print(f"⚠️  Encoding test failed: {e}")
+        print(f"Encoding test failed: {e}")
         return False
 
 def verify_dependencies():
@@ -50,7 +50,7 @@ def verify_dependencies():
             print(f"✓ {modname} is available ({ver})")
             return True
         except Exception as e:
-            print(f"❌ {modname} import failed: {e!r}")
+            print(f"{modname} import failed: {e!r}")
             return False
     
     # Check packages with correct import names
@@ -69,7 +69,7 @@ def verify_dependencies():
         print("✓ All required packages are available")
         return True
     else:
-        print("⚠️  Some packages are missing, but pipeline should still work")
+        print("Some packages are missing, but pipeline should still work")
         return False
 
 def main():
@@ -90,7 +90,7 @@ def main():
         print("✓ Python environment is ready")
         return True
     else:
-        print("⚠️  Some issues remain, but pipeline should still work")
+        print("Some issues remain, but pipeline should still work")
         return False
 
 if __name__ == "__main__":

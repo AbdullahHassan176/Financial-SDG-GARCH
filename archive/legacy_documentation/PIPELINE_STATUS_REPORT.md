@@ -73,7 +73,7 @@ All sheets now have exact column names as specified:
 - ❌ Missing values in 6 sheets
 - ❌ Missing classical models in performance summary
 
-## 🚀 NEXT STEPS FOR FINAL RERUN
+## NEXT STEPS FOR FINAL RERUN
 
 ### 1. Data Extraction Fixes
 - **Improve data loading**: Better extraction from existing result files
@@ -111,7 +111,7 @@ The pipeline structure is now complete and ready for the final rerun. The main r
 3. Ensure all models are properly included
 4. Integrate validation into the main pipeline
 
-## 🎯 SUCCESS METRICS
+## SUCCESS METRICS
 
 - **Schema compliance**: ✅ 100% (all sheets have correct column names)
 - **Sheet existence**: ✅ 100% (all 10 required sheets present)

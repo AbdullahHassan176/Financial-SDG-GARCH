@@ -44,22 +44,22 @@ if args.train_models:
         model_type=args.model_type,
         asset_subset=args.asset_subset
     )
-    print("✅ Model training complete.")
+    print("Model training complete.")
 else:
-    print("⚠️ Skipping model training. Use --train-models to enable.")
+    print("Skipping model training. Use --train-models to enable.")
 
 # === Run Synthetic Evaluation Pipeline ===
 if args.eval_synthetic:
-    print("🔍 Running synthetic evaluation pipeline...")
+    print("Running synthetic evaluation pipeline...")
     run_synthetic_evaluation(
         window_size=args.window_size,
         forecast_horizon=args.forecast_horizon,
         model_type=args.model_type,
         asset_subset=args.asset_subset
     )
-    print("✅ Synthetic evaluation complete.")
+    print("Synthetic evaluation complete.")
 else:
-    print("⚠️ Skipping synthetic evaluation. Use --eval-synthetic to enable.")
+    print("Skipping synthetic evaluation. Use --eval-synthetic to enable.")
 
 # === CONFIG ===
 CONFIG = {
@@ -131,7 +131,7 @@ def main():
 
     df_results = pd.DataFrame(all_results)
     df_results.to_csv("results/nf_garch_forecast_results.csv", index=False)
-    print("✅ Done. Results saved to results/nf_garch_forecast_results.csv")
+    print("Done. Results saved to results/nf_garch_forecast_results.csv")
 
 
 
@@ -170,9 +170,9 @@ if args.run_tests:
         dm_results.to_excel(writer, sheet_name="DM_Test_MSE_CV", index=False)
         wilcoxon_results.to_excel(writer, sheet_name="Wilcoxon_MSE_CV", index=False)
 
-    print("✅ All statistical tests complete.")
+    print("All statistical tests complete.")
 else:
-    print("⚠️ Skipping statistical tests. Use --run-tests to enable.")
+    print("Skipping statistical tests. Use --run-tests to enable.")
 
 
 

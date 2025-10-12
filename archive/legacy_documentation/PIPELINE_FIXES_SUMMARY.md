@@ -145,7 +145,7 @@ equity_chrono_split_fit <- lapply(names(equity_train_returns), function(asset) {
 })
 ```
 
-## **🚀 IMPROVEMENTS MADE**
+## **IMPROVEMENTS MADE**
 
 ### **1. Robustness**
 - ✅ **Graceful degradation** when components fail

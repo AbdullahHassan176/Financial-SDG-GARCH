@@ -78,7 +78,7 @@ for (dir in required_dirs) {
 # Summary
 cat("\n=== INSTALLATION SUMMARY ===\n")
 if (length(missing_packages) == 0) {
-  cat("🎉 ALL PACKAGES INSTALLED SUCCESSFULLY!\n")
+  cat("ALL PACKAGES INSTALLED SUCCESSFULLY!\n")
   cat("Your environment is ready to run the NF-GARCH pipeline.\n")
   cat("\nNext steps:\n")
   cat("1. Run quick test: Rscript scripts/simulation_forecasting/simulate_nf_garch_quick_test.R\n")
