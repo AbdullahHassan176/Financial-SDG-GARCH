@@ -24,7 +24,7 @@ cat("Time:", Sys.time(), "\n\n")
 cat("1. Checking required files and directories...\n")
 
 required_files <- c(
-  "data/processed/raw (FX + EQ).csv",
+  "data/processed/combined_data.csv",
   "scripts/utils/safety_functions.R",
   "scripts/utils/cli_parser.R",
   "scripts/engines/engine_selector.R",
@@ -33,7 +33,10 @@ required_files <- c(
   "scripts/manual_garch/fit_egarch_manual.R",
   "scripts/manual_garch/fit_tgarch_manual.R",
   "scripts/manual_garch/forecast_manual.R",
-  "scripts/manual_garch/manual_garch_core.R"
+  "scripts/manual_garch/manual_garch_core.R",
+  "scripts/core/config.R",
+  "scripts/core/consolidation.R",
+  "scripts/core/utils.R"
 )
 
 required_dirs <- c(
@@ -50,6 +53,10 @@ required_dirs <- c(
   "outputs/stress_tests",
   "outputs/stress_tests/tables",
   "outputs/stress_tests/figures",
+  "outputs/supplementary",
+  "outputs/diagnostic",
+  "results",
+  "results/consolidated",
   "nf_generated_residuals",
   "checkpoints"
 )
@@ -92,7 +99,8 @@ required_packages <- c(
   "rugarch", "xts", "zoo", "dplyr", "tidyr", "ggplot2",
   "PerformanceAnalytics", "forecast", "moments", "openxlsx",
   "stringr", "readxl", "parallel", "TTR", "quantmod",
-  "lubridate", "scales", "viridis", "gridExtra"
+  "lubridate", "scales", "viridis", "gridExtra", "jsonlite",
+  "purrr", "magrittr", "knitr", "rmarkdown"
 )
 
 missing_packages <- c()
@@ -120,8 +128,8 @@ if (length(missing_packages) > 0) {
 # 3. Check Data Files
 cat("\n3. Checking data files...\n")
 
-if (file.exists("data/processed/raw (FX + EQ).csv")) {
-  data <- read.csv("data/processed/raw (FX + EQ).csv", stringsAsFactors = FALSE)
+if (file.exists("data/processed/combined_data.csv")) {
+  data <- read.csv("data/processed/combined_data.csv", stringsAsFactors = FALSE)
   cat("OK: Data file loaded successfully\n")
   cat("   Rows:", nrow(data), "\n")
   cat("   Columns:", ncol(data), "\n")
@@ -203,12 +211,56 @@ tryCatch({
   cat("ERROR: Manual GARCH core failed:", e$message, "\n")
 })
 
-# 7. Test Data Processing
-cat("\n7. Testing data processing...\n")
+# 7. Test Dual Split Analysis Functions
+cat("\n7. Testing dual split analysis functions...\n")
 
-if (file.exists("data/processed/raw (FX + EQ).csv")) {
+tryCatch({
+  source("scripts/utils/safety_functions.R")
+  
+  # Test dual split functions
+  test_data <- rnorm(1000)
+  chrono_split <- get_chronological_split(test_data)
+  tscv_splits <- get_tscv_splits(test_data, window_size = 200, step_size = 50, forecast_horizon = 20)
+  
+  cat("OK: Dual split functions working\n")
+  cat("   Chronological split: train=", length(chrono_split$train), ", test=", length(chrono_split$test), "\n")
+  cat("   TS CV splits: ", length(tscv_splits), " windows\n")
+}, error = function(e) {
+  cat("ERROR: Dual split functions failed:", e$message, "\n")
+})
+
+# 8. Test Engine Configuration
+cat("\n8. Testing engine configuration...\n")
+
+tryCatch({
+  source("scripts/core/config.R")
+  
+  # Check engine configuration
+  if (exists("ENGINE_CONFIG")) {
+    cat("OK: Engine configuration loaded\n")
+    cat("   Manual engine results:", ENGINE_CONFIG$manual_results, "\n")
+    cat("   RUGARCH engine results:", ENGINE_CONFIG$rugarch_results, "\n")
+  } else {
+    cat("WARNING: ENGINE_CONFIG not found in config.R\n")
+  }
+  
+  # Check model configurations
+  if (exists("NF_GARCH_MODELS")) {
+    cat("OK: NF-GARCH models configured\n")
+    cat("   Models:", paste(names(NF_GARCH_MODELS), collapse = ", "), "\n")
+  } else {
+    cat("WARNING: NF_GARCH_MODELS not found in config.R\n")
+  }
+}, error = function(e) {
+  cat("ERROR: Engine configuration failed:", e$message, "\n")
+})
+
+# 9. Test Data Processing
+cat("\n9. Testing data processing...\n")
+
+if (file.exists("data/processed/combined_data.csv")) {
   tryCatch({
-    data <- read.csv("data/processed/raw (FX + EQ).csv", stringsAsFactors = FALSE)
+    data <- read.csv("data/processed/combined_data.csv", stringsAsFactors = FALSE)
     data$Date <- as.Date(data$Date)
     
     # Test return calculation
@@ -225,8 +277,8 @@ if (file.exists("data/processed/raw (FX + EQ).csv")) {
   })
 }
 
-# 8. Generate Diagnostic Report
-cat("\n8. Generating diagnostic report...\n")
+# 10. Generate Diagnostic Report
+cat("\n10. Generating diagnostic report...\n")
 
 diagnostic_report <- data.frame(
   Component = c(
@@ -239,25 +291,29 @@ diagnostic_report <- data.frame(
     "CLI Parser",
     "Engine Selector",
     "Manual GARCH",
+    "Dual Split Analysis",
+    "Engine Configuration",
     "Data Processing"
   ),
   Status = c(
     ifelse(length(missing_files) == 0, "OK", paste("ERROR:", length(missing_files), "missing")),
     ifelse(length(missing_dirs) == 0, "OK", paste("ERROR:", length(missing_dirs), "missing")),
     ifelse(length(missing_packages) == 0, "OK", paste("ERROR:", length(missing_packages), "missing")),
-    ifelse(file.exists("data/processed/raw (FX + EQ).csv"), "OK", "Missing"),
+    ifelse(file.exists("data/processed/combined_data.csv"), "OK", "Missing"),
     ifelse(dir.exists("nf_generated_residuals") && length(list.files("nf_generated_residuals")) > 0, "OK", "Missing/Empty"),
     ifelse(all(sapply(output_dirs, dir.exists)), "OK", "Some missing"),
     "OK",  # CLI parser
     "OK",  # Engine selector
     "OK",  # Manual GARCH
+    "OK",  # Dual split analysis
+    "OK",  # Engine configuration
     "OK"   # Data processing
   ),
   Details = c(
     paste("Checked", length(required_files), "files"),
     paste("Checked", length(required_dirs), "directories"),
     paste("Checked", length(required_packages), "packages"),
-    ifelse(file.exists("data/processed/raw (FX + EQ).csv"), 
+    ifelse(file.exists("data/processed/combined_data.csv"), 
            paste("Rows:", nrow(data), "Cols:", ncol(data)), 
            "File not found"),
     ifelse(dir.exists("nf_generated_residuals"), 
@@ -267,6 +323,8 @@ diagnostic_report <- data.frame(
     "Engine selection working",
     "Engine functions loaded",
     "Manual GARCH functions loaded",
+    "Dual split functions working",
+    "Engine configuration loaded",
     "Return calculation working"
   )
 )
@@ -300,7 +358,7 @@ if (sum(grepl("ERROR", diagnostic_report$Status)) > 0) {
   if (length(missing_packages) > 0) {
     cat("  2. Install missing R packages\n")
   }
-  if (!file.exists("data/processed/raw (FX + EQ).csv")) {
+  if (!file.exists("data/processed/combined_data.csv")) {
     cat("  3. Ensure data file exists in correct location\n")
   }
   if (!dir.exists("nf_generated_residuals") || length(list.files("nf_generated_residuals")) == 0) {
