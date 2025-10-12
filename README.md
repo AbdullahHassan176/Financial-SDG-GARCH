@@ -22,6 +22,18 @@ This repository implements and evaluates **Normalizing Flows (NF) integrated wit
 - **Removed unused files**: Manual scripts, legacy EDA, redundant documentation
 - **Streamlined structure**: Only active pipeline components
 - **Improved navigation**: Clear separation between active and archived code
+- **Engine standardization**: Pipeline uses manual engine for consistency across all models
+
+## Script Organization
+
+### **Engine Configuration**
+- **Primary Pipeline**: Uses **manual engine** for all GARCH models (standard and NF-GARCH) to ensure consistent comparison
+- **Dual Engine Script**: `scripts/core/consolidation_dual_engine.R` is available for comparing RUGARCH vs manual engine results (not used in main pipeline)
+- **Engine Selection**: Handled by `scripts/engines/engine_selector.R` for unified API
+
+### **Consolidation Scripts**
+- **Main Consolidation**: `scripts/core/consolidation.R` - Handles manual engine results only
+- **Dual Engine Consolidation**: `scripts/core/consolidation_dual_engine.R` - For RUGARCH vs manual comparison (archived functionality)
 
 ## Quick Start Guide
 
