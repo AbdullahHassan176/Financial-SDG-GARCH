@@ -171,6 +171,15 @@ SIMULATION_PARAMS <- list(
   seed = 12345
 )
 
+# OPTIMIZED TSCV PARAMETERS for speed
+TSCV_OPTIMIZATION <- list(
+  window_size = 500,
+  step_size = 150,  # Increased from 50 for speed
+  forecast_horizon = 20,  # Reduced from 40 for speed
+  max_windows = 4,  # Limit to 3-4 non-overlapping windows
+  parallel_cores = 4  # Use up to 4 cores for parallel processing
+)
+
 # =============================================================================
 # VALIDATION PARAMETERS
 # =============================================================================

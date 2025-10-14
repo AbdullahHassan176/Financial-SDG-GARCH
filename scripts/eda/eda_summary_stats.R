@@ -366,18 +366,18 @@ calculate_summary_stats <- function(train_data, test_data, split_type) {
   all_data <- rbind(train_data, test_data)
   
   summary_stats <- all_data %>%
-    summarise_all(list(
-      mean = ~mean(., na.rm = TRUE),
-      sd = ~sd(., na.rm = TRUE),
-      min = ~min(., na.rm = TRUE),
-      max = ~max(., na.rm = TRUE),
-      skewness = ~skewness(., na.rm = TRUE),
-      kurtosis = ~kurtosis(., na.rm = TRUE)
-    )) %>%
-    gather(key = "stat", value = "value") %>%
-    separate(stat, into = c("asset", "statistic"), sep = "_") %>%
-    spread(statistic, value)
-  
+  summarise_all(list(
+    mean = ~mean(., na.rm = TRUE),
+    sd = ~sd(., na.rm = TRUE),
+    min = ~min(., na.rm = TRUE),
+    max = ~max(., na.rm = TRUE),
+    skewness = ~skewness(., na.rm = TRUE),
+    kurtosis = ~kurtosis(., na.rm = TRUE)
+  )) %>%
+  gather(key = "stat", value = "value") %>%
+  separate(stat, into = c("asset", "statistic"), sep = "_") %>%
+  spread(statistic, value)
+
   # Add split information
   summary_stats$Split_Type <- split_type
   summary_stats$Train_Size <- nrow(train_data)

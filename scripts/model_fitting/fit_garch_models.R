@@ -4,6 +4,16 @@
 
 set.seed(123)  # Ensure reproducibility
 
+# Load parallel processing libraries for speed optimization
+library(parallel)
+library(doParallel)
+
+# Set up parallel processing for speed optimization
+n_cores <- min(detectCores() - 1, 4)  # Use up to 4 cores, leave 1 free
+cl <- makeCluster(n_cores)
+registerDoParallel(cl)
+message("Using ", n_cores, " cores for parallel processing")
+
 # Load required libraries and initialize pipeline
 source("scripts/utils/conflict_resolution.R")
 initialize_pipeline()
@@ -96,7 +106,8 @@ generate_spec <- function(model, dist = "sstd", submodel = NULL) {
 
 fit_models <- function(returns_list, model_type, dist_type = "sstd", submodel = NULL, engine = "manual") {
   # Use engine_fit for consistent engine support (manual or rugarch)
-  fits <- lapply(returns_list, function(ret) {
+  # Use parallel processing for speed optimization
+  fits <- parLapply(cl, returns_list, function(ret) {
     tryCatch({
       engine_fit(model = model_type, returns = ret, dist = dist_type, submodel = submodel, engine = engine)
     }, error = function(e) {
@@ -141,23 +152,31 @@ equity_test_returns  <- lapply(equity_returns, function(x) x[(get_split_index(x)
 # Implement sliding window approach for robust model evaluation across time
 
 ts_cross_validate <- function(returns, model_type, dist_type = "sstd", submodel = NULL, 
-                              window_size = 500, step_size = 50, forecast_horizon = 20, engine = "manual") {
+                              window_size = 500, step_size = 150, forecast_horizon = 20, engine = "manual") {
   # Perform sliding window time-series cross-validation
   # This approach respects temporal ordering and provides robust performance estimates
   
   n <- nrow(returns)
   results <- list()
   
-  for (start_idx in seq(1, n - window_size - forecast_horizon, by = step_size)) {
+  # Calculate optimal number of non-overlapping windows (3-4 windows max for speed)
+  max_windows <- 4
+  total_available <- n - window_size - forecast_horizon
+  optimal_step <- max(step_size, floor(total_available / max_windows))
+  
+  window_count <- 0
+  for (start_idx in seq(1, n - window_size - forecast_horizon, by = optimal_step)) {
     # Define training and testing windows
     train_set <- returns[start_idx:(start_idx + window_size - 1)]
     test_set  <- returns[(start_idx + window_size):(start_idx + window_size + forecast_horizon - 1)]
     
     # Print progress information for monitoring
-    message("Processing window: ", start_idx, 
+    message("Processing window ", window_count + 1, "/", max_windows, ": ", start_idx, 
             " | Train size: ", nrow(train_set), 
             " | Test size: ", nrow(test_set),
             " | Train SD: ", round(sd(train_set, na.rm = TRUE), 6))
+    
+    window_count <- window_count + 1
     
     # Fit GARCH model using specified engine for consistency
     fit <- tryCatch({
@@ -190,6 +209,12 @@ ts_cross_validate <- function(returns, model_type, dist_type = "sstd", submodel 
           results[[length(results) + 1]] <- eval
         }
       }
+    }
+    
+    # Limit to maximum number of windows for speed optimization
+    if (window_count >= max_windows) {
+      message("Reached maximum windows (", max_windows, ") for speed optimization")
+      break
     }
   }
   
@@ -270,14 +295,15 @@ for (config_name in names(model_configs))
 
 # Helper to run all CV models across window size of x and a forecast horizon of y
 
-run_all_cv_models <- function(returns_list, model_configs, window_size = 500, forecast_horizon = 40) {
+run_all_cv_models <- function(returns_list, model_configs, window_size = 500, forecast_horizon = 20) {
   cv_results_all <- list()
   
   for (model_name in names(model_configs)) {
     cfg <- model_configs[[model_name]]
     message("Running CV for model: ", model_name)
     
-    result <- lapply(returns_list, function(ret) {
+    # Use parallel processing for speed optimization
+    result <- parLapply(cl, returns_list, function(ret) {
       ts_cross_validate(ret, 
                         model_type = cfg$model, 
                         dist_type  = cfg$dist, 
@@ -516,5 +542,9 @@ if (!dir.exists("results/consolidated")) {
   dir.create("results/consolidated", recursive = TRUE, showWarnings = FALSE)
 }
 saveWorkbook(wb, "results/consolidated/Initial_GARCH_Model_Fitting.xlsx", overwrite = TRUE)
+
+# Clean up parallel processing cluster
+stopCluster(cl)
+message("Parallel processing cluster stopped")
 
 

@@ -67,12 +67,17 @@ get_chronological_split <- function(data, split_ratio = 0.65) {
   ))
 }
 
-# Time Series Cross-Validation function
-get_tscv_splits <- function(data, window_size = 500, step_size = 50, forecast_horizon = 20) {
+# Time Series Cross-Validation function - OPTIMIZED for speed
+get_tscv_splits <- function(data, window_size = 500, step_size = 150, forecast_horizon = 20) {
   n <- length(data)
   splits <- list()
   
-  for (start_idx in seq(1, n - window_size - forecast_horizon, by = step_size)) {
+  # Calculate optimal number of non-overlapping windows (3-4 windows max)
+  max_windows <- 4
+  total_available <- n - window_size - forecast_horizon
+  optimal_step <- max(step_size, floor(total_available / max_windows))
+  
+  for (start_idx in seq(1, n - window_size - forecast_horizon, by = optimal_step)) {
     train_end <- start_idx + window_size - 1
     test_start <- start_idx + window_size
     test_end <- start_idx + window_size + forecast_horizon - 1
@@ -87,14 +92,17 @@ get_tscv_splits <- function(data, window_size = 500, step_size = 50, forecast_ho
         test_end = test_end
       )
     }
+    
+    # Limit to maximum number of windows for speed
+    if (length(splits) >= max_windows) break
   }
   
   return(splits)
 }
 
-# Apply analysis to both splits
+# Apply analysis to both splits - OPTIMIZED for speed
 apply_dual_split_analysis <- function(data, analysis_function, split_name = "analysis", 
-                                     window_size = 500, step_size = 50, forecast_horizon = 20) {
+                                     window_size = 500, step_size = 150, forecast_horizon = 20) {
   results <- list()
   
   # Chronological split analysis
