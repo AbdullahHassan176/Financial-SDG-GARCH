@@ -228,7 +228,7 @@ Financial-SDG-GARCH/
 │       └── build_results_site.sh            # Build script
 ├── Documentation/
 │   ├── README.md                            # This file
-│   ├── ai.md                               # Assistant guide
+│   ├── ai.md                               # Project guide
 │   ├── MODULAR_PIPELINE_GUIDE.md           # Modular pipeline guide
 │   ├── PIPELINE_FIXES_SUMMARY.md           # Pipeline fixes summary
 │   ├── UNUSED_FILES_ANALYSIS.md            # Unused files analysis
@@ -325,7 +325,7 @@ run_all.bat --engine rugarch
 
 ### Getting Help
 - Review `MODULAR_PIPELINE_GUIDE.md` for pipeline troubleshooting
-- Examine `ai.md` for assistant guidance
+- Examine `ai.md` for project guidance
 - Check `PIPELINE_FIXES_SUMMARY.md` for recent fixes and improvements
 - Review `UNUSED_FILES_ANALYSIS.md` for repository cleanup information
 
