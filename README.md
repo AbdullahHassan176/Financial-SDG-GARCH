@@ -44,7 +44,28 @@ This repository implements and evaluates **Normalizing Flows (NF) integrated wit
 - **Python** (>= 3.8)
 - **Windows** (primary support) or Linux/macOS
 
-### One-Click Setup
+### Running the Pipeline
+
+**Manual Branch - Quick Start:**
+```cmd
+# Main entry point - runs optimized manual pipeline (45-90 minutes)
+run_manual.bat
+
+# Or run directly from scripts/manual/
+scripts\manual\run_manual_optimized.bat
+```
+
+**Manual Branch - Step-by-Step (R Studio):**
+```r
+# In R Studio
+setwd("C:/Github/Financial-SDG-GARCH")
+source("scripts/manual/manual_optimized_config.R")
+source("scripts/manual/manual_garch_fitting.R")
+# Then run Python NF training: python scripts/manual/manual_nf_training.py
+# Then run: Rscript scripts/simulation_forecasting/simulate_nf_garch_engine.R --engine manual
+```
+
+### One-Click Setup (Legacy)
 
 **Windows Users:**
 ```cmd

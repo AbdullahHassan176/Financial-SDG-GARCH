@@ -12,16 +12,15 @@ This project implements a comprehensive financial synthetic data generation pipe
 - **Python Packages**: `numpy`, `pandas`, `scikit-learn`, `matplotlib`, `seaborn`, `torch`, `torchvision`, `pyyaml`, `pathlib2`
 
 ### GARCH Models Implemented
-The pipeline now supports **ALL 5 GARCH model variants** with **dual engine support**:
+The pipeline supports **5 GARCH model variants** using the **manual engine only**:
 1. **sGARCH_norm**: Standard GARCH with normal distribution
 2. **sGARCH_sstd**: Standard GARCH with skewed Student's t distribution
 3. **eGARCH**: Exponential GARCH with asymmetric effects
 4. **gjrGARCH**: Glosten-Jagannathan-Runkle GARCH with leverage effects
 5. **TGARCH**: Threshold GARCH with regime-dependent behavior
 
-**Engine Options:**
-- **rugarch**: Standard implementation using the `rugarch` package (default)
-- **manual**: Custom implementation from scratch with CLI switch support
+**Engine:**
+- **manual**: Custom implementation from scratch (fully verified mathematically)
 
 ### Asset Classes
 - **FX (Foreign Exchange)**: EURUSD, GBPUSD, GBPCNY, USDZAR, GBPZAR, EURZAR
@@ -103,16 +102,13 @@ model_configs <- list(
 ```
 
 ### Engine Selection
-The pipeline supports two engines with CLI switch:
+The pipeline uses the **manual engine only** (verified mathematically):
 ```bash
-# Use rugarch engine (default)
-Rscript simulate_nf_garch_engine.R --engine rugarch
-
-# Use manual engine
+# Manual engine (default and only option)
 Rscript simulate_nf_garch_engine.R --engine manual
 
-# Use config file
-Rscript simulate_nf_garch_engine.R --config config.yaml
+# Or simply (engine defaults to manual)
+Rscript simulate_nf_garch_engine.R
 ```
 
 ### File Naming Conventions

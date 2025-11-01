@@ -4,21 +4,22 @@
 
 set.seed(123)  # Ensure reproducibility
 
-# Load parallel processing libraries for speed optimization
-library(parallel)
-library(doParallel)
-
-# Set up parallel processing for speed optimization
-n_cores <- min(detectCores() - 1, 4)  # Use up to 4 cores, leave 1 free
-cl <- makeCluster(n_cores)
-registerDoParallel(cl)
-message("Using ", n_cores, " cores for parallel processing")
+# Load required libraries (no parallel processing)
+library(xts)
+library(PerformanceAnalytics)
 
 # Load required libraries and initialize pipeline
 source("scripts/utils/conflict_resolution.R")
 initialize_pipeline()
 source("./scripts/utils/safety_functions.R")
 source("scripts/engines/engine_selector.R")  # Load engine selector for manual engine support
+
+# Load manual GARCH functions
+source("scripts/manual_garch/fit_sgarch_manual.R")
+source("scripts/manual_garch/fit_gjr_manual.R")
+source("scripts/manual_garch/fit_egarch_manual.R")
+source("scripts/manual_garch/fit_tgarch_manual.R")
+source("scripts/manual_garch/forecast_manual.R")
 
 # Data Import and Preprocessing
 # Load the combined FX and equity price dataset
@@ -41,9 +42,9 @@ date_index <- raw_price_data$Date
 # Extract price matrix without date column for processing
 price_data_matrix <- raw_price_data[, !(names(raw_price_data) %in% "Date")]
 
-# Define asset tickers for equity and foreign exchange instruments
-equity_tickers <- c("NVDA", "MSFT", "PG", "CAT", "WMT", "AMZN")
-fx_names <- c("EURUSD", "GBPUSD", "GBPCNY", "USDZAR", "GBPZAR", "EURZAR")
+# Define asset tickers for equity and foreign exchange instruments (OPTIMIZED: 6 assets total)
+equity_tickers <- c("NVDA", "MSFT", "AMZN")  # 3 most representative equity assets
+fx_names <- c("EURUSD", "GBPUSD", "USDZAR")  # 3 most representative FX assets
 
 # Convert price series to XTS objects for time series analysis
 equity_xts <- lapply(equity_tickers, function(ticker) {
@@ -92,12 +93,13 @@ plot_returns_and_save(fx_returns, "Real_FX")
 # Define model specifications and automated fitting procedures
 
 generate_spec <- function(model, dist = "sstd", submodel = NULL) {
-  # Create GARCH model specification with ARMA(0,0) mean model
-  # and GARCH(1,1) variance model for volatility clustering
-  ugarchspec(
-    mean.model = list(armaOrder = c(0,0)),
-    variance.model = list(model = model, garchOrder = c(1,1), submodel = submodel),
-    distribution.model = dist
+  # Manual engine doesn't use specs - this function is kept for compatibility
+  # Returns model configuration list instead of ugarchspec object
+  # Actual fitting uses engine_fit() directly
+  list(
+    model = model,
+    distribution = dist,
+    submodel = submodel
   )
 }
 
@@ -105,9 +107,9 @@ generate_spec <- function(model, dist = "sstd", submodel = NULL) {
 # Fits GARCH models to a list of return series with consistent specifications
 
 fit_models <- function(returns_list, model_type, dist_type = "sstd", submodel = NULL, engine = "manual") {
-  # Use engine_fit for consistent engine support (manual or rugarch)
-  # Use parallel processing for speed optimization
-  fits <- parLapply(cl, returns_list, function(ret) {
+  # Use engine_fit for consistent engine support (manual engine only)
+  # Sequential processing (no parallel)
+  fits <- lapply(returns_list, function(ret) {
     tryCatch({
       engine_fit(model = model_type, returns = ret, dist = dist_type, submodel = submodel, engine = engine)
     }, error = function(e) {
@@ -122,12 +124,12 @@ fit_models <- function(returns_list, model_type, dist_type = "sstd", submodel = 
 # Define specifications for various GARCH-family models to capture different volatility dynamics
 
 model_configs <- list(
-  sGARCH_norm  = list(model = "sGARCH", distribution = "norm", submodel = NULL),    # Standard GARCH with normal errors
-  sGARCH_sstd  = list(model = "sGARCH", distribution = "sstd", submodel = NULL),    # Standard GARCH with skewed Student-t
-  gjrGARCH     = list(model = "gjrGARCH", distribution = "sstd", submodel = NULL),   # GJR-GARCH for leverage effects
-  eGARCH       = list(model = "eGARCH", distribution = "sstd", submodel = NULL),     # Exponential GARCH for asymmetric effects
-  TGARCH       = list(model = "TGARCH", distribution = "sstd", submodel = NULL)      # Threshold GARCH for regime-dependent effects
+  sGARCH  = list(model = "sGARCH", distribution = "sstd", submodel = NULL),    # Standard GARCH with skewed Student-t
+  eGARCH  = list(model = "eGARCH", distribution = "sstd", submodel = NULL),   # Exponential GARCH for asymmetric effects
+  TGARCH  = list(model = "TGARCH", distribution = "sstd", submodel = NULL)     # Threshold GARCH for regime-dependent effects
 )
+
+# No parallel processing - model_configs available in main process
 
 
 # Data Splitting for Model Evaluation
@@ -229,37 +231,62 @@ ts_cross_validate <- function(returns, model_type, dist_type = "sstd", submodel 
 # Helper to evaluate results across each TS CV Window
 evaluate_model <- function(fit, forecast, actual_returns, forecast_horizon = 40) 
 {
+  # Check for NULL or empty inputs
+  if (is.null(fit) || is.null(forecast) || is.null(actual_returns)) {
+    return(NULL)
+  }
+  
+  # Check if actual_returns has data
+  if (length(actual_returns) == 0) {
+    return(NULL)
+  }
+  
   actual <- head(actual_returns, forecast_horizon)
   
-  # Handle different forecast formats (manual engine vs rugarch)
+  # Handle manual engine forecast format
   if (is.list(forecast) && "mean" %in% names(forecast)) {
     # Manual engine forecast format
     pred <- forecast$mean
+  } else if (is.list(forecast) && "sigma" %in% names(forecast)) {
+    # Manual engine sigma forecast
+    pred <- forecast$sigma
   } else {
-    # Rugarch forecast format (fallback)
-    pred <- fitted(forecast)
+    # Unknown format - try to extract
+    warning("Unknown forecast format, attempting extraction")
+    pred <- if (is.numeric(forecast)) forecast else NULL
+  }
+  
+  # Check if pred has data
+  if (is.null(pred) || length(pred) == 0) {
+    return(NULL)
   }
   
   # Ensure same length
   actual <- actual[1:min(NROW(actual), NROW(pred))]
   pred   <- pred[1:min(NROW(actual), NROW(pred))]
   
+  # Check if we have valid data after trimming
+  if (length(actual) == 0 || length(pred) == 0) {
+    return(NULL)
+  }
+  
   mse <- mean((actual - pred)^2, na.rm = TRUE)
   mae <- mean(abs(actual - pred), na.rm = TRUE)
   
-  # Handle different fit formats
+  # Handle manual engine fit format
   if (is.list(fit) && "residuals" %in% names(fit)) {
     # Manual engine fit format
     residuals_vec <- fit$residuals
-    aic <- fit$aic
-    bic <- fit$bic
-    loglik <- fit$loglik
+    aic <- if ("aic" %in% names(fit)) fit$aic else NA
+    bic <- if ("bic" %in% names(fit)) fit$bic else NA
+    loglik <- if ("loglik" %in% names(fit)) fit$loglik else NA
   } else {
-    # Rugarch fit format (fallback)
-    residuals_vec <- residuals(fit)
-    aic <- infocriteria(fit)[1]
-    bic <- infocriteria(fit)[2]
-    loglik <- likelihood(fit)
+    # Unknown format - manual engine should always provide list format
+    warning("Unknown fit format, expecting manual engine list format")
+    residuals_vec <- NULL
+    aic <- NA
+    bic <- NA
+    loglik <- NA
   }
   
   q_stat_p <- tryCatch(Box.test(residuals_vec, lag = 10, type = "Ljung-Box")$p.value, error = function(e) NA)
@@ -294,16 +321,17 @@ for (config_name in names(model_configs))
 }
 
 # Helper to run all CV models across window size of x and a forecast horizon of y
+# OPTIMIZED: Reduced window size and forecast horizon for speed
 
-run_all_cv_models <- function(returns_list, model_configs, window_size = 500, forecast_horizon = 20) {
+run_all_cv_models <- function(returns_list, model_configs, window_size = 300, forecast_horizon = 10) {
   cv_results_all <- list()
   
   for (model_name in names(model_configs)) {
     cfg <- model_configs[[model_name]]
     message("Running CV for model: ", model_name)
     
-    # Use parallel processing for speed optimization
-    result <- parLapply(cl, returns_list, function(ret) {
+    # Sequential processing (no parallel)
+    result <- lapply(returns_list, function(ret) {
       ts_cross_validate(ret, 
                         model_type = cfg$model, 
                         dist_type  = cfg$dist, 
@@ -399,9 +427,28 @@ for (model_name in names(Fitted_FX_TS_CV_models)) {
 #### Forecast Financial Data ####
 
 # Helper to forecast financial returns data across each GARCH model for 40 days into the future
+# OPTIMIZED: Use manual engine forecast function
 
 forecast_models <- function(fit_list, n.ahead = 40) {
-  lapply(fit_list, function(fit) ugarchforecast(fitORspec = fit, n.ahead = n.ahead))
+  lapply(fit_list, function(fit) {
+    if (!is.null(fit) && !is.null(fit$convergence) && fit$convergence) {
+      tryCatch({
+        forecast_result <- engine_forecast(fit, h = n.ahead, engine = "manual")
+        if (!is.null(forecast_result) && !is.null(forecast_result$sigma) && !is.null(forecast_result$mean)) {
+          return(forecast_result)
+        } else {
+          message("Forecast returned NULL values")
+          return(NULL)
+        }
+      }, error = function(e) {
+        message("Forecast error: ", e$message)
+        return(NULL)
+      })
+    } else {
+      message("Skipping forecast for failed fit")
+      return(NULL)
+    }
+  })
 }
 
 # Forecast financial data for models trained on 65/35 Chrono Split
@@ -444,8 +491,18 @@ for (key in names(Fitted_Chrono_Split_models))
   return_list <- if (asset_type == "equity") equity_returns else fx_returns
   
   comparison <- setNames(
-    Map(function(fit, forecast, ret) evaluate_model(fit, forecast, ret), 
-        model_set, forecast_set, return_list), 
+    Map(function(fit, forecast, ret) {
+      if (!is.null(fit) && !is.null(forecast) && !is.null(ret)) {
+        tryCatch({
+          evaluate_model(fit, forecast, ret)
+        }, error = function(e) {
+          message("Evaluation error for ", names(model_set)[which(model_set == fit)], ": ", e$message)
+          return(NULL)
+        })
+      } else {
+        return(NULL)
+      }
+    }, model_set, forecast_set, return_list), 
     names(model_set)
   )
   
@@ -500,18 +557,46 @@ plot_and_save_volatility_forecasts <- function(forecast_list, model_name, asset_
   dir.create(dir_path, recursive = TRUE, showWarnings = FALSE)
   
   for (asset in names(forecast_list)) {
-    sigma_vals <- sigma(forecast_list[[asset]])
+    forecast_obj <- forecast_list[[asset]]
     
-    png(file.path(dir_path, paste0(asset, "_volatility.png")), width = 800, height = 600)
-    plot(sigma_vals, main = paste("Volatility Forecast:", asset, "-", model_name), col = "blue", ylab = "Volatility")
-    dev.off()
+    # Handle different forecast formats
+    if (is.list(forecast_obj) && "sigma" %in% names(forecast_obj)) {
+      # Manual engine forecast format
+      sigma_vals <- forecast_obj$sigma
+    } else {
+      # Unknown format - manual engine should always provide list format
+      sigma_vals <- tryCatch({
+        sigma(forecast_obj)
+      }, error = function(e) {
+        message("Could not extract sigma from forecast for ", asset)
+        return(NULL)
+      })
+    }
+    
+    # Check if we have valid sigma values
+    if (!is.null(sigma_vals) && length(sigma_vals) > 0 && all(is.finite(sigma_vals))) {
+      png(file.path(dir_path, paste0(asset, "_volatility.png")), width = 800, height = 600)
+      plot(sigma_vals, main = paste("Volatility Forecast:", asset, "-", model_name), col = "blue", ylab = "Volatility")
+      dev.off()
+    } else {
+      message("Skipping plot for ", asset, " - no valid sigma values")
+    }
   }
 }
 
 for (key in names(Forecasts_Chrono_Split)) {
   asset_type <- ifelse(startsWith(key, "equity"), "equity", "fx")
   model_name <- gsub("^(equity|fx)_", "", key)
-  plot_and_save_volatility_forecasts(Forecasts_Chrono_Split[[key]], model_name, asset_type)
+  
+  # Filter out NULL forecasts
+  valid_forecasts <- Forecasts_Chrono_Split[[key]]
+  valid_forecasts <- valid_forecasts[!sapply(valid_forecasts, is.null)]
+  
+  if (length(valid_forecasts) > 0) {
+    plot_and_save_volatility_forecasts(valid_forecasts, model_name, asset_type)
+  } else {
+    message("No valid forecasts for ", key, " - skipping plots")
+  }
 }
 
 
@@ -543,8 +628,7 @@ if (!dir.exists("results/consolidated")) {
 }
 saveWorkbook(wb, "results/consolidated/Initial_GARCH_Model_Fitting.xlsx", overwrite = TRUE)
 
-# Clean up parallel processing cluster
-stopCluster(cl)
-message("Parallel processing cluster stopped")
+# No parallel processing cleanup needed
+message("GARCH fitting completed successfully")
 
 

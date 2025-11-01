@@ -27,8 +27,8 @@ ASSET_METADATA <- list(
 # MODEL REDUCTION (40% time savings)
 # =============================================================================
 
-# Reduced from 5 to 3 most effective GARCH variants
-MANUAL_MODELS <- c("sGARCH", "eGARCH", "TGARCH")
+# All 4 GARCH variants required by dissertation
+MANUAL_MODELS <- c("sGARCH", "eGARCH", "TGARCH", "gjrGARCH")
 
 # Model configuration for manual execution
 MANUAL_MODEL_CONFIG <- list(
@@ -45,19 +45,25 @@ MANUAL_MODEL_CONFIG <- list(
     description = "Exponential GARCH with asymmetric effects"
   ),
   TGARCH = list(
-    model = "NF_tGARCH",
+    model = "TGARCH",
     distribution = "sstd", 
-    submodel = "TGARCH",
+    submodel = NULL,
     description = "Threshold GARCH with regime-dependent behavior"
+  ),
+  gjrGARCH = list(
+    model = "gjrGARCH",
+    distribution = "sstd",
+    submodel = NULL,
+    description = "Glosten-Jagannathan-Runkle GARCH with leverage effects"
   )
 )
 
 # Model metadata
 MODEL_METADATA <- list(
-  total_count = 3,
+  total_count = 4,
   original_count = 5,
-  reduction_pct = 40,
-  excluded_models = c("sGARCH_norm", "gjrGARCH")
+  reduction_pct = 20,
+  excluded_models = c("sGARCH_norm")
 )
 
 # =============================================================================
@@ -154,33 +160,36 @@ MANUAL_SIMULATION_CONFIG <- list(
   
   # Engine selection
   preferred_engine = "manual",    # Use manual engine for speed
-  fallback_engine = "rugarch"
+  fallback_engine = "manual"
 )
 
 # =============================================================================
 # EVALUATION OPTIMIZATION
 # =============================================================================
 
-# Core metrics only (skip non-essential evaluations)
+# Complete metrics for dissertation requirements
 MANUAL_EVALUATION_CONFIG <- list(
   # Core forecasting metrics
-  forecasting_metrics = c("RMSE", "MAE", "MAPE", "LogLik"),
+  forecasting_metrics = c("RMSE", "MAE", "MAPE", "LogLik", "AIC", "BIC"),
   
-  # Core distributional metrics
-  distributional_metrics = c("KS_distance", "Wasserstein", "Jensen_Shannon"),
+  # Distributional metrics (required by dissertation)
+  distributional_metrics = c("KS_distance", "Wasserstein", "Tail_index", "Skewness", "Kurtosis", "Jensen_Shannon"),
   
-  # Core risk metrics
-  risk_metrics = c("VaR_95", "VaR_99", "ES_95", "ES_99"),
+  # Risk metrics (required by dissertation)
+  risk_metrics = c("VaR_95", "VaR_99", "ES_95", "ES_99", "Kupiec", "Christoffersen"),
   
-  # Skip detailed evaluations
-  skip_stylized_facts = TRUE,
-  skip_stress_testing = TRUE,
-  skip_detailed_plots = TRUE,
+  # Stylized facts (required by dissertation)
+  stylized_facts_metrics = c("Volatility_clustering", "Leverage_effect", "Autocorrelation_decay", "Heavy_tails", "Gain_loss_asymmetry"),
+  
+  # Enable all evaluations
+  skip_stylized_facts = FALSE,
+  skip_stress_testing = FALSE,
+  skip_detailed_plots = FALSE,
   skip_appendix_generation = TRUE,
   
-  # Quick consolidation
-  simple_consolidation = TRUE,
-  summary_only = TRUE
+  # Full consolidation
+  simple_consolidation = FALSE,
+  summary_only = FALSE
 )
 
 # =============================================================================
@@ -231,6 +240,11 @@ get_manual_assets <- function() {
 # Get optimized model list
 get_manual_models <- function() {
   return(MANUAL_MODELS)
+}
+
+# Get optimized model configuration (per-model spec)
+get_manual_model_config <- function() {
+  return(MANUAL_MODEL_CONFIG)
 }
 
 # Get CV configuration

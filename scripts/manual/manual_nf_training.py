@@ -70,8 +70,8 @@ PERFORMANCE_CONFIG = {
 # UTILITY FUNCTIONS
 # =============================================================================
 
-def set_seed(seed=42):
-    """Set random seeds for reproducibility"""
+def set_seed(seed=123):
+    """Set random seeds for reproducibility (matching R seed)"""
     torch.manual_seed(seed)
     np.random.seed(seed)
     if torch.cuda.is_available():
@@ -197,7 +197,7 @@ def train_optimized_nf(file_path, model_key, output_dir="outputs/manual/nf_model
             
             # Check for NaN
             if torch.isnan(loss):
-                print(f"❌ NaN loss encountered at epoch {epoch+1} for {model_key}")
+                print(f"[ERROR] NaN loss encountered at epoch {epoch+1} for {model_key}")
                 return None, [], residuals
             
             # Backward pass
@@ -248,10 +248,14 @@ def train_optimized_nf(file_path, model_key, output_dir="outputs/manual/nf_model
         # Progress reporting
         if (epoch + 1) % PERFORMANCE_CONFIG["progress_frequency"] == 0 or epoch == 0:
             elapsed_time = time.time() - start_time
-            print(f"[{model_key}] Epoch {epoch+1}/{config['epochs']}: "
-                  f"Train Loss = {avg_train_loss:.4f}, "
-                  f"Val Loss = {val_loss_history[-1]:.4f if val_loss_history[-1] is not None else 'N/A'}, "
-                  f"Time = {elapsed_time:.1f}s")
+            last_val = val_loss_history[-1] if len(val_loss_history) > 0 else None
+            val_str = f"{last_val:.4f}" if isinstance(last_val, (float, int)) else "N/A"
+            print(
+                f"[{model_key}] Epoch {epoch+1}/{config['epochs']}: "
+                f"Train Loss = {avg_train_loss:.4f}, "
+                f"Val Loss = {val_str}, "
+                f"Time = {elapsed_time:.1f}s"
+            )
             
             # Memory monitoring
             if PERFORMANCE_CONFIG["memory_monitoring"]:
@@ -286,7 +290,7 @@ def train_optimized_nf(file_path, model_key, output_dir="outputs/manual/nf_model
     ks_stat, ks_pvalue = ks_2samp(residuals.flatten(), samples.flatten())
     wass_dist = wasserstein_distance(residuals.flatten(), samples.flatten())
     
-    print(f"✅ {model_key} training completed:")
+    print(f"[OK] {model_key} training completed:")
     print(f"   Final train loss: {loss_history[-1]:.4f}")
     print(f"   KS statistic: {ks_stat:.4f} (p-value: {ks_pvalue:.4f})")
     print(f"   Wasserstein distance: {wass_dist:.4f}")
@@ -300,8 +304,8 @@ def train_optimized_nf(file_path, model_key, output_dir="outputs/manual/nf_model
 def main():
     """Main training pipeline with optimizations"""
     
-    # Set reproducibility
-    set_seed(42)
+    # Set reproducibility (matching R seed 123 for consistency)
+    set_seed(123)
     
     # Print optimization summary
     print_optimization_summary()
@@ -315,7 +319,7 @@ def main():
     residual_files = glob(os.path.join(residuals_dir, "*", "*.csv"))
     
     if not residual_files:
-        print("❌ No residual files found in", residuals_dir)
+        print("[ERROR] No residual files found in", residuals_dir)
         print("Please run manual_garch_fitting.R first to generate residuals")
         return
     
@@ -356,7 +360,7 @@ def main():
                 samples_df.to_csv(samples_file, index=False)
             
         except Exception as e:
-            print(f"❌ Error training {model_key}: {str(e)}")
+            print(f"[ERROR] Error training {model_key}: {str(e)}")
             continue
         
         # Memory management
@@ -385,7 +389,7 @@ def main():
     with open(output_dir / "training_summary.json", 'w') as f:
         json.dump(results_summary, f, indent=2)
     
-    print(f"\n✅ Manual optimized NF training completed!")
+    print(f"\n[OK] Manual optimized NF training completed!")
     print(f"Results saved to: {output_dir}")
     print(f"Generated {len(all_samples)} synthetic residual files")
     

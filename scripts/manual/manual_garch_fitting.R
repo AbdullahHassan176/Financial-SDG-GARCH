@@ -3,7 +3,6 @@
 # Designed for manual execution in R Studio
 
 # Load required libraries
-library(rugarch)
 library(xts)
 library(PerformanceAnalytics)
 library(dplyr)
@@ -15,6 +14,9 @@ library(doParallel)
 
 # Load manual optimization configuration
 source("scripts/manual/manual_optimized_config.R")
+
+# Load manual engine
+source("scripts/engines/engine_selector.R")
 
 # Set up error handling and timing
 options(warn = 1)
@@ -102,24 +104,10 @@ manual_model_config <- get_manual_model_config()
 
 cat("Using optimized models:", paste(manual_models, collapse = ", "), "\n")
 
-# GARCH model specifications with optimized parameters
-garch_specs <- list()
+# GARCH model configurations (no need for specs with manual engine)
+# Models will be fit directly using engine_fit()
 
-for (model_name in manual_models) {
-  model_config <- manual_model_config[[model_name]]
-  
-  garch_specs[[model_name]] <- ugarchspec(
-    variance.model = list(
-      model = model_config$model,
-      garchOrder = c(1, 1),
-      submodel = model_config$submodel
-    ),
-    mean.model = list(armaOrder = c(0, 0), include.mean = FALSE),
-    distribution.model = model_config$distribution
-  )
-}
-
-cat("Model specifications created for", length(garch_specs), "models\n")
+cat("Model configurations prepared for", length(manual_models), "models\n")
 
 # =============================================================================
 # OPTIMIZED TIME-SERIES CROSS-VALIDATION
@@ -147,32 +135,51 @@ if (cv_config$parallel_enabled) {
 # OPTIMIZED MODEL FITTING FUNCTION
 # =============================================================================
 
-# Optimized model fitting with reduced complexity
-fit_optimized_garch <- function(returns_data, asset_name, model_name, garch_spec) {
+# Optimized model fitting with manual engine
+fit_optimized_garch <- function(returns_data, asset_name, model_name) {
   tryCatch({
-    # Fit GARCH model
-    garch_fit <- ugarchfit(
-      spec = garch_spec,
-      data = returns_data,
-      solver = "hybrid",
-      solver.control = list(tol = 1e-6, maxiter = 1000)
+    # Get model configuration
+    model_config <- manual_model_config[[model_name]]
+    
+    # Convert returns_data to numeric vector if needed
+    if (inherits(returns_data, "xts")) {
+      returns_vec <- as.numeric(returns_data)
+    } else {
+      returns_vec <- as.numeric(returns_data)
+    }
+    
+    # Remove NAs
+    returns_vec <- returns_vec[!is.na(returns_vec)]
+    
+    if (length(returns_vec) < 100) {
+      cat("Warning: Insufficient data for", asset_name, model_name, "\n")
+      return(NULL)
+    }
+    
+    # Fit GARCH model using manual engine
+    garch_fit <- engine_fit(
+      model = model_config$model,
+      returns = returns_vec,
+      dist = model_config$distribution,
+      submodel = model_config$submodel,
+      engine = "manual"
     )
     
     # Check convergence
-    if (garch_fit@fit$convergence == 0) {
+    if (engine_converged(garch_fit)) {
       # Extract standardized residuals
-      residuals <- residuals(garch_fit, standardize = TRUE)
+      residuals <- engine_residuals(garch_fit, standardize = TRUE)
       
       # Calculate basic statistics
       stats <- list(
         asset = asset_name,
         model = model_name,
-        loglik = likelihood(garch_fit),
-        aic = infocriteria(garch_fit)[1],
-        bic = infocriteria(garch_fit)[2],
+        loglik = garch_fit$loglik,
+        aic = garch_fit$aic,
+        bic = garch_fit$bic,
         convergence = TRUE,
-        n_obs = length(returns_data),
-        n_params = length(coef(garch_fit))
+        n_obs = length(returns_vec),
+        n_params = length(garch_fit$coef)
       )
       
       return(list(
@@ -195,7 +202,8 @@ fit_optimized_garch <- function(returns_data, asset_name, model_name, garch_spec
 # =============================================================================
 
 # Optimized time-series cross-validation with reduced complexity
-run_optimized_cv <- function(returns_data, asset_name, model_name, garch_spec) {
+# Note: garch_spec not needed - using manual engine directly
+run_optimized_cv <- function(returns_data, asset_name, model_name) {
   n_obs <- length(returns_data)
   window_size <- floor(n_obs * cv_config$window_size)
   step_size <- floor(n_obs * cv_config$step_size)
@@ -226,7 +234,7 @@ run_optimized_cv <- function(returns_data, asset_name, model_name, garch_spec) {
     }
     
     # Fit model on training data
-    fit_result <- fit_optimized_garch(train_data, asset_name, model_name, garch_spec)
+    fit_result <- fit_optimized_garch(train_data, asset_name, model_name)
     
     if (!is.null(fit_result)) {
       cv_results[[i]] <- list(
@@ -270,12 +278,11 @@ for (asset_idx in 1:length(all_returns)) {
   for (model_name in manual_models) {
     cat("  Fitting model:", model_name, "\n")
     
-    # Run optimized cross-validation
+    # Run optimized cross-validation (no spec needed for manual engine)
     cv_results <- run_optimized_cv(
       returns_data, 
       asset_name, 
-      model_name, 
-      garch_specs[[model_name]]
+      model_name
     )
     
     # Store results
@@ -387,3 +394,4 @@ cat("\nOptimized GARCH fitting completed successfully!\n")
 cat("Results saved to outputs/manual/garch_fitting/\n")
 cat("Residuals saved to outputs/manual/residuals_by_model/\n")
 cat("===============================================\n")
+

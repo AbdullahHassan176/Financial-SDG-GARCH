@@ -1,13 +1,13 @@
 # CLI Argument Parser for Engine Selection
-# Handles --engine flag and config file parsing
+# Manual engine only - simplified parser
 
 parse_cli_args <- function() {
   # Parse command line arguments
   args <- commandArgs(trailingOnly = TRUE)
   
-  # Default values
+  # Default values - always use manual engine
   config <- list(
-    engine = "rugarch",  # Default to rugarch for backward compatibility
+    engine = "manual",
     config_file = NULL
   )
   
@@ -17,10 +17,11 @@ parse_cli_args <- function() {
     if (args[i] == "--engine") {
       if (i + 1 <= length(args)) {
         engine <- args[i + 1]
-        if (engine %in% c("rugarch", "manual")) {
+        if (engine == "manual") {
           config$engine <- engine
         } else {
-          stop("Invalid engine: ", engine, ". Use 'rugarch' or 'manual'")
+          warning("Invalid engine: ", engine, ". Only 'manual' engine is supported. Using 'manual'.")
+          config$engine <- "manual"
         }
         i <- i + 2
       } else {
@@ -36,13 +37,13 @@ parse_cli_args <- function() {
     } else if (args[i] == "--help" || args[i] == "-h") {
       cat("Usage: Rscript script.R [options]\n")
       cat("Options:\n")
-      cat("  --engine ENGINE     GARCH engine to use (rugarch|manual) [default: rugarch]\n")
+      cat("  --engine ENGINE     GARCH engine to use (manual only) [default: manual]\n")
       cat("  --config FILE       Configuration file path\n")
       cat("  --help, -h          Show this help message\n")
       cat("\n")
       cat("Examples:\n")
       cat("  Rscript simulate_nf_garch.R --engine manual\n")
-      cat("  Rscript simulate_nf_garch.R --engine rugarch --config config.yaml\n")
+      cat("  Rscript simulate_nf_garch.R --config config.yaml\n")
       quit(status = 0)
     } else {
       warning("Unknown argument: ", args[i])
@@ -55,7 +56,11 @@ parse_cli_args <- function() {
     config_from_file <- load_config_file(config$config_file)
     # CLI arguments override config file
     if (!is.null(config_from_file$engine)) {
-      config$engine <- config_from_file$engine
+      if (config_from_file$engine == "manual") {
+        config$engine <- config_from_file$engine
+      } else {
+        warning("Config file specified invalid engine. Using 'manual'.")
+      }
     }
   }
   

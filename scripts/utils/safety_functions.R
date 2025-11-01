@@ -30,24 +30,16 @@ safe_write_csv <- function(data, file_path, ...) {
   })
 }
 
-# Safe model fitting
+# Safe model fitting (DEPRECATED - rugarch not used)
+# Kept for backwards compatibility but will error if called
 safe_ugarchfit <- function(spec, data, ...) {
-  tryCatch({
-    ugarchfit(spec = spec, data = data, ...)
-  }, error = function(e) {
-    warning("GARCH fitting failed: ", conditionMessage(e))
-    return(NULL)
-  })
+  stop("rugarch engine has been removed. Use manual engine with engine_fit() instead.")
 }
 
-# Safe forecasting
+# Safe forecasting (DEPRECATED - rugarch not used)
+# Kept for backwards compatibility but will error if called
 safe_ugarchforecast <- function(fit, n.ahead = 1, ...) {
-  tryCatch({
-    ugarchforecast(fit, n.ahead = n.ahead, ...)
-  }, error = function(e) {
-    warning("GARCH forecasting failed: ", conditionMessage(e))
-    return(NULL)
-  })
+  stop("rugarch engine has been removed. Use manual engine with engine_forecast() instead.")
 }
 
 # =============================================================================
@@ -185,7 +177,7 @@ validate_data <- function(data, name = "data") {
     warning("Columns with all NA values: ", paste(names(data)[na_cols], collapse = ", "))
   }
   
-  cat("✓ Data validation passed for:", name, "(", nrow(data), "rows,", ncol(data), "cols)\n")
+  cat("[OK] Data validation passed for:", name, "(", nrow(data), "rows,", ncol(data), "cols)\n")
   return(TRUE)
 }
 
@@ -298,4 +290,4 @@ with_error_handling <- function(expr, error_message = "Operation failed") {
   })
 }
 
-cat("✓ Safety functions loaded\n")
+cat("[OK] Safety functions loaded\n")

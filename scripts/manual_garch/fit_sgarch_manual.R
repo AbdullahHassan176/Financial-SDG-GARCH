@@ -14,20 +14,20 @@ fit_sgarch_manual <- function(returns, dist = c("norm", "std"), init = NULL) {
     sample_mean <- mean(returns, na.rm = TRUE)
     
     if (dist == "norm") {
-      # 4 parameters: μ, ω, α, β
+      # 4 parameters: μ, ω, α, β - Better starting values for faster convergence
       init <- c(
         mu = sample_mean,
-        omega = log(sample_var * 0.1),  # ω ≈ var * (1-α-β)
-        alpha = 0,  # logit(0) = -Inf, so use 0
-        beta = 0    # logit(0) = -Inf, so use 0
+        omega = log(sample_var * 0.05),  # Smaller initial omega
+        alpha = 0.1,  # Start with small positive alpha
+        beta = 0.8    # Start with high beta (typical for financial data)
       )
     } else if (dist == "std") {
-      # 5 parameters: μ, ω, α, β, ν
+      # 5 parameters: μ, ω, α, β, ν - Better starting values
       init <- c(
         mu = sample_mean,
-        omega = log(sample_var * 0.1),
-        alpha = 0,
-        beta = 0,
+        omega = log(sample_var * 0.05),
+        alpha = 0.1,
+        beta = 0.8,
         nu = log(5)  # ν = 2 + exp(log(5)) = 7
       )
     }
@@ -90,12 +90,16 @@ fit_sgarch_manual <- function(returns, dist = c("norm", "std"), init = NULL) {
     })
   }
   
-  # Optimize
+  # Optimize with faster settings
   opt_result <- optim(
     par = init,
     fn = neg_ll,
     method = "BFGS",  # Use BFGS for better stability
-    control = list(maxit = 1000)
+    control = list(
+      maxit = 200,        # Reduced iterations for speed
+      reltol = 1e-4,      # Less strict tolerance
+      abstol = 1e-4       # Less strict absolute tolerance
+    )
   )
   
   # Check convergence

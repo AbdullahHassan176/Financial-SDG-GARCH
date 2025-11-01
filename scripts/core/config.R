@@ -45,12 +45,11 @@ NF_GARCH_MODELS <- list(
   )
 )
 
-# Engine Configuration
+# Engine Configuration - Manual engine only
 ENGINE_CONFIG <- list(
-  standard_garch_engine = "manual",  # Use manual engine for standard GARCH
-  nf_garch_engine = "manual",        # Use manual engine for NF-GARCH
-  rugarch_results_dir = "results/rugarch-run",
-  manual_results_dir = "results/manual_results"
+  standard_garch_engine = "manual",
+  nf_garch_engine = "manual",
+  results_dir = "results/manual_results"
 )
 
 # =============================================================================
@@ -154,8 +153,7 @@ OUTPUT_PATHS <- list(
   stress_tests = "outputs/stress_tests",
   consolidated_results = "outputs/Consolidated_NF_GARCH_Results.xlsx",
   dissertation_results = "outputs/Dissertation_Consolidated_Results.xlsx",
-  # Engine-specific paths
-  rugarch_results = "results/rugarch_results",
+  # Results paths
   manual_results = "results/manual_results"
 )
 

@@ -14,7 +14,7 @@ setup_parallel <- function(n_cores = 4) {
 
 # Parallel asset processing
 process_assets_parallel <- function(assets, process_function, ...) {
-  results <- foreach(asset = assets, .packages = c("rugarch", "xts")) %dopar% {
+  results <- foreach(asset = assets, .packages = c("xts", "dplyr")) %dopar% {
     tryCatch({
       process_function(asset, ...)
     }, error = function(e) {
@@ -33,7 +33,7 @@ fit_models_parallel <- function(assets, models, data) {
   # Create combinations
   combinations <- expand.grid(asset = assets, model = models, stringsAsFactors = FALSE)
   
-  results <- foreach(i = 1:nrow(combinations), .packages = c("rugarch", "xts")) %dopar% {
+  results <- foreach(i = 1:nrow(combinations), .packages = c("xts", "dplyr")) %dopar% {
     asset <- combinations$asset[i]
     model <- combinations$model[i]
     
@@ -128,4 +128,5 @@ run_parallel_pipeline <- function(config) {
     cleanup_parallel(cl)
   })
 }
+
 
