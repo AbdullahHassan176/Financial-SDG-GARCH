@@ -90,12 +90,16 @@ fit_tgarch_manual <- function(returns, dist = c("norm", "std"), init = NULL) {
     })
   }
   
-  # Optimize
+  # Optimize with faster settings
   opt_result <- optim(
     par = init,
     fn = neg_ll,
     method = "BFGS",  # Use BFGS for better stability
-    control = list(maxit = 1000)
+    control = list(
+      maxit = 200,        # Reduced iterations for speed
+      reltol = 1e-4,      # Less strict tolerance
+      abstol = 1e-4       # Less strict absolute tolerance
+    )
   )
   
   # Check convergence

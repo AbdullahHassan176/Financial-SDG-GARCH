@@ -1,16 +1,16 @@
 #!/usr/bin/env Rscript
-# NF-GARCH Simulation and Forecasting (Fixed Version)
+# NF-GARCH Simulation and Forecasting
 # This script implements Normalizing Flow-enhanced GARCH models for financial time series
-# Supports both rugarch and manual engine implementations with robust error handling
+# Uses manual engine implementation
 
 # Load required libraries
-library(rugarch)
 library(xts)
 library(zoo)
 library(dplyr)
 library(tidyr)
 library(stringr)
 library(lubridate)
+library(openxlsx)
 
 # Set up error handling
 options(warn = 1)
@@ -60,7 +60,7 @@ tryCatch({
   rownames(raw_price_data) <- NULL
   raw_price_data <- raw_price_data %>% dplyr::select(Date, everything())
   
-  cat("✅ Data loaded successfully\n")
+  cat("OK: Data loaded successfully\n")
   cat("   Rows:", nrow(raw_price_data), "\n")
   cat("   Columns:", ncol(raw_price_data), "\n")
   
@@ -74,8 +74,8 @@ date_index <- raw_price_data$Date
 price_data_matrix <- raw_price_data[, !(names(raw_price_data) %in% "Date")]
 
 # Define asset tickers for equity and foreign exchange instruments
-equity_tickers <- c("NVDA", "MSFT", "PG", "CAT", "WMT", "AMZN")
-fx_names <- c("EURUSD", "GBPUSD", "GBPCNY", "USDZAR", "GBPZAR", "EURZAR")
+equity_tickers <- c("NVDA", "MSFT", "AMZN")
+fx_names <- c("EURUSD", "GBPUSD", "USDZAR")
 
 # Convert price series to XTS objects for time series analysis
 equity_xts <- lapply(equity_tickers, function(ticker) {
@@ -100,7 +100,7 @@ fx_xts <- lapply(fx_names, function(ticker) {
 names(fx_xts) <- fx_names
 fx_xts <- fx_xts[!sapply(fx_xts, is.null)]
 
-cat("✅ Asset data prepared\n")
+cat("OK: Asset data prepared\n")
 cat("   Equity assets:", length(equity_xts), "\n")
 cat("   FX assets:", length(fx_xts), "\n")
 
@@ -119,12 +119,13 @@ fx_returns     <- lapply(fx_xts,     function(x) diff(log(x))[-1, ])
 # Model Configuration and Data Splitting
 cat("Setting up model configurations...\n")
 
+# Model configurations - manual engine only
 model_configs <- list(
   sGARCH_norm  = list(model = "sGARCH", distribution = "norm", submodel = NULL),
   sGARCH_sstd  = list(model = "sGARCH", distribution = "sstd", submodel = NULL),
   gjrGARCH     = list(model = "gjrGARCH", distribution = "sstd", submodel = NULL),
   eGARCH       = list(model = "eGARCH", distribution = "sstd", submodel = NULL),
-  TGARCH       = list(model = "fGARCH", distribution = "sstd", submodel = "TGARCH")
+  TGARCH       = list(model = "TGARCH", distribution = "sstd", submodel = NULL)
 )
 
 # Data Splitting for Model Training and Evaluation
@@ -143,15 +144,30 @@ equity_test_returns  <- lapply(equity_returns, function(x) x[(get_split_index(x)
 cat("Implementing Time Series Cross-Validation for NF-GARCH...\n")
 
 # TS CV function for NF-GARCH with manual engine
+# Optimized: Increased step_size to reduce windows, added max_windows limit
 ts_cross_validate_nfgarch_manual <- function(returns, model_type, dist_type = "sstd", submodel = NULL, 
-                                             nf_residuals, window_size = 500, step_size = 50, forecast_horizon = 20) {
+                                             nf_residuals, window_size = 500, step_size = 500, forecast_horizon = 20, max_windows = 3) {
   # Perform sliding window time-series cross-validation for NF-GARCH with manual engine
   # This approach respects temporal ordering and provides robust performance estimates
   
   n <- nrow(returns)
   results <- list()
   
-  for (start_idx in seq(1, n - window_size - forecast_horizon, by = step_size)) {
+  # Generate all possible window start indices
+  all_start_indices <- seq(1, n - window_size - forecast_horizon, by = step_size)
+  
+  # Limit to max_windows if specified
+  if (!is.null(max_windows) && length(all_start_indices) > max_windows) {
+    # Select evenly spaced windows
+    selected_indices <- round(seq(1, length(all_start_indices), length.out = max_windows))
+    start_indices <- all_start_indices[selected_indices]
+  } else {
+    start_indices <- all_start_indices
+  }
+  
+  cat("TS CV: Processing", length(start_indices), "windows (optimized from", length(all_start_indices), "possible)\n")
+  
+  for (start_idx in start_indices) {
     # Define training and testing windows
     train_set <- returns[start_idx:(start_idx + window_size - 1)]
     test_set  <- returns[(start_idx + window_size):(start_idx + window_size + forecast_horizon - 1)]
@@ -180,15 +196,29 @@ ts_cross_validate_nfgarch_manual <- function(returns, model_type, dist_type = "s
       # Setup NF-GARCH simulation
       n_sim <- min(length(nf_residuals), length(test_set))
       if (n_sim < length(test_set)) {
-        message("⚠️ NF residuals too short for window ", start_idx)
+        message("WARNING: NF residuals too short for window ", start_idx)
         next
+      }
+      
+      # CRITICAL FIX: Ensure NF residuals are standardized before use
+      nf_resid_vec <- as.numeric(head(nf_residuals, n_sim))
+      nf_resid_vec <- nf_resid_vec[!is.na(nf_resid_vec)]
+      if (length(nf_resid_vec) < n_sim) {
+        message("WARNING: NF residuals contain NAs for window ", start_idx)
+        next
+      }
+      # Double-check standardization (should already be done, but ensure it)
+      resid_mean <- mean(nf_resid_vec, na.rm = TRUE)
+      resid_sd <- sd(nf_resid_vec, na.rm = TRUE)
+      if (abs(resid_mean) > 0.1 || abs(resid_sd - 1) > 0.1) {
+        nf_resid_vec <- (nf_resid_vec - resid_mean) / resid_sd
       }
       
       # Use engine_path for NF-GARCH simulation
       sim_result <- tryCatch({
         engine_path(
           fit, 
-          head(nf_residuals, n_sim), 
+          nf_resid_vec, 
           n_sim, 
           model_type, 
           submodel, 
@@ -273,7 +303,14 @@ for (config_name in names(model_configs)) {
 cat("Loading NF residuals...\n")
 
 tryCatch({
-  nf_files <- list.files("nf_generated_residuals", pattern = "*.csv", full.names = TRUE)
+  # Check both manual output directory and default directory
+  nf_dirs <- c("outputs/manual/nf_models", "nf_generated_residuals")
+  nf_files <- c()
+  for (dir in nf_dirs) {
+    if (dir.exists(dir)) {
+      nf_files <- c(nf_files, list.files(dir, pattern = "*_synthetic_residuals.csv", full.names = TRUE))
+    }
+  }
   
   if (length(nf_files) == 0) {
     cat("WARNING: No NF residual files found\n")
@@ -292,19 +329,52 @@ tryCatch({
       }
     }
   } else {
-    # Parse model and asset from file names
+    # Parse model and asset from file names (format: MODEL_ASSET_synthetic_residuals.csv)
     nf_residuals_map <- list()
     for (f in nf_files) {
       fname <- basename(f)
-      key <- stringr::str_replace(fname, "\\.csv$", "")
+      # Extract model and asset from filename (e.g., "eGARCH_AMZN_synthetic_residuals.csv" -> "eGARCH" and "AMZN")
+      fname_clean <- stringr::str_replace(fname, "_synthetic_residuals\\.csv$", "")
+      parts <- strsplit(fname_clean, "_")[[1]]
+      
+      # Match against possible keys
+      possible_keys <- c(
+        paste0(parts[1], "_", parts[2], "_residuals_synthetic"),  # eGARCH_AMZN_residuals_synthetic
+        paste0(parts[1], "_", parts[2]),                           # eGARCH_AMZN
+        fname_clean,                                                # eGARCH_AMZN
+        paste0(parts[1], "_fx_", parts[2], "_residuals_synthetic"), # eGARCH_fx_AMZN_residuals_synthetic
+        paste0(parts[1], "_equity_", parts[2], "_residuals_synthetic") # eGARCH_equity_AMZN_residuals_synthetic
+      )
       
       tryCatch({
         residuals_data <- read.csv(f)
         
-        if ("residual" %in% names(residuals_data)) {
-          nf_residuals_map[[key]] <- residuals_data$residual
+        residual_values <- if ("residual" %in% names(residuals_data)) {
+          residuals_data$residual
+        } else if (ncol(residuals_data) > 0) {
+          residuals_data[[1]]
         } else {
-          nf_residuals_map[[key]] <- residuals_data[[1]]
+          next
+        }
+        
+        # CRITICAL FIX: Standardize NF residuals (mean ≈ 0, SD ≈ 1)
+        # This fixes the improper residual standardization issue
+        residual_values <- as.numeric(residual_values)
+        residual_values <- residual_values[!is.na(residual_values)]
+        if (length(residual_values) > 0) {
+          resid_mean <- mean(residual_values, na.rm = TRUE)
+          resid_sd <- sd(residual_values, na.rm = TRUE)
+          if (!is.finite(resid_sd) || resid_sd == 0) {
+            cat("WARNING: NF residuals have zero/invalid variance for", fname_clean, "- skipping\n")
+            next
+          }
+          residual_values <- (residual_values - resid_mean) / resid_sd
+          cat("Standardized NF residuals for", fname_clean, ": Mean =", round(mean(residual_values), 6), "SD =", round(sd(residual_values), 6), "\n")
+        }
+        
+        # Store under all possible keys for flexible lookup
+        for (key in possible_keys) {
+          nf_residuals_map[[key]] <- residual_values
         }
       }, error = function(e) {
         cat("WARNING: Failed to load NF residuals from", fname, ":", e$message, "\n")
@@ -312,7 +382,7 @@ tryCatch({
     }
   }
   
-  cat("✅ Loaded", length(nf_residuals_map), "NF residual files\n")
+  cat("OK: Loaded", length(nf_residuals_map), "NF residual files\n")
   
 }, error = function(e) {
   cat("ERROR: Failed to load NF residuals:", e$message, "\n")
@@ -335,21 +405,37 @@ fit_nf_garch <- function(asset_name, asset_returns, model_config, nf_resid) {
     )
     
     if (!engine_converged(fit)) {
-      cat("❌ Fit failed for", asset_name, model_config[["model"]], "\n")
+      cat("ERROR: Fit failed for", asset_name, model_config[["model"]], "\n")
       return(NULL)
     }
     
     # Setup simulation
     n_sim <- floor(length(asset_returns) / 2)
     if (length(nf_resid) < n_sim) {
-      cat("⚠️ NF residuals too short for", asset_name, "-", model_config[["model"]], "\n")
+      cat("WARNING: NF residuals too short for", asset_name, "-", model_config[["model"]], "\n")
       return(NULL)
+    }
+    
+    # CRITICAL FIX: Ensure NF residuals are standardized before use
+    nf_resid_vec <- as.numeric(head(nf_resid, n_sim))
+    nf_resid_vec <- nf_resid_vec[!is.na(nf_resid_vec)]
+    if (length(nf_resid_vec) < n_sim) {
+      cat("WARNING: NF residuals contain NAs for", asset_name, "-", model_config[["model"]], "\n")
+      return(NULL)
+    }
+    # Double-check standardization (should already be done, but ensure it)
+    resid_mean <- mean(nf_resid_vec, na.rm = TRUE)
+    resid_sd <- sd(nf_resid_vec, na.rm = TRUE)
+    if (abs(resid_mean) > 0.1 || abs(resid_sd - 1) > 0.1) {
+      nf_resid_vec <- (nf_resid_vec - resid_mean) / resid_sd
+      cat("Re-standardized NF residuals for", asset_name, model_config[["model"]], 
+          ": Mean =", round(mean(nf_resid_vec), 6), "SD =", round(sd(nf_resid_vec), 6), "\n")
     }
     
     # Use engine_path for simulation
     sim_result <- engine_path(
       fit, 
-      head(nf_resid, n_sim), 
+      nf_resid_vec, 
       n_sim, 
       model_config[["model"]], 
       model_config[["submodel"]], 
@@ -376,7 +462,7 @@ fit_nf_garch <- function(asset_name, asset_returns, model_config, nf_resid) {
       SplitType = "Chrono"
     ))
   }, error = function(e) {
-    cat("❌ Error for", asset_name, model_config[["model"]], ":", conditionMessage(e), "\n")
+    cat("ERROR: Error for", asset_name, model_config[["model"]], ":", conditionMessage(e), "\n")
     return(NULL)
   })
 }
@@ -407,7 +493,7 @@ for (config_name in names(model_configs)) {
     }
     
     if (is.null(key)) {
-      cat("❌ Skipped:", asset, config_name, "- No synthetic residuals found.\n")
+      cat("ERROR: Skipped:", asset, config_name, "- No synthetic residuals found.\n")
       next
     }
     
@@ -433,7 +519,7 @@ for (config_name in names(model_configs)) {
     }
     
     if (is.null(key)) {
-      cat("❌ Skipped:", asset, config_name, "- No synthetic residuals found.\n")
+      cat("ERROR: Skipped:", asset, config_name, "- No synthetic residuals found.\n")
       next
     }
     
@@ -451,20 +537,24 @@ valid_fx_returns <- fx_returns[sapply(fx_returns, function(x) nrow(x) > 520 && s
 valid_equity_returns <- equity_returns[sapply(equity_returns, function(x) nrow(x) > 520 && sd(x, na.rm = TRUE) > 0)]
 
 # Helper to run all NF-GARCH CV models with manual engine
+# Optimized: Reduced forecast_horizon and added max_windows limit
 run_all_nfgarch_cv_models_manual <- function(returns_list, model_configs, nf_residuals_map, 
-                                            window_size = 500, forecast_horizon = 40) {
+                                            window_size = 500, forecast_horizon = 20, max_windows = 3) {
   cv_results_all <- list()
   
   for (model_name in names(model_configs)) {
     cfg <- model_configs[[model_name]]
-    message("⚙️ Running NF-GARCH TS CV for model: ", model_name, " (", engine, " engine)")
+    message("Running NF-GARCH TS CV for model: ", model_name, " (", engine, " engine)")
     
     result <- lapply(names(returns_list), function(asset_name) {
       # Find corresponding NF residuals
       possible_keys <- c(
         paste0(model_name, "_", asset_name, "_residuals_synthetic"),
         paste0(model_name, "_fx_", asset_name, "_residuals_synthetic"),
-        paste0(model_name, "_equity_", asset_name, "_residuals_synthetic")
+        paste0(model_name, "_equity_", asset_name, "_residuals_synthetic"),
+        paste0(model_name, "_", asset_name, "_residuals_synthetic.csv"),
+        paste0(model_name, "_fx_", asset_name, "_residuals_synthetic.csv"),
+        paste0(model_name, "_equity_", asset_name, "_residuals_synthetic.csv")
       )
       
       key <- NULL
@@ -476,7 +566,7 @@ run_all_nfgarch_cv_models_manual <- function(returns_list, model_configs, nf_res
       }
       
       if (is.null(key)) {
-        message("❌ No NF residuals found for ", asset_name, " - ", model_name)
+        message("ERROR: No NF residuals found for ", asset_name, " - ", model_name)
         return(NULL)
       }
       
@@ -487,7 +577,8 @@ run_all_nfgarch_cv_models_manual <- function(returns_list, model_configs, nf_res
         submodel = cfg$submodel,
         nf_residuals = nf_residuals_map[[key]],
         window_size = window_size,
-        forecast_horizon = forecast_horizon
+        forecast_horizon = forecast_horizon,
+        max_windows = max_windows
       )
     })
     
@@ -497,7 +588,7 @@ run_all_nfgarch_cv_models_manual <- function(returns_list, model_configs, nf_res
     # Remove nulls
     result <- result[!sapply(result, is.null)]
     
-    message("✅ NF-GARCH TS CV fits found for assets: ", paste(names(result), collapse = ", "))
+    message("OK: NF-GARCH TS CV fits found for assets: ", paste(names(result), collapse = ", "))
     
     cv_results_all[[model_name]] <- result
   }
@@ -520,29 +611,55 @@ Fitted_EQ_NFGARCH_TS_CV_models <- run_all_nfgarch_cv_models_manual(
 Fitted_NFGARCH_TS_CV_models <- data.frame()
 
 for (model_name in names(Fitted_FX_NFGARCH_TS_CV_models)) {
+  # FX results - add asset name to each data frame before combining
   fx_results <- tryCatch({
-    do.call(rbind, Fitted_FX_NFGARCH_TS_CV_models[[model_name]])
+    fx_list <- Fitted_FX_NFGARCH_TS_CV_models[[model_name]]
+    if (is.null(fx_list) || length(fx_list) == 0) {
+      return(NULL)
+    }
+    # Add asset name to each asset's results before combining
+    fx_list_with_asset <- lapply(names(fx_list), function(asset_name) {
+      df <- fx_list[[asset_name]]
+      if (!is.null(df) && nrow(df) > 0) {
+        df$Asset <- asset_name
+        df$AssetType <- "FX"
+      }
+      return(df)
+    })
+    # Combine all FX results
+    do.call(rbind, fx_list_with_asset)
   }, error = function(e) {
-    message("⚠️ FX NF-GARCH CV results failed for: ", model_name, " - ", e$message)
+    message("WARNING: FX NF-GARCH CV results failed for: ", model_name, " - ", e$message)
     return(NULL)
   })
   
+  # Equity results - add asset name to each data frame before combining
   eq_results <- tryCatch({
-    do.call(rbind, Fitted_EQ_NFGARCH_TS_CV_models[[model_name]])
+    eq_list <- Fitted_EQ_NFGARCH_TS_CV_models[[model_name]]
+    if (is.null(eq_list) || length(eq_list) == 0) {
+      return(NULL)
+    }
+    # Add asset name to each asset's results before combining
+    eq_list_with_asset <- lapply(names(eq_list), function(asset_name) {
+      df <- eq_list[[asset_name]]
+      if (!is.null(df) && nrow(df) > 0) {
+        df$Asset <- asset_name
+        df$AssetType <- "Equity"
+      }
+      return(df)
+    })
+    # Combine all Equity results
+    do.call(rbind, eq_list_with_asset)
   }, error = function(e) {
-    message("⚠️ EQ NF-GARCH CV results failed for: ", model_name, " - ", e$message)
+    message("WARNING: EQ NF-GARCH CV results failed for: ", model_name, " - ", e$message)
     return(NULL)
   })
   
-  if (!is.null(fx_results)) {
-    fx_results$Asset <- names(Fitted_FX_NFGARCH_TS_CV_models[[model_name]])
-    fx_results$AssetType <- "FX"
+  if (!is.null(fx_results) && nrow(fx_results) > 0) {
     Fitted_NFGARCH_TS_CV_models <- bind_rows(Fitted_NFGARCH_TS_CV_models, fx_results)
   }
   
-  if (!is.null(eq_results)) {
-    eq_results$Asset <- names(Fitted_EQ_NFGARCH_TS_CV_models[[model_name]])
-    eq_results$AssetType <- "Equity"
+  if (!is.null(eq_results) && nrow(eq_results) > 0) {
     Fitted_NFGARCH_TS_CV_models <- bind_rows(Fitted_NFGARCH_TS_CV_models, eq_results)
   }
 }
@@ -704,7 +821,7 @@ if (length(nf_results_chrono) > 0) {
     # Save workbook
     saveWorkbook(wb, output_file, overwrite = TRUE)
     
-    cat("✅ NF-GARCH results saved to:", output_file, "\n")
+    cat("OK: NF-GARCH results saved to:", output_file, "\n")
     cat("   Total chronological models:", nrow(nf_results_df), "\n")
     cat("   Successful chronological fits:", sum(!is.na(nf_results_df$AIC)), "\n")
     if (nrow(Fitted_NFGARCH_TS_CV_models) > 0) {
@@ -725,7 +842,7 @@ if (length(nf_results_chrono) > 0) {
   })
   
 } else {
-  cat("❌ No NF-GARCH results generated\n")
+  cat("ERROR: No NF-GARCH results generated\n")
 }
 
 cat("\n=== NF-GARCH SIMULATION COMPLETE ===\n")

@@ -86,7 +86,7 @@ def main():
     # Summary
     print("\n=== INSTALLATION SUMMARY ===\n")
     if len(missing_packages) == 0 and len(failed_packages) == 0:
-        print("🎉 ALL PYTHON PACKAGES INSTALLED SUCCESSFULLY!")
+        print("ALL PYTHON PACKAGES INSTALLED SUCCESSFULLY!")
         print("Your Python environment is ready for the NF-GARCH pipeline.\n")
         print("Next steps:")
         print("1. Run R installation: Rscript quick_install.R")

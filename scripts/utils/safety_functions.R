@@ -30,24 +30,94 @@ safe_write_csv <- function(data, file_path, ...) {
   })
 }
 
-# Safe model fitting
+# Safe model fitting (DEPRECATED - rugarch not used)
+# Kept for backwards compatibility but will error if called
 safe_ugarchfit <- function(spec, data, ...) {
-  tryCatch({
-    ugarchfit(spec = spec, data = data, ...)
-  }, error = function(e) {
-    warning("GARCH fitting failed: ", conditionMessage(e))
-    return(NULL)
-  })
+  stop("rugarch engine has been removed. Use manual engine with engine_fit() instead.")
 }
 
-# Safe forecasting
+# Safe forecasting (DEPRECATED - rugarch not used)
+# Kept for backwards compatibility but will error if called
 safe_ugarchforecast <- function(fit, n.ahead = 1, ...) {
-  tryCatch({
-    ugarchforecast(fit, n.ahead = n.ahead, ...)
-  }, error = function(e) {
-    warning("GARCH forecasting failed: ", conditionMessage(e))
-    return(NULL)
-  })
+  stop("rugarch engine has been removed. Use manual engine with engine_forecast() instead.")
+}
+
+# =============================================================================
+# DATA SPLITTING UTILITIES
+# =============================================================================
+
+# Chronological split function (65/35 split)
+get_chronological_split <- function(data, split_ratio = 0.65) {
+  n <- length(data)
+  split_idx <- floor(n * split_ratio)
+  
+  return(list(
+    train = data[1:split_idx],
+    test = data[(split_idx + 1):n],
+    split_index = split_idx,
+    split_ratio = split_ratio
+  ))
+}
+
+# Time Series Cross-Validation function - OPTIMIZED for speed
+get_tscv_splits <- function(data, window_size = 500, step_size = 150, forecast_horizon = 20) {
+  n <- length(data)
+  splits <- list()
+  
+  # Calculate optimal number of non-overlapping windows (3-4 windows max)
+  max_windows <- 4
+  total_available <- n - window_size - forecast_horizon
+  optimal_step <- max(step_size, floor(total_available / max_windows))
+  
+  for (start_idx in seq(1, n - window_size - forecast_horizon, by = optimal_step)) {
+    train_end <- start_idx + window_size - 1
+    test_start <- start_idx + window_size
+    test_end <- start_idx + window_size + forecast_horizon - 1
+    
+    if (test_end <= n) {
+      splits[[length(splits) + 1]] <- list(
+        train = data[start_idx:train_end],
+        test = data[test_start:test_end],
+        window_start = start_idx,
+        window_end = train_end,
+        test_start = test_start,
+        test_end = test_end
+      )
+    }
+    
+    # Limit to maximum number of windows for speed
+    if (length(splits) >= max_windows) break
+  }
+  
+  return(splits)
+}
+
+# Apply analysis to both splits - OPTIMIZED for speed
+apply_dual_split_analysis <- function(data, analysis_function, split_name = "analysis", 
+                                     window_size = 500, step_size = 150, forecast_horizon = 20) {
+  results <- list()
+  
+  # Chronological split analysis
+  cat("Running chronological split analysis for", split_name, "...\n")
+  chrono_split <- get_chronological_split(data)
+  results$chronological <- analysis_function(chrono_split$train, chrono_split$test, "chronological")
+  
+  # Time Series Cross-Validation analysis
+  cat("Running time series cross-validation analysis for", split_name, "...\n")
+  tscv_splits <- get_tscv_splits(data, window_size, step_size, forecast_horizon)
+  
+  if (length(tscv_splits) > 0) {
+    tscv_results <- lapply(tscv_splits, function(split) {
+      analysis_function(split$train, split$test, "tscv")
+    })
+    results$tscv <- tscv_results
+    cat("Completed", length(tscv_results), "TS CV windows for", split_name, "\n")
+  } else {
+    cat("Warning: No valid TS CV splits found for", split_name, "\n")
+    results$tscv <- list()
+  }
+  
+  return(results)
 }
 
 # Safe directory creation
@@ -107,7 +177,7 @@ validate_data <- function(data, name = "data") {
     warning("Columns with all NA values: ", paste(names(data)[na_cols], collapse = ", "))
   }
   
-  cat("✓ Data validation passed for:", name, "(", nrow(data), "rows,", ncol(data), "cols)\n")
+  cat("[OK] Data validation passed for:", name, "(", nrow(data), "rows,", ncol(data), "cols)\n")
   return(TRUE)
 }
 
@@ -220,4 +290,4 @@ with_error_handling <- function(expr, error_message = "Operation failed") {
   })
 }
 
-cat("✓ Safety functions loaded\n")
+cat("[OK] Safety functions loaded\n")

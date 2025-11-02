@@ -1,393 +1,495 @@
 @echo off
-REM Modular Pipeline Execution Script
-REM Checkpointed version of run_all.bat with component isolation
-REM Allows independent execution of pipeline components with checkpointing
+REM Financial-SDG-GARCH - Modular Pipeline with Checkpointing and Logging
+REM Allows step-by-step execution with checkpointing, detailed logging, and resume capability
+REM Does everything that run_all.bat does but with modular approach
+
+setlocal enabledelayedexpansion
+
+REM =============================================================================
+REM CONFIGURATION
+REM =============================================================================
+
+set "CHECKPOINT_DIR=checkpoints"
+set "LOG_DIR=logs"
+set "STATUS_FILE=%CHECKPOINT_DIR%\pipeline_status.json"
+set "LOG_FILE=%LOG_DIR%\pipeline_%date:~-4,4%%date:~-7,2%%date:~-10,2%_%time:~0,2%%time:~3,2%%time:~6,2%.log"
+set "LOG_FILE=%LOG_FILE: =0%"
+set "RSCRIPT=C:\Program Files\R\R-4.5.1\bin\Rscript.exe"
+
+REM Create directories
+if not exist "%CHECKPOINT_DIR%" mkdir "%CHECKPOINT_DIR%"
+if not exist "%LOG_DIR%" mkdir "%LOG_DIR%"
+
+REM =============================================================================
+REM INITIALIZATION
+REM =============================================================================
 
 echo ========================================
-echo MODULAR NF-GARCH PIPELINE
+echo FINANCIAL-SDG-GARCH - MODULAR PIPELINE
 echo ========================================
+echo.
+echo Modular execution with checkpointing and detailed logging
+echo.
+echo Features:
+echo   - Step-by-step execution with checkpoints
+echo   - Resume from any completed step
+echo   - Detailed logging to: %LOG_FILE%
+echo   - Progress tracking and status saving
+echo   - Ability to skip or retry individual steps
+echo.
+echo Optimizations:
+echo   - Assets: 6 (EURUSD, GBPUSD, USDZAR, NVDA, MSFT, AMZN)
+echo   - Models: 4 (sGARCH, eGARCH, TGARCH, gjrGARCH)
+echo   - CV: 3 folds, max 3 windows
+echo   - NF Training: 75 epochs, optimized architecture
+echo   - Seed: 123 (for reproducibility)
+echo.
+echo Expected time: 45-90 minutes (depending on steps)
+echo ========================================
+echo.
 
-REM Initialize checkpointing
-if not exist "checkpoints" mkdir checkpoints
-if not exist "checkpoints\pipeline_status.json" (
-    echo {} > checkpoints\pipeline_status.json
+REM Initialize log file
+(
+    echo === MODULAR PIPELINE LOG ===
+    echo Started: %date% %time%
+    echo Log file: %LOG_FILE%
+    echo Checkpoint file: %STATUS_FILE%
+    echo.
+) > "%LOG_FILE%"
+
+REM Check for checkpoint file
+set "RESUME_MODE=0"
+if exist "%STATUS_FILE%" (
+    echo Found checkpoint file: %STATUS_FILE%
+    echo.
+    echo Current pipeline status:
+    %RSCRIPT% scripts\utils\checkpoint_manager.R status
+    echo.
+    set /p resume="Resume from checkpoint? (Y/N): "
+    if /i "!resume!"=="Y" (
+        set "RESUME_MODE=1"
+        echo Resuming from checkpoint (will skip completed steps).
+        echo [%date% %time%] Resuming from checkpoint >> "%LOG_FILE%"
+    ) else (
+        set "RESUME_MODE=0"
+        echo Starting fresh (existing checkpoints will be cleared).
+        %RSCRIPT% -e "source('scripts/utils/checkpoint_manager.R'); clear_all_checkpoints()" 2>nul
+        echo [%date% %time%] Starting fresh pipeline >> "%LOG_FILE%"
+    )
+    echo.
 )
-if not exist "results\consolidated" mkdir results\consolidated
 
-REM Checkpoint management functions
-:checkpoint_completed
-set component=%1
-echo [CHECKPOINT] %component% completed at %date% %time%
-Rscript -e "library(jsonlite); if(file.exists('checkpoints/pipeline_status.json')) { cp <- fromJSON('checkpoints/pipeline_status.json') } else { cp <- list() }; cp[['%component%']] <- list(status='completed', timestamp=Sys.time(), error=NULL); writeLines(toJSON(cp, auto_unbox=TRUE, pretty=TRUE), 'checkpoints/pipeline_status.json')"
+REM =============================================================================
+REM HELPER FUNCTIONS
+REM =============================================================================
+
+REM Check if step is completed
+:is_completed
+set "STEP_NUM=%~1"
+set "STEP_COMPLETE=0"
+set "CHECK_RESULT="
+if exist "%STATUS_FILE%" (
+    for /f "delims=" %%i in ('%RSCRIPT% scripts\utils\checkpoint_manager.R check %STEP_NUM% 2^>nul') do set "CHECK_RESULT=%%i"
+    if "!CHECK_RESULT!"=="COMPLETED" (
+        set "STEP_COMPLETE=1"
+    )
+)
+set "%~2=!STEP_COMPLETE!"
 goto :eof
 
-:checkpoint_failed
-set component=%1
-set error_msg=%2
-echo [CHECKPOINT] %component% failed at %date% %time% - %error_msg%
-Rscript -e "library(jsonlite); if(file.exists('checkpoints/pipeline_status.json')) { cp <- fromJSON('checkpoints/pipeline_status.json') } else { cp <- list() }; cp[['%component%']] <- list(status='failed', timestamp=Sys.time(), error='%error_msg%'); writeLines(toJSON(cp, auto_unbox=TRUE, pretty=TRUE), 'checkpoints/pipeline_status.json')"
+REM Log message
+:log_message
+echo [%date% %time%] %~1 >> "%LOG_FILE%"
 goto :eof
 
-REM Component execution functions
-:run_component
-set component=%1
+REM Save checkpoint
+:save_checkpoint
+set "STEP_NUM=%~1"
+set "STEP_NAME=%~2"
+set "STATUS=%~3"
+set "ERROR_MSG=%~4"
+if "!ERROR_MSG!"=="" set "ERROR_MSG=NULL"
+
+%RSCRIPT% scripts\utils\checkpoint_manager.R save %STEP_NUM% "!STEP_NAME!" !STATUS! "!ERROR_MSG!" 2>nul
+echo [%date% %time%] Checkpoint saved: Step %STEP_NUM% - !STEP_NAME! - !STATUS! >> "%LOG_FILE%"
+goto :eof
+
+REM Execute step with checkpointing and logging
+:execute_step
+set "STEP_NUM=%~1"
+set "STEP_NAME=%~2"
+set "STEP_DESC=%~3"
+set "STEP_CMD=%~4"
+set "STEP_FILE=%~5"
+set "STEP_SKIPABLE=%~6"
+
 echo.
 echo ========================================
-echo RUNNING COMPONENT: %component%
+echo STEP %STEP_NUM%: %STEP_NAME%
 echo ========================================
+echo.
+echo %STEP_DESC%
+echo.
 
-if "%component%"=="pipeline_diagnostic" (
-    echo Running pipeline diagnostic...
-    Rscript scripts\utils\pipeline_diagnostic.R
-    if %errorlevel% neq 0 (
-        call :checkpoint_failed "pipeline_diagnostic" "Pipeline diagnostic failed"
-        echo ERROR: Pipeline diagnostic failed
-        exit /b 1
-    ) else (
-        call :checkpoint_completed "pipeline_diagnostic"
+REM Check if already completed (if resume mode)
+if "%RESUME_MODE%"=="1" (
+    call :is_completed %STEP_NUM% STEP_COMPLETE_CHECK
+    if !STEP_COMPLETE_CHECK! equ 1 (
+        echo [OK] Step %STEP_NUM% already completed (skipping)
+        call :log_message "Step %STEP_NUM% skipped (already completed)"
+        goto :step_complete
     )
-) else if "%component%"=="eda" (
-    echo Running EDA...
-    Rscript scripts\eda\eda_summary_stats.R
-    if %errorlevel% neq 0 (
-        call :checkpoint_failed "eda" "EDA failed"
-        echo ERROR: EDA failed
-        exit /b 1
+)
+
+REM Log step start
+call :log_message "========================================"
+call :log_message "Starting Step %STEP_NUM%: %STEP_NAME%"
+call :log_message "Description: %STEP_DESC%"
+call :log_message "Command: %STEP_CMD%"
+if not "%STEP_FILE%"=="" (
+    call :log_message "Expected output: %STEP_FILE%"
+)
+call :log_message "----------------------------------------"
+
+REM Display execution details
+echo Executing: %STEP_CMD%
+if not "%STEP_FILE%"=="" (
+    echo Expected output: %STEP_FILE%
+)
+echo.
+echo [Logging to: %LOG_FILE%]
+echo.
+
+REM Record start time
+set "START_TIME=%time%"
+
+REM Execute command
+%STEP_CMD%
+set "STEP_ERRORLEVEL=!errorlevel!"
+
+REM Record end time
+set "END_TIME=%time%"
+
+REM Check result
+if !STEP_ERRORLEVEL! neq 0 (
+    echo.
+    echo [ERROR] Step %STEP_NUM% failed with error code !STEP_ERRORLEVEL!
+    echo.
+    echo Check log file for details: %LOG_FILE%
+    echo.
+    call :log_message "Step %STEP_NUM% FAILED with error code !STEP_ERRORLEVEL!"
+    call :log_message "Start time: %START_TIME%"
+    call :log_message "End time: %END_TIME%"
+    call :log_message "Duration: (check manually)"
+    
+    REM Save failed checkpoint
+    call :save_checkpoint %STEP_NUM% "%STEP_NAME%" "failed" "Error code: !STEP_ERRORLEVEL!"
+    
+    REM Handle based on skipable flag
+    if "%STEP_SKIPABLE%"=="1" (
+        echo.
+        echo [WARNING] This step is optional - continuing to next step...
+        call :log_message "Step %STEP_NUM% failed but is optional - continuing"
+        goto :step_complete
     ) else (
-        call :checkpoint_completed "eda"
-    )
-) else if "%component%"=="garch_fitting" (
-    echo Fitting GARCH models with Time Series Cross-Validation...
-    Rscript scripts\model_fitting\fit_garch_models.R
-    if %errorlevel% neq 0 (
-        call :checkpoint_failed "garch_fitting" "GARCH fitting failed"
-        echo ERROR: GARCH fitting failed
-        exit /b 1
-    ) else (
-        call :checkpoint_completed "garch_fitting"
-    )
-) else if "%component%"=="residual_extraction" (
-    echo Extracting residuals...
-    Rscript scripts\model_fitting\extract_residuals.R
-    if %errorlevel% neq 0 (
-        call :checkpoint_failed "residual_extraction" "Residual extraction failed"
-        echo ERROR: Residual extraction failed
-        exit /b 1
-    ) else (
-        call :checkpoint_completed "residual_extraction"
-    )
-) else if "%component%"=="nf_training" (
-    echo Training NF models...
-    python scripts\model_fitting\train_nf_models.py
-    if %errorlevel% neq 0 (
-        call :checkpoint_failed "nf_training" "NF training failed"
-        echo ERROR: NF training failed
-        exit /b 1
-    ) else (
-        call :checkpoint_completed "nf_training"
-    )
-) else if "%component%"=="nf_evaluation" (
-    echo Evaluating NF models...
-    python scripts\model_fitting\evaluate_nf_fit.py
-    if %errorlevel% neq 0 (
-        call :checkpoint_failed "nf_evaluation" "NF evaluation failed"
-        echo ERROR: NF evaluation failed
-        exit /b 1
-    ) else (
-        call :checkpoint_completed "nf_evaluation"
-    )
-) else if "%component%"=="nf_garch_manual" (
-    echo Running NF-GARCH simulation (MANUAL engine)...
-    Rscript scripts\simulation_forecasting\simulate_nf_garch_engine.R --engine manual
-    if %errorlevel% neq 0 (
-        call :checkpoint_failed "nf_garch_manual" "Manual engine simulation failed"
-        echo ERROR: Manual engine simulation failed
-        exit /b 1
-    ) else (
-        call :checkpoint_completed "nf_garch_manual"
-    )
-) else if "%component%"=="forecasting" (
-    echo Running forecasts...
-    Rscript scripts\simulation_forecasting\forecast_garch_variants.R
-    if %errorlevel% neq 0 (
-        call :checkpoint_failed "forecasting" "Forecasting failed"
-        echo ERROR: Forecasting failed
-        exit /b 1
-    ) else (
-        call :checkpoint_completed "forecasting"
-    )
-) else if "%component%"=="forecast_evaluation" (
-    echo Evaluating forecasts...
-    Rscript scripts\evaluation\wilcoxon_winrate_analysis.R
-    if %errorlevel% neq 0 (
-        call :checkpoint_failed "forecast_evaluation" "Forecast evaluation failed"
-        echo ERROR: Forecast evaluation failed
-        exit /b 1
-    ) else (
-        call :checkpoint_completed "forecast_evaluation"
-    )
-) else if "%component%"=="stylized_facts" (
-    echo Running stylized fact tests...
-    Rscript scripts\evaluation\stylized_fact_tests.R
-    if %errorlevel% neq 0 (
-        call :checkpoint_failed "stylized_facts" "Stylized fact tests failed"
-        echo ERROR: Stylized fact tests failed
-        exit /b 1
-    ) else (
-        call :checkpoint_completed "stylized_facts"
-    )
-) else if "%component%"=="var_backtesting" (
-    echo Running VaR backtesting...
-    Rscript scripts\evaluation\var_backtesting.R
-    if %errorlevel% neq 0 (
-        call :checkpoint_failed "var_backtesting" "VaR backtesting failed"
-        echo ERROR: VaR backtesting failed
-        exit /b 1
-    ) else (
-        call :checkpoint_completed "var_backtesting"
-    )
-) else if "%component%"=="nfgarch_var_backtesting" (
-    echo Running NFGARCH VaR backtesting...
-    Rscript scripts\evaluation\nfgarch_var_backtesting.R
-    if %errorlevel% neq 0 (
-        call :checkpoint_failed "nfgarch_var_backtesting" "NFGARCH VaR backtesting failed"
-        echo ERROR: NFGARCH VaR backtesting failed
-        exit /b 1
-    ) else (
-        call :checkpoint_completed "nfgarch_var_backtesting"
-    )
-) else if "%component%"=="stress_testing" (
-    echo Running stress tests...
-    Rscript scripts\stress_tests\evaluate_under_stress.R
-    if %errorlevel% neq 0 (
-        call :checkpoint_failed "stress_testing" "Stress tests failed"
-        echo ERROR: Stress tests failed
-        exit /b 1
-    ) else (
-        call :checkpoint_completed "stress_testing"
-    )
-) else if "%component%"=="nfgarch_stress_testing" (
-    echo Running NFGARCH stress testing...
-    Rscript scripts\evaluation\nfgarch_stress_testing.R
-    if %errorlevel% neq 0 (
-        call :checkpoint_failed "nfgarch_stress_testing" "NFGARCH stress testing failed"
-        echo ERROR: NFGARCH stress testing failed
-        exit /b 1
-    ) else (
-        call :checkpoint_completed "nfgarch_stress_testing"
-    )
-) else if "%component%"=="final_summary" (
-    echo Generating final summary...
-    Rscript -e "library(openxlsx); cat('=== NF-GARCH PIPELINE SUMMARY ===\n'); cat('Date:', Sys.Date(), '\n'); cat('Time:', Sys.time(), '\n\n'); output_files <- list.files('outputs', recursive = TRUE, full.names = TRUE); cat('Output files generated:', length(output_files), '\n'); nf_files <- list.files('nf_generated_residuals', pattern = '*.csv', full.names = TRUE); cat('NF residual files:', length(nf_files), '\n'); result_files <- list.files(pattern = '*Results*.xlsx', full.names = TRUE); cat('Result files:', length(result_files), '\n'); cat('\n=== PIPELINE COMPLETE ===\n')"
-    if %errorlevel% neq 0 (
-        call :checkpoint_failed "final_summary" "Final summary generation failed"
-        echo ERROR: Final summary generation failed
-        exit /b 1
-    ) else (
-        call :checkpoint_completed "final_summary"
-    )
-) else if "%component%"=="consolidation" (
-    echo Consolidating all results into comprehensive Excel document...
-    Rscript -e "source('scripts/core/consolidation.R'); consolidate_all_results(output_dir = 'results/consolidated')"
-    if %errorlevel% neq 0 (
-        call :checkpoint_failed "consolidation" "Results consolidation failed"
-        echo ERROR: Results consolidation failed
-        exit /b 1
-    ) else (
-        call :checkpoint_completed "consolidation"
-    )
-) else if "%component%"=="validation" (
-    echo Validating pipeline results...
-    python scripts\utils\validate_pipeline.py
-    if %errorlevel% neq 0 (
-        call :checkpoint_failed "validation" "Pipeline validation failed"
-        echo ERROR: Pipeline validation failed
-        exit /b 1
-    ) else (
-        call :checkpoint_completed "validation"
-    )
-) else if "%component%"=="appendix_log" (
-    echo Generating appendix log...
-    python scripts\utils\generate_appendix_log.py
-    if %errorlevel% neq 0 (
-        call :checkpoint_failed "appendix_log" "Appendix log generation failed"
-        echo ERROR: Appendix log generation failed
-        exit /b 1
-    ) else (
-        call :checkpoint_completed "appendix_log"
+        echo.
+        set /p continue="Step failed. Continue to next step anyway? (Y/N): "
+        if /i not "!continue!"=="Y" (
+            echo Pipeline stopped by user.
+            call :log_message "Pipeline stopped by user at Step %STEP_NUM%"
+            pause
+            exit /b !STEP_ERRORLEVEL!
+        ) else (
+            call :log_message "User chose to continue after Step %STEP_NUM% failure"
+        )
     )
 ) else (
-    echo ERROR: Unknown component '%component%'
-    echo Available components:
-    echo   pipeline_diagnostic, eda, garch_fitting, residual_extraction
-    echo   nf_training, nf_evaluation, nf_garch_manual, forecasting
-    echo   forecast_evaluation, stylized_facts, var_backtesting
-    echo   nfgarch_var_backtesting, stress_testing, nfgarch_stress_testing
-    echo   final_summary, consolidation, validation, appendix_log
-    exit /b 1
+    echo.
+    echo [OK] Step %STEP_NUM% completed successfully
+    call :log_message "Step %STEP_NUM% completed successfully"
+    call :log_message "Start time: %START_TIME%"
+    call :log_message "End time: %END_TIME%"
+    
+    REM Save successful checkpoint
+    call :save_checkpoint %STEP_NUM% "%STEP_NAME%" "completed"
+    
+    REM Verify output file exists if specified
+    if not "%STEP_FILE%"=="" (
+        if exist "%STEP_FILE%" (
+            echo   Verified output: %STEP_FILE%
+            call :log_message "Verified output exists: %STEP_FILE%"
+            
+            REM Get file size for logging
+            for %%F in ("%STEP_FILE%") do (
+                call :log_message "Output file size: %%~zF bytes"
+            )
+        ) else (
+            echo   [WARNING] Expected output file not found: %STEP_FILE%
+            call :log_message "WARNING: Expected output not found: %STEP_FILE%"
+        )
+    )
 )
+
+:step_complete
+call :log_message "========================================"
+echo.
+set /p continue="Press Enter to continue to next step (or Ctrl+C to stop)..."
+echo.
 goto :eof
 
-REM Main execution logic
-if "%1"=="" (
-    echo Running full modular pipeline...
-    echo.
-    echo ========================================
-    echo FULL PIPELINE EXECUTION
-    echo ========================================
-    echo.
-    
-    REM Run all components in sequence
-    call :run_component "pipeline_diagnostic"
-    call :run_component "eda"
-    call :run_component "garch_fitting"
-    call :run_component "residual_extraction"
-    call :run_component "nf_training"
-    call :run_component "nf_evaluation"
-    call :run_component "nf_garch_manual"
-    call :run_component "forecasting"
-    call :run_component "forecast_evaluation"
-    call :run_component "stylized_facts"
-    call :run_component "var_backtesting"
-    call :run_component "nfgarch_var_backtesting"
-    call :run_component "stress_testing"
-    call :run_component "nfgarch_stress_testing"
-    call :run_component "final_summary"
-    call :run_component "consolidation"
-    call :run_component "validation"
-    call :run_component "appendix_log"
-    
-    echo.
-    echo ========================================
-    echo FULL PIPELINE COMPLETE!
-    echo ========================================
-    echo.
-    echo Check the following directories for results:
-    echo - outputs\ (all analysis results)
-    echo - nf_generated_residuals\ (NF residual files)
-    echo - results\consolidated\ (consolidated results)
-    echo.
-    echo CONSOLIDATED RESULTS (in results/consolidated/):
-    echo - Consolidated_NF_GARCH_Results.xlsx (ALL results in one file)
-    echo - Initial_GARCH_Model_Fitting.xlsx (GARCH TS CV results)
-    echo - NF_GARCH_Results_manual.xlsx (NF-GARCH with Chrono vs TS CV comparison)
-    echo.
-    echo COMPARISON TABLES INCLUDED:
-    echo - Split_Comparison: Direct comparison of Chrono vs TS CV performance
-    echo - Performance_Comparison: Ranking comparison between methods
-    echo - Asset_Comparison: Asset-level performance differences
-    echo.
-    echo Both MANUAL and RUGARCH engines tested with Chronological and Time Series Cross-Validation comparison.
-    echo.
-    
-) else if "%1"=="status" (
-    echo Checking pipeline status...
-    echo.
-    if exist "checkpoints\pipeline_status.json" (
-        Rscript -e "library(jsonlite); cp <- fromJSON('checkpoints/pipeline_status.json'); if(length(cp) > 0) { cat('=== PIPELINE STATUS ===\n'); for(i in names(cp)) { cat(sprintf('%-20s: %s (%s)\n', i, cp[[i]]$status, cp[[i]]$timestamp)) }; cat('\n') } else { cat('No checkpoints found.\n') }"
-    ) else (
-        echo No checkpoints found.
-    )
-    
-) else if "%1"=="run" (
-    if "%2"=="" (
-        echo ERROR: Please specify a component to run
-        echo.
-        echo Available components:
-        echo   pipeline_diagnostic - Run pipeline diagnostic
-        echo   eda                - EDA analysis
-        echo   garch_fitting      - Standard GARCH model fitting (includes TS CV)
-        echo   residual_extraction - Extract residuals for NF training
-        echo   nf_training        - Python NF model training
-        echo   nf_evaluation      - NF model evaluation
-        echo   nf_garch_manual    - NF-GARCH with manual engine
-        echo   forecasting        - Forecasting evaluation
-        echo   forecast_evaluation - Evaluate forecasts (Wilcoxon)
-        echo   stylized_facts     - Stylized facts analysis
-        echo   var_backtesting    - VaR backtesting
-        echo   nfgarch_var_backtesting - NFGARCH VaR backtesting
-        echo   stress_testing     - Stress testing
-        echo   nfgarch_stress_testing - NFGARCH stress testing
-        echo   final_summary      - Generate final summary
-        echo   consolidation      - Final results consolidation
-        echo   validation         - Pipeline validation
-        echo   appendix_log       - Generate appendix log
-        echo.
-        echo EXAMPLES:
-        echo   run_modular.bat run nf_garch_manual
-        echo   run_modular.bat run garch_fitting
-        echo   run_modular.bat status
-        exit /b 1
-    ) else (
-        call :run_component "%2"
-    )
-    
-) else if "%1"=="reset" (
-    if "%2"=="" (
-        echo ERROR: Please specify a component to reset
-        echo.
-        echo Available components:
-        echo   pipeline_diagnostic, eda, garch_fitting, residual_extraction
-        echo   nf_training, nf_evaluation, nf_garch_manual, forecasting
-        echo   forecast_evaluation, stylized_facts, var_backtesting
-        echo   nfgarch_var_backtesting, stress_testing, nfgarch_stress_testing
-        echo   final_summary, consolidation, validation, appendix_log
-        echo.
-        echo EXAMPLES:
-        echo   run_modular.bat reset nf_training
-        echo   run_modular.bat reset garch_fitting
-        exit /b 1
-    ) else (
-        echo Resetting component: %2
-        Rscript -e "library(jsonlite); if(file.exists('checkpoints/pipeline_status.json')) { cp <- fromJSON('checkpoints/pipeline_status.json'); cp[['%2']] <- NULL; writeLines(toJSON(cp, auto_unbox=TRUE, pretty=TRUE), 'checkpoints/pipeline_status.json'); cat('Component %2 reset.\n') } else { cat('No checkpoints found.\n') }"
-    )
-    
-) else if "%1"=="help" (
-    echo.
-    echo USAGE:
-    echo   run_modular.bat                    - Run full pipeline
-    echo   run_modular.bat status             - Show pipeline status
-    echo   run_modular.bat run <component>    - Run specific component
-    echo   run_modular.bat reset <component>  - Reset component
-    echo   run_modular.bat help               - Show this help
-    echo.
-    echo COMPONENTS:
-    echo   pipeline_diagnostic - Run pipeline diagnostic
-    echo   eda                - EDA analysis
-    echo   garch_fitting      - Standard GARCH model fitting (includes TS CV)
-    echo   residual_extraction - Extract residuals for NF training
-    echo   nf_training        - Python NF model training
-    echo   nf_evaluation      - NF model evaluation
-    echo   nf_garch_manual    - NF-GARCH with manual engine
-    echo   forecasting        - Forecasting evaluation
-    echo   forecast_evaluation - Evaluate forecasts (Wilcoxon)
-    echo   stylized_facts     - Stylized facts analysis
-    echo   var_backtesting    - VaR backtesting
-    echo   nfgarch_var_backtesting - NFGARCH VaR backtesting
-    echo   stress_testing     - Stress testing
-    echo   nfgarch_stress_testing - NFGARCH stress testing
-    echo   final_summary      - Generate final summary
-    echo   consolidation      - Final results consolidation
-    echo   validation         - Pipeline validation
-    echo   appendix_log       - Generate appendix log
-    echo.
-    echo EXAMPLES:
-    echo   run_modular.bat run nf_garch_manual
-    echo   run_modular.bat reset nf_training
-    echo   run_modular.bat status
-    echo.
-    echo DIFFERENCES FROM run_all.bat:
-    echo   - run_all.bat: Full pipeline execution with checkpointing
-    echo   - run_modular.bat: Component-based execution with checkpointing
-    echo   - Both use identical pipeline steps and checkpointing system
-    echo   - run_modular.bat allows selective component execution
-    echo.
-    
-) else (
-    echo ERROR: Unknown command '%1'
-    echo Run 'run_modular.bat help' for usage information
-    exit /b 1
+REM =============================================================================
+REM CLEAR OUTPUTS FUNCTION
+REM =============================================================================
+
+:clear_outputs
+echo Clearing outputs/manual directories...
+call :log_message "Clearing outputs..."
+
+if exist "outputs\manual\garch_fitting" (
+    del /q "outputs\manual\garch_fitting\*.*" 2>nul
+    echo   Cleared: garch_fitting
+    call :log_message "  Cleared: outputs/manual/garch_fitting"
+)
+if exist "outputs\manual\residuals_by_model" (
+    rd /s /q "outputs\manual\residuals_by_model" 2>nul
+    echo   Cleared: residuals_by_model
+    call :log_message "  Cleared: outputs/manual/residuals_by_model"
+)
+if exist "outputs\manual\nf_models" (
+    del /q "outputs\manual\nf_models\*.csv" 2>nul
+    del /q "outputs\manual\nf_models\*.pth" 2>nul
+    echo   Cleared: nf_models (residuals and models)
+    call :log_message "  Cleared: outputs/manual/nf_models (CSV and PTH files)"
 )
 
+REM Clear consolidated results
+echo Clearing consolidated results...
+if exist "results\consolidated" (
+    del /q "results\consolidated\*.xlsx" 2>nul
+    echo   Cleared: consolidated results
+    call :log_message "  Cleared: results/consolidated/*.xlsx"
+)
+
+REM Clear dashboard plots (optional - keep diagnostics)
+if exist "results\dashboard_plots" (
+    del /q "results\dashboard_plots\*.png" 2>nul
+    echo   Cleared: dashboard plots
+    call :log_message "  Cleared: results/dashboard_plots/*.png"
+)
+
+REM Recreate directory structure
+if not exist "outputs\manual" mkdir "outputs\manual"
+if not exist "outputs\manual\garch_fitting" mkdir "outputs\manual\garch_fitting"
+if not exist "outputs\manual\residuals_by_model" mkdir "outputs\manual\residuals_by_model"
+if not exist "outputs\manual\nf_models" mkdir "outputs\manual\nf_models"
+if not exist "outputs\manual\evaluation" mkdir "outputs\manual\evaluation"
+if not exist "results\consolidated" mkdir "results\consolidated"
+if not exist "results\diagnostics" mkdir "results\diagnostics"
+if not exist "results\dashboard_plots" mkdir "results\dashboard_plots"
+if not exist "%CHECKPOINT_DIR%" mkdir "%CHECKPOINT_DIR%"
+if not exist "%LOG_DIR%" mkdir "%LOG_DIR%"
+
+echo [OK] Outputs cleared and directories recreated
+call :log_message "Outputs cleared and directories recreated"
+goto :eof
+
+REM =============================================================================
+REM STEP 1: CLEARING PREVIOUS OUTPUTS
+REM =============================================================================
+
+set "STEP_1_NUM=1"
+set "STEP_1_NAME=CLEARING PREVIOUS OUTPUTS"
+set "STEP_1_DESC=Clearing outputs/manual directories and consolidated results"
+set "STEP_1_CMD=call :clear_outputs"
+set "STEP_1_FILE="
+set "STEP_1_SKIPABLE=0"
+call :execute_step !STEP_1_NUM! "!STEP_1_NAME!" "!STEP_1_DESC!" "!STEP_1_CMD!" "!STEP_1_FILE!" "!STEP_1_SKIPABLE!"
+
+REM =============================================================================
+REM STEP 2: GARCH FITTING (Optimized)
+REM =============================================================================
+
+set "STEP_2_NUM=2"
+set "STEP_2_NAME=GARCH FITTING"
+set "STEP_2_DESC=Running optimized GARCH fitting for 6 assets, 4 models (sGARCH, eGARCH, TGARCH, gjrGARCH). Estimated time: 30 minutes"
+set "STEP_2_CMD=%RSCRIPT% scripts\manual\manual_garch_fitting.R"
+set "STEP_2_FILE=outputs\manual\garch_fitting\model_summary.csv"
+set "STEP_2_SKIPABLE=0"
+call :execute_step !STEP_2_NUM! "!STEP_2_NAME!" "!STEP_2_DESC!" "!STEP_2_CMD!" "!STEP_2_FILE!" "!STEP_2_SKIPABLE!"
+
+REM =============================================================================
+REM STEP 3: NF TRAINING (Optimized)
+REM =============================================================================
+
+set "STEP_3_NUM=3"
+set "STEP_3_NAME=NF TRAINING"
+set "STEP_3_DESC=Training Normalizing Flows on GARCH residuals. Epochs: 75, Batch size: 512, Architecture: 4 layers, 64 hidden features. Estimated time: 20 minutes"
+set "STEP_3_CMD=python scripts\manual\manual_nf_training.py"
+set "STEP_3_FILE=outputs\manual\nf_models\training_summary.json"
+set "STEP_3_SKIPABLE=0"
+call :execute_step !STEP_3_NUM! "!STEP_3_NAME!" "!STEP_3_DESC!" "!STEP_3_CMD!" "!STEP_3_FILE!" "!STEP_3_SKIPABLE!"
+
+REM =============================================================================
+REM STEP 4: NF-GARCH SIMULATION
+REM =============================================================================
+
+set "STEP_4_NUM=4"
+set "STEP_4_NAME=NF-GARCH SIMULATION"
+set "STEP_4_DESC=Running NF-GARCH simulation with properly standardized residuals. Engine: manual. Estimated time: 15 minutes"
+set "STEP_4_CMD=%RSCRIPT% scripts\simulation_forecasting\simulate_nf_garch_engine.R --engine manual"
+set "STEP_4_FILE=results\consolidated\NF_GARCH_Results_manual.xlsx"
+set "STEP_4_SKIPABLE=1"
+call :execute_step !STEP_4_NUM! "!STEP_4_NAME!" "!STEP_4_DESC!" "!STEP_4_CMD!" "!STEP_4_FILE!" "!STEP_4_SKIPABLE!"
+
+REM =============================================================================
+REM STEP 5: COMPARE NF-GARCH vs STANDARD GARCH
+REM =============================================================================
+
+set "STEP_5_NUM=5"
+set "STEP_5_NAME=NF-GARCH vs STANDARD GARCH COMPARISON"
+set "STEP_5_DESC=Comparing NF-GARCH and Standard GARCH performance with statistical tests (Wilcoxon, asset-class analysis). Estimated time: 5 minutes"
+set "STEP_5_CMD=%RSCRIPT% scripts\evaluation\compare_nf_vs_standard_garch.R"
+set "STEP_5_FILE=results\consolidated\NF_vs_Standard_GARCH_Comparison.xlsx"
+set "STEP_5_SKIPABLE=1"
+call :execute_step !STEP_5_NUM! "!STEP_5_NAME!" "!STEP_5_DESC!" "!STEP_5_CMD!" "!STEP_5_FILE!" "!STEP_5_SKIPABLE!"
+
+REM =============================================================================
+REM STEP 6: CALCULATE DISTRIBUTIONAL METRICS
+REM =============================================================================
+
+set "STEP_6_NUM=6"
+set "STEP_6_NAME=DISTRIBUTIONAL METRICS"
+set "STEP_6_DESC=Calculating KS distance, Wasserstein distance, Tail index (Hill estimator), Skewness, Kurtosis. Estimated time: 3 minutes"
+set "STEP_6_CMD=%RSCRIPT% scripts\evaluation\calculate_distributional_metrics.R"
+set "STEP_6_FILE=results\consolidated\Distributional_Metrics.xlsx"
+set "STEP_6_SKIPABLE=1"
+call :execute_step !STEP_6_NUM! "!STEP_6_NAME!" "!STEP_6_DESC!" "!STEP_6_CMD!" "!STEP_6_FILE!" "!STEP_6_SKIPABLE!"
+
+REM =============================================================================
+REM STEP 7: CALCULATE STYLIZED FACTS
+REM =============================================================================
+
+set "STEP_7_NUM=7"
+set "STEP_7_NAME=STYLIZED FACTS"
+set "STEP_7_DESC=Calculating volatility clustering, leverage effects, autocorrelation decay, heavy tails, gain/loss asymmetry. Estimated time: 3 minutes"
+set "STEP_7_CMD=%RSCRIPT% scripts\evaluation\calculate_stylized_facts.R"
+set "STEP_7_FILE=results\consolidated\Stylized_Facts.xlsx"
+set "STEP_7_SKIPABLE=1"
+call :execute_step !STEP_7_NUM! "!STEP_7_NAME!" "!STEP_7_DESC!" "!STEP_7_CMD!" "!STEP_7_FILE!" "!STEP_7_SKIPABLE!"
+
+REM =============================================================================
+REM STEP 8: VaR BACKTESTING
+REM =============================================================================
+
+set "STEP_8_NUM=8"
+set "STEP_8_NAME=VaR BACKTESTING"
+set "STEP_8_DESC=Running VaR backtesting with Kupiec test, Christoffersen test, exceedance rates, Expected Shortfall. Estimated time: 5 minutes"
+set "STEP_8_CMD=%RSCRIPT% scripts\evaluation\var_backtesting_comprehensive.R"
+set "STEP_8_FILE=results\consolidated\VaR_Backtesting.xlsx"
+set "STEP_8_SKIPABLE=1"
+call :execute_step !STEP_8_NUM! "!STEP_8_NAME!" "!STEP_8_DESC!" "!STEP_8_CMD!" "!STEP_8_FILE!" "!STEP_8_SKIPABLE!"
+
+REM =============================================================================
+REM STEP 9: STRESS TESTING
+REM =============================================================================
+
+set "STEP_9_NUM=9"
+set "STEP_9_NAME=STRESS TESTING"
+set "STEP_9_DESC=Running stress tests for historical crises (2008 GFC, 2020 COVID) and hypothetical shocks (price drops, volatility spikes, mean shifts). Estimated time: 5 minutes"
+set "STEP_9_CMD=%RSCRIPT% scripts\evaluation\stress_testing_comprehensive.R"
+set "STEP_9_FILE=results\consolidated\Stress_Testing.xlsx"
+set "STEP_9_SKIPABLE=1"
+call :execute_step !STEP_9_NUM! "!STEP_9_NAME!" "!STEP_9_DESC!" "!STEP_9_CMD!" "!STEP_9_FILE!" "!STEP_9_SKIPABLE!"
+
+REM =============================================================================
+REM STEP 10: VERIFY RESULTS
+REM =============================================================================
+
+set "STEP_10_NUM=10"
+set "STEP_10_NAME=VERIFY RESULTS"
+set "STEP_10_DESC=Verifying all results and checking data integrity. Checking file existence, data completeness, and consistency. Estimated time: 2 minutes"
+set "STEP_10_CMD=%RSCRIPT% scripts\evaluation\verify_all_results.R"
+set "STEP_10_FILE=results\diagnostics\verification_summary.csv"
+set "STEP_10_SKIPABLE=1"
+call :execute_step !STEP_10_NUM! "!STEP_10_NAME!" "!STEP_10_DESC!" "!STEP_10_CMD!" "!STEP_10_FILE!" "!STEP_10_SKIPABLE!"
+
+REM =============================================================================
+REM STEP 11: CONSOLIDATE RESULTS
+REM =============================================================================
+
+set "STEP_11_NUM=11"
+set "STEP_11_NAME=CONSOLIDATE RESULTS"
+set "STEP_11_DESC=Consolidating all results into unified format. Merging all Excel files and creating summary tables. Estimated time: 3 minutes"
+set "STEP_11_CMD=%RSCRIPT% -e \"source('scripts/core/consolidation.R'); consolidate_all_results('results/consolidated')\""
+set "STEP_11_FILE=results\consolidated\consolidated_results.xlsx"
+set "STEP_11_SKIPABLE=1"
+call :execute_step !STEP_11_NUM! "!STEP_11_NAME!" "!STEP_11_DESC!" "!STEP_11_CMD!" "!STEP_11_FILE!" "!STEP_11_SKIPABLE!"
+
+REM =============================================================================
+REM STEP 12: CREATE FINAL EXCEL DASHBOARD
+REM =============================================================================
+
+set "STEP_12_NUM=12"
+set "STEP_12_NAME=CREATE EXCEL DASHBOARD"
+set "STEP_12_DESC=Creating comprehensive Excel dashboard with all metrics and analyses. Includes executive summary, performance metrics, distributional metrics, stylized facts, VaR backtesting, stress testing. Estimated time: 2 minutes"
+set "STEP_12_CMD=%RSCRIPT% scripts\core\create_final_dashboard.R"
+set "STEP_12_FILE=results\consolidated\Final_Dashboard.xlsx"
+set "STEP_12_SKIPABLE=1"
+call :execute_step !STEP_12_NUM! "!STEP_12_NAME!" "!STEP_12_DESC!" "!STEP_12_CMD!" "!STEP_12_FILE!" "!STEP_12_SKIPABLE!"
+
+REM =============================================================================
+REM STEP 13: GENERATE HTML DASHBOARD VISUALIZATIONS
+REM =============================================================================
+
+set "STEP_13_NUM=13"
+set "STEP_13_NAME=GENERATE HTML DASHBOARD"
+set "STEP_13_DESC=Generating visualization plots (13 PNG files) and interactive HTML dashboard with explanations, citations, and links. Estimated time: 3 minutes"
+set "STEP_13_CMD=%RSCRIPT% scripts\evaluation\generate_dashboard_visualizations.R"
+set "STEP_13_FILE=results\dashboard_visualizations.html"
+set "STEP_13_SKIPABLE=1"
+call :execute_step !STEP_13_NUM! "!STEP_13_NAME!" "!STEP_13_DESC!" "!STEP_13_CMD!" "!STEP_13_FILE!" "!STEP_13_SKIPABLE!"
+
+REM =============================================================================
+REM FINAL SUMMARY
+REM =============================================================================
+
+echo.
+echo ========================================
+echo PIPELINE COMPLETED SUCCESSFULLY
+echo ========================================
+echo.
+
+call :log_message "========================================"
+call :log_message "Pipeline completed successfully"
+call :log_message "End time: %date% %time%"
+call :log_message "========================================"
+
+echo All steps completed!
+echo.
+echo Results saved to:
+echo   - results\consolidated\NF_GARCH_Results_manual.xlsx
+echo   - results\consolidated\NF_vs_Standard_GARCH_Comparison.xlsx
+echo   - results\consolidated\Distributional_Metrics.xlsx
+echo   - results\consolidated\Stylized_Facts.xlsx
+echo   - results\consolidated\VaR_Backtesting.xlsx
+echo   - results\consolidated\Stress_Testing.xlsx
+echo   - results\consolidated\Final_Dashboard.xlsx (Excel dashboard)
+echo   - results\dashboard_visualizations.html (Interactive HTML dashboard)
+echo   - results\dashboard_plots\ (13 visualization plots)
+echo.
+echo Checkpoint file: %STATUS_FILE%
+echo Log file: %LOG_FILE%
+echo.
+echo Final status:
+%RSCRIPT% scripts\utils\checkpoint_manager.R status 2>nul
+echo.
+echo Next steps:
+echo   1. Review results in: results\consolidated\
+echo   2. View dashboards:
+echo      - Excel: Final_Dashboard.xlsx
+echo      - HTML: dashboard_visualizations.html (run start_research_dashboard.bat)
+echo   3. Check log file for detailed execution information: %LOG_FILE%
+echo.
+echo ========================================
 echo.
 pause

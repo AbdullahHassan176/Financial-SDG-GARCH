@@ -5,7 +5,7 @@ set.seed(123)
 library(openxlsx)
 library(quantmod)
 library(tseries)
-library(rugarch)
+# library(rugarch)  # Not needed for manual engine
 library(xts)
 library(PerformanceAnalytics)
 library(FinTS)
@@ -15,6 +15,7 @@ library(stringr)
 
 # Source utility functions
 source("./scripts/utils/safety_functions.R")
+source("scripts/engines/engine_selector.R")  # Load engine selector for manual engine support
 library(ggplot2)
 #### Import the FX + EQ price data ####
 
@@ -91,22 +92,30 @@ plot_returns_and_save(fx_returns, "Real_FX")
 
 #### Model Generator ####
 
+# Manual engine doesn't need ugarchspec - using engine_fit directly
 generate_spec <- function(model, dist = "sstd", submodel = NULL) 
 {
-  ugarchspec(
-    mean.model = list(armaOrder = c(0,0)),
-    variance.model = list(model = model, garchOrder = c(1,1), submodel = submodel),
-    distribution.model = dist
+  # Return model configuration for manual engine
+  list(
+    model = model,
+    distribution = dist,
+    submodel = submodel
   )
-} # Change the order of the ARCH and GARCH parameters here
+}
 
 #### Automate Fitting for Any Set of Returns #### 
 
 fit_models <- function(returns_list, model_type, dist_type = "sstd", submodel = NULL) 
 {
-  specs <- lapply(returns_list, function(x) generate_spec(model_type, dist_type, submodel))
-  fits <- mapply(function(ret, spec) ugarchfit(data = ret, spec = spec, out.sample = 20),
-                 returns_list, specs, SIMPLIFY = FALSE)
+  # Use manual engine for all models
+  fits <- lapply(returns_list, function(ret) {
+    tryCatch({
+      engine_fit(model = model_type, returns = ret, dist = dist_type, submodel = submodel, engine = "manual")
+    }, error = function(e) {
+      cat("Error fitting", model_type, ":", e$message, "\n")
+      return(NULL)
+    })
+  })
   return(fits)
 }
 
@@ -118,7 +127,7 @@ model_configs <- list(
   sGARCH_sstd  = list(model = "sGARCH", distribution = "sstd", submodel = NULL),
   gjrGARCH     = list(model = "gjrGARCH", distribution = "sstd", submodel = NULL),
   eGARCH       = list(model = "eGARCH", distribution = "sstd", submodel = NULL),
-  TGARCH       = list(model = "fGARCH", distribution = "sstd", submodel = "TGARCH")
+  TGARCH       = list(model = "TGARCH", distribution = "sstd", submodel = NULL)
 )  # Change the distributional assumptions of the ARCH and GARCH parameters here
 
 
@@ -151,27 +160,25 @@ ts_cross_validate <- function(returns, model_type, dist_type = "sstd", submodel 
     train_set <- returns[start_idx:(start_idx + window_size - 1)]
     test_set  <- returns[(start_idx + window_size):(start_idx + window_size + forecast_horizon - 1)]
     
-    # 🔍 Print diagnostics before fitting
-    message("📦 Start index: ", start_idx, 
+    # Print diagnostics before fitting
+    message("Start index: ", start_idx, 
             " | Train size: ", nrow(train_set), 
             " | Test size: ", nrow(test_set),
             " | Train SD: ", round(sd(train_set, na.rm = TRUE), 6))
     
-    spec <- generate_spec(model_type, dist_type, submodel)
-    
-    # 🔒 Try fitting GARCH model
+    # Try fitting GARCH model using manual engine
     fit <- tryCatch({
-      ugarchfit(data = train_set, spec = spec, solver = "hybrid")
+      engine_fit(model = model_type, returns = train_set, dist = dist_type, submodel = submodel, engine = "manual")
     }, error = function(e) {
-      message("❌ Fit error at index ", start_idx, ": ", e$message)
+      message("ERROR: Fit error at index ", start_idx, ": ", e$message)
       return(NULL)
     })
     
     if (!is.null(fit)) {
       forecast <- tryCatch({
-        ugarchforecast(fit, n.ahead = forecast_horizon)
+        engine_forecast(fit, n.ahead = forecast_horizon, engine = "manual")
       }, error = function(e) {
-        message("❌ Forecast error at index ", start_idx, ": ", e$message)
+        message("ERROR: Forecast error at index ", start_idx, ": ", e$message)
         return(NULL)
       })
       
@@ -179,7 +186,7 @@ ts_cross_validate <- function(returns, model_type, dist_type = "sstd", submodel 
         eval <- tryCatch({
           evaluate_model(fit, forecast, test_set)
         }, error = function(e) {
-          message("❌ Evaluation error at index ", start_idx, ": ", e$message)
+          message("ERROR: Evaluation error at index ", start_idx, ": ", e$message)
           return(NULL)
         })
         
@@ -192,7 +199,7 @@ ts_cross_validate <- function(returns, model_type, dist_type = "sstd", submodel 
   }
   
   if (length(results) == 0) {
-    message("⚠️ No successful CV results for this series.")
+    message("WARNING: No successful CV results for this series.")
     return(NULL)
   }
   
@@ -352,14 +359,14 @@ for (model_name in names(Fitted_FX_TS_CV_models)) {
   fx_results <- tryCatch({
     compare_results(Fitted_FX_TS_CV_models[[model_name]], model_name, is_cv = TRUE)
   }, error = function(e) {
-    message("⚠️ FX compare_results failed for: ", model_name, " - ", e$message)
+    message("WARNING: FX compare_results failed for: ", model_name, " - ", e$message)
     return(NULL)
   })
   
   eq_results <- tryCatch({
     compare_results(Fitted_EQ_TS_CV_models[[model_name]], model_name, is_cv = TRUE)
   }, error = function(e) {
-    message("⚠️ EQ compare_results failed for: ", model_name, " - ", e$message)
+    message("WARNING: EQ compare_results failed for: ", model_name, " - ", e$message)
     return(NULL)
   })
   

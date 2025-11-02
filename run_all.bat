@@ -1,282 +1,356 @@
 @echo off
-REM Windows batch script to run the Financial-SDG-GARCH pipeline
-REM Full pipeline execution with checkpointing support
+REM Financial-SDG-GARCH - Complete Manual Pipeline
+REM Clears outputs, runs entire pipeline, compares NF-GARCH vs Standard GARCH
+REM Produces evaluation summaries and dashboard
+REM Uses Manual branch optimizations (6 assets, 3 models, fast CV)
+REM Includes proper NF residual standardization
 
-echo Starting Financial-SDG-GARCH pipeline...
+echo ========================================
+echo FINANCIAL-SDG-GARCH - MANUAL PIPELINE
+echo ========================================
+echo.
+echo This will:
+echo  1. Clear previous outputs and results
+echo  2. Run complete optimized pipeline (45-90 minutes)
+echo  3. Compare NF-GARCH vs Standard GARCH
+echo  4. Evaluate and summarize results
+echo  5. Create final dashboard
+echo.
+echo Optimizations:
+echo  - Assets: 6 (EURUSD, GBPUSD, USDZAR, NVDA, MSFT, AMZN)
+echo  - Models: 4 (sGARCH, eGARCH, TGARCH, gjrGARCH)
+echo  - CV: 3 folds, max 3 windows
+echo  - NF Training: 75 epochs, optimized architecture
+echo  - Seed: 123 (for reproducibility)
+echo.
+echo Expected time: 45-90 minutes
+echo ========================================
+echo.
 
-REM Initialize checkpointing
-if not exist "checkpoints" mkdir checkpoints
-if not exist "checkpoints\pipeline_status.json" (
-    echo {} > checkpoints\pipeline_status.json
-)
-
-REM Checkpoint management functions
-:checkpoint_completed
-set component=%1
-echo [CHECKPOINT] %component% completed at %date% %time%
-Rscript -e "library(jsonlite); if(file.exists('checkpoints/pipeline_status.json')) { cp <- fromJSON('checkpoints/pipeline_status.json') } else { cp <- list() }; cp[['%component%']] <- list(status='completed', timestamp=Sys.time(), error=NULL); writeLines(toJSON(cp, auto_unbox=TRUE, pretty=TRUE), 'checkpoints/pipeline_status.json')"
-goto :eof
-
-:checkpoint_failed
-set component=%1
-set error_msg=%2
-echo [CHECKPOINT] %component% failed at %date% %time% - %error_msg%
-Rscript -e "library(jsonlite); if(file.exists('checkpoints/pipeline_status.json')) { cp <- fromJSON('checkpoints/pipeline_status.json') } else { cp <- list() }; cp[['%component%']] <- list(status='failed', timestamp=Sys.time(), error='%error_msg%'); writeLines(toJSON(cp, auto_unbox=TRUE, pretty=TRUE), 'checkpoints/pipeline_status.json')"
-goto :eof
-
-REM Setup
-echo Setting up environment...
-if not exist "environment" mkdir environment
-if not exist "data\raw" mkdir data\raw
-if not exist "data\processed\ts_cv_folds" mkdir data\processed\ts_cv_folds
-if not exist "outputs\eda\tables" mkdir outputs\eda\tables
-if not exist "outputs\eda\figures" mkdir outputs\eda\figures
-if not exist "outputs\model_eval\tables" mkdir outputs\model_eval\tables
-if not exist "outputs\model_eval\figures" mkdir outputs\model_eval\figures
-if not exist "outputs\var_backtest\tables" mkdir outputs\var_backtest\tables
-if not exist "outputs\var_backtest\figures" mkdir outputs\var_backtest\figures
-if not exist "outputs\stress_tests\tables" mkdir outputs\stress_tests\tables
-if not exist "outputs\stress_tests\figures" mkdir outputs\stress_tests\figures
-if not exist "outputs\supplementary" mkdir outputs\supplementary
-if not exist "nf_generated_residuals" mkdir nf_generated_residuals
-if not exist "results\consolidated" mkdir results\consolidated
-
-echo Installing Python dependencies...
-pip install -r environment\requirements.txt
-
-echo Fixing Python environment issues...
-python scripts\utils\fix_python_env.py
-
-echo Checking R environment...
-Rscript --version >nul 2>&1
-if %errorlevel% neq 0 (
-    echo ERROR: Rscript not found in PATH
-    echo Please run: quick_install.R to set up R environment
-    pause
-    exit /b 1
-)
-
-echo Generating session info files...
-Rscript -e "writeLines(capture.output(sessionInfo()), 'environment/R_sessionInfo.txt')"
-if %errorlevel% neq 0 (
-    echo ERROR: Failed to generate R session info
-    echo Please check R installation and run: quick_install.R
-    pause
-    exit /b 1
-)
-pip freeze > environment\pip_freeze.txt
-
-echo Setup complete!
-
-REM Step 0: Run diagnostic script
-echo Step 0: Running pipeline diagnostic...
-Rscript scripts\utils\pipeline_diagnostic.R
-if %errorlevel% neq 0 (
-    call :checkpoint_failed "pipeline_diagnostic" "Pipeline diagnostic failed"
-    echo WARNING: Pipeline diagnostic failed, continuing...
-) else (
-    call :checkpoint_completed "pipeline_diagnostic"
-)
-
-REM Step 1: Run EDA
-echo Step 1: Running EDA...
-Rscript scripts\eda\eda_summary_stats.R
-if %errorlevel% neq 0 (
-    call :checkpoint_failed "eda" "EDA failed"
-    echo WARNING: EDA failed, continuing...
-) else (
-    call :checkpoint_completed "eda"
-)
-
-REM Step 2: Fit GARCH models (includes TS CV)
-echo Step 2: Fitting GARCH models with Time Series Cross-Validation...
-Rscript scripts\model_fitting\fit_garch_models.R
-if %errorlevel% neq 0 (
-    call :checkpoint_failed "garch_fitting" "GARCH fitting failed"
-    echo WARNING: GARCH fitting failed, continuing...
-) else (
-    call :checkpoint_completed "garch_fitting"
-)
-
-REM Step 3: Extract residuals
-echo Step 3: Extracting residuals...
-Rscript scripts\model_fitting\extract_residuals.R
-if %errorlevel% neq 0 (
-    call :checkpoint_failed "residual_extraction" "Residual extraction failed"
-    echo WARNING: Residual extraction failed, continuing...
-) else (
-    call :checkpoint_completed "residual_extraction"
-)
-
-REM Step 4: Train NF models
-echo Step 4: Training NF models...
-python scripts\model_fitting\train_nf_models.py
-if %errorlevel% neq 0 (
-    call :checkpoint_failed "nf_training" "NF training failed"
-    echo WARNING: NF training failed, continuing...
-) else (
-    call :checkpoint_completed "nf_training"
-)
-
-REM Step 5: Evaluate NF models
-echo Step 5: Evaluating NF models...
-python scripts\model_fitting\evaluate_nf_fit.py
-if %errorlevel% neq 0 (
-    call :checkpoint_failed "nf_evaluation" "NF evaluation failed"
-    echo WARNING: NF evaluation failed, continuing...
-) else (
-    call :checkpoint_completed "nf_evaluation"
-)
-
-REM Step 6: Run NF-GARCH simulation with MANUAL engine (includes TS CV comparison)
-echo Step 6: Running NF-GARCH simulation (MANUAL engine)...
-Rscript scripts\simulation_forecasting\simulate_nf_garch_engine.R --engine manual
-if %errorlevel% neq 0 (
-    call :checkpoint_failed "nf_garch_manual" "Manual engine simulation failed"
-    echo WARNING: Manual engine simulation failed, continuing...
-) else (
-    call :checkpoint_completed "nf_garch_manual"
-)
-
-REM Step 7: Run NF-GARCH simulation with RUGARCH engine (DISABLED)
-REM echo Step 7: Running NF-GARCH simulation (RUGARCH engine)...
-REM Rscript scripts\simulation_forecasting\simulate_nf_garch_engine.R --engine rugarch
-REM if %errorlevel% neq 0 (
-REM     echo WARNING: rugarch engine simulation failed, continuing...
-REM )
-REM NOTE: RUGARCH engine disabled - using manual engine only for consistency
-
-REM Step 8: Run forecasts
-echo Step 8: Running forecasts...
-Rscript scripts\simulation_forecasting\forecast_garch_variants.R
-if %errorlevel% neq 0 (
-    call :checkpoint_failed "forecasting" "Forecasting failed"
-    echo WARNING: Forecasting failed, continuing...
-) else (
-    call :checkpoint_completed "forecasting"
-)
-
-REM Step 9: Evaluate forecasts
-echo Step 9: Evaluating forecasts...
-Rscript scripts\evaluation\wilcoxon_winrate_analysis.R
-if %errorlevel% neq 0 (
-    call :checkpoint_failed "forecast_evaluation" "Forecast evaluation failed"
-    echo WARNING: Forecast evaluation failed, continuing...
-) else (
-    call :checkpoint_completed "forecast_evaluation"
-)
-
-REM Step 10: Run stylized fact tests
-echo Step 10: Running stylized fact tests...
-Rscript scripts\evaluation\stylized_fact_tests.R
-if %errorlevel% neq 0 (
-    call :checkpoint_failed "stylized_facts" "Stylized fact tests failed"
-    echo WARNING: Stylized fact tests failed, continuing...
-) else (
-    call :checkpoint_completed "stylized_facts"
-)
-
-REM Step 11: Run VaR backtesting
-echo Step 11: Running VaR backtesting...
-Rscript scripts\evaluation\var_backtesting.R
-if %errorlevel% neq 0 (
-    call :checkpoint_failed "var_backtesting" "VaR backtesting failed"
-    echo WARNING: VaR backtesting failed, continuing...
-) else (
-    call :checkpoint_completed "var_backtesting"
-)
-
-REM Step 12: Run NFGARCH VaR backtesting
-echo Step 12: Running NFGARCH VaR backtesting...
-Rscript scripts\evaluation\nfgarch_var_backtesting.R
-if %errorlevel% neq 0 (
-    call :checkpoint_failed "nfgarch_var_backtesting" "NFGARCH VaR backtesting failed"
-    echo WARNING: NFGARCH VaR backtesting failed, continuing...
-) else (
-    call :checkpoint_completed "nfgarch_var_backtesting"
-)
-
-REM Step 13: Run stress tests
-echo Step 13: Running stress tests...
-Rscript scripts\stress_tests\evaluate_under_stress.R
-if %errorlevel% neq 0 (
-    call :checkpoint_failed "stress_testing" "Stress tests failed"
-    echo WARNING: Stress tests failed, continuing...
-) else (
-    call :checkpoint_completed "stress_testing"
-)
-
-REM Step 14: Run NFGARCH stress testing
-echo Step 14: Running NFGARCH stress testing...
-Rscript scripts\evaluation\nfgarch_stress_testing.R
-if %errorlevel% neq 0 (
-    call :checkpoint_failed "nfgarch_stress_testing" "NFGARCH stress testing failed"
-    echo WARNING: NFGARCH stress testing failed, continuing...
-) else (
-    call :checkpoint_completed "nfgarch_stress_testing"
-)
-
-REM Step 15: Generate final summary
-echo Step 15: Generating final summary...
-Rscript -e "library(openxlsx); cat('=== NF-GARCH PIPELINE SUMMARY ===\n'); cat('Date:', Sys.Date(), '\n'); cat('Time:', Sys.time(), '\n\n'); output_files <- list.files('outputs', recursive = TRUE, full.names = TRUE); cat('Output files generated:', length(output_files), '\n'); nf_files <- list.files('nf_generated_residuals', pattern = '*.csv', full.names = TRUE); cat('NF residual files:', length(nf_files), '\n'); result_files <- list.files(pattern = '*Results*.xlsx', full.names = TRUE); cat('Result files:', length(result_files), '\n'); cat('\n=== PIPELINE COMPLETE ===\n')"
-if %errorlevel% neq 0 (
-    call :checkpoint_failed "final_summary" "Final summary generation failed"
-    echo WARNING: Final summary generation failed, continuing...
-) else (
-    call :checkpoint_completed "final_summary"
-)
-
-REM Step 16: Consolidate all results
-echo Step 16: Consolidating all results into comprehensive Excel document...
-Rscript -e "source('scripts/core/consolidation.R'); consolidate_all_results(output_dir = 'results/consolidated')"
-if %errorlevel% neq 0 (
-    call :checkpoint_failed "consolidation" "Results consolidation failed"
-    echo WARNING: Results consolidation failed, continuing...
-) else (
-    call :checkpoint_completed "consolidation"
-)
-
-REM Step 17: Validate pipeline results
-echo Step 17: Validating pipeline results...
-python scripts\utils\validate_pipeline.py
-if %errorlevel% neq 0 (
-    call :checkpoint_failed "validation" "Pipeline validation failed"
-    echo WARNING: Pipeline validation failed, continuing...
-) else (
-    call :checkpoint_completed "validation"
-)
-
-REM Step 18: Generate appendix log
-echo Step 18: Generating appendix log...
-python scripts\utils\generate_appendix_log.py
-if %errorlevel% neq 0 (
-    call :checkpoint_failed "appendix_log" "Appendix log generation failed"
-    echo WARNING: Appendix log generation failed, continuing...
-) else (
-    call :checkpoint_completed "appendix_log"
+REM Confirm before proceeding
+set /p confirm="Continue with pipeline? (Y/N): "
+if /i not "%confirm%"=="Y" (
+    echo Pipeline cancelled.
+    exit /b 0
 )
 
 echo.
 echo ========================================
-echo PIPELINE EXECUTION COMPLETE!
+echo STEP 1: CLEARING PREVIOUS OUTPUTS
 echo ========================================
 echo.
-echo Check the following directories for results:
-echo - outputs\ (all analysis results)
-echo - nf_generated_residuals\ (NF residual files)
-echo - results\consolidated\ (consolidated results)
+
+REM Clear outputs (but keep essential structure)
+echo Clearing outputs/manual directories...
+if exist "outputs\manual\garch_fitting" (
+    del /q "outputs\manual\garch_fitting\*.*" 2>nul
+    echo   Cleared: garch_fitting
+)
+if exist "outputs\manual\residuals_by_model" (
+    rd /s /q "outputs\manual\residuals_by_model" 2>nul
+    echo   Cleared: residuals_by_model
+)
+if exist "outputs\manual\nf_models" (
+    del /q "outputs\manual\nf_models\*.csv" 2>nul
+    del /q "outputs\manual\nf_models\*.pth" 2>nul
+    echo   Cleared: nf_models (residuals and models)
+)
+
+REM Clear consolidated results (but keep directory structure)
+echo Clearing consolidated results...
+if exist "results\consolidated" (
+    del /q "results\consolidated\*.xlsx" 2>nul
+    echo   Cleared: consolidated results
+)
+
+REM Recreate directory structure
+if not exist "outputs\manual" mkdir "outputs\manual"
+if not exist "outputs\manual\garch_fitting" mkdir "outputs\manual\garch_fitting"
+if not exist "outputs\manual\residuals_by_model" mkdir "outputs\manual\residuals_by_model"
+if not exist "outputs\manual\nf_models" mkdir "outputs\manual\nf_models"
+if not exist "outputs\manual\evaluation" mkdir "outputs\manual\evaluation"
+if not exist "results\consolidated" mkdir "results\consolidated"
+if not exist "results\diagnostics" mkdir "results\diagnostics"
+
 echo.
-echo CONSOLIDATED RESULTS (in results/consolidated/):
-echo - Consolidated_NF_GARCH_Results.xlsx (ALL results in one file)
-echo - Initial_GARCH_Model_Fitting.xlsx (GARCH TS CV results)
-echo - NF_GARCH_Results_manual.xlsx (NF-GARCH with Chrono vs TS CV comparison)
-echo - NF_GARCH_Results_rugarch.xlsx (NF-GARCH with Chrono vs TS CV comparison)
+echo [OK] Outputs cleared and directories recreated
 echo.
-echo COMPARISON TABLES INCLUDED:
-echo - Split_Comparison: Direct comparison of Chrono vs TS CV performance
-echo - Performance_Comparison: Ranking comparison between methods
-echo - Asset_Comparison: Asset-level performance differences
+
+REM =============================================================================
+REM STEP 2: GARCH FITTING (Optimized)
+REM =============================================================================
+
+echo ========================================
+echo STEP 2: GARCH FITTING (30 minutes)
+echo ========================================
 echo.
-echo Both MANUAL and RUGARCH engines tested with Chronological and Time Series Cross-Validation comparison.
+echo Running optimized GARCH fitting...
+echo   Assets: EURUSD, GBPUSD, USDZAR, NVDA, MSFT, AMZN (6 total)
+echo   Models: sGARCH, eGARCH, TGARCH (3 total)
+echo   CV: 3 folds, optimized windows
+echo.
+
+"C:\Program Files\R\R-4.5.1\bin\Rscript.exe" scripts\manual\manual_garch_fitting.R
+if %errorlevel% neq 0 (
+    echo [ERROR] GARCH fitting failed
+    echo Check outputs\manual\garch_fitting\ for details
+    pause
+    exit /b 1
+) else (
+    echo [OK] GARCH fitting completed successfully
+)
+echo.
+
+REM =============================================================================
+REM STEP 3: NF TRAINING (Optimized)
+REM =============================================================================
+
+echo ========================================
+echo STEP 3: NF TRAINING (20 minutes)
+echo ========================================
+echo.
+echo Running optimized NF training...
+echo   Epochs: 75 (reduced from 100)
+echo   Batch size: 512 (increased for GPU utilization)
+echo   Architecture: 4 layers, 64 hidden features
+echo.
+
+python scripts\manual\manual_nf_training.py
+if %errorlevel% neq 0 (
+    echo [ERROR] NF training failed
+    echo Check outputs\manual\nf_models\ for details
+    pause
+    exit /b 1
+) else (
+    echo [OK] NF training completed successfully
+)
+echo.
+
+REM =============================================================================
+REM STEP 4: NF-GARCH SIMULATION (with proper standardization)
+REM =============================================================================
+
+echo ========================================
+echo STEP 4: NF-GARCH SIMULATION (15 minutes)
+echo ========================================
+echo.
+echo Running NF-GARCH simulation...
+echo   Engine: manual
+echo   Using: Properly standardized NF residuals
+echo.
+
+"C:\Program Files\R\R-4.5.1\bin\Rscript.exe" scripts\simulation_forecasting\simulate_nf_garch_engine.R --engine manual
+if %errorlevel% neq 0 (
+    echo [WARNING] NF-GARCH simulation had issues, continuing...
+) else (
+    echo [OK] NF-GARCH simulation completed
+)
+echo.
+
+REM =============================================================================
+REM STEP 5: COMPARE NF-GARCH vs STANDARD GARCH
+REM =============================================================================
+
+echo ========================================
+echo STEP 5: NF-GARCH vs STANDARD GARCH COMPARISON
+echo ========================================
+echo.
+echo Running comparison analysis...
+echo.
+
+"C:\Program Files\R\R-4.5.1\bin\Rscript.exe" scripts\evaluation\compare_nf_vs_standard_garch.R
+if %errorlevel% neq 0 (
+    echo [WARNING] Comparison analysis had issues, continuing...
+) else (
+    echo [OK] Comparison analysis completed
+)
+echo.
+
+REM =============================================================================
+REM STEP 6: CALCULATE DISTRIBUTIONAL METRICS
+REM =============================================================================
+
+echo ========================================
+echo STEP 6: CALCULATING DISTRIBUTIONAL METRICS
+echo ========================================
+echo.
+echo Calculating KS distance, Wasserstein, Tail index, Skewness, Kurtosis...
+echo.
+
+"C:\Program Files\R\R-4.5.1\bin\Rscript.exe" scripts\evaluation\calculate_distributional_metrics.R
+if %errorlevel% neq 0 (
+    echo [WARNING] Distributional metrics calculation had issues, continuing...
+) else (
+    echo [OK] Distributional metrics calculated
+)
+echo.
+
+REM =============================================================================
+REM STEP 7: CALCULATE STYLIZED FACTS
+REM =============================================================================
+
+echo ========================================
+echo STEP 7: CALCULATING STYLIZED FACTS
+echo ========================================
+echo.
+echo Calculating volatility clustering, leverage effects, autocorrelation...
+echo.
+
+"C:\Program Files\R\R-4.5.1\bin\Rscript.exe" scripts\evaluation\calculate_stylized_facts.R
+if %errorlevel% neq 0 (
+    echo [WARNING] Stylized facts calculation had issues, continuing...
+) else (
+    echo [OK] Stylized facts calculated
+)
+echo.
+
+REM =============================================================================
+REM STEP 8: VaR BACKTESTING
+REM =============================================================================
+
+echo ========================================
+echo STEP 8: VaR BACKTESTING
+echo ========================================
+echo.
+echo Running VaR backtesting (Kupiec, Christoffersen)...
+echo.
+
+"C:\Program Files\R\R-4.5.1\bin\Rscript.exe" scripts\evaluation\var_backtesting_comprehensive.R
+if %errorlevel% neq 0 (
+    echo [WARNING] VaR backtesting had issues, continuing...
+) else (
+    echo [OK] VaR backtesting completed
+)
+echo.
+
+REM =============================================================================
+REM STEP 9: STRESS TESTING
+REM =============================================================================
+
+echo ========================================
+echo STEP 9: STRESS TESTING
+echo ========================================
+echo.
+echo Running stress tests (historical crises, hypothetical shocks)...
+echo.
+
+"C:\Program Files\R\R-4.5.1\bin\Rscript.exe" scripts\evaluation\stress_testing_comprehensive.R
+if %errorlevel% neq 0 (
+    echo [WARNING] Stress testing had issues, continuing...
+) else (
+    echo [OK] Stress testing completed
+)
+echo.
+
+REM =============================================================================
+REM STEP 10: VERIFY RESULTS
+REM =============================================================================
+
+echo ========================================
+echo STEP 10: VERIFYING RESULTS
+echo ========================================
+echo.
+echo Verifying all results...
+echo.
+
+"C:\Program Files\R\R-4.5.1\bin\Rscript.exe" scripts\evaluation\verify_all_results.R
+if %errorlevel% neq 0 (
+    echo [WARNING] Verification had issues
+) else (
+    echo [OK] Results verification completed
+)
+echo.
+
+REM =============================================================================
+REM STEP 11: CONSOLIDATE RESULTS
+REM =============================================================================
+
+echo ========================================
+echo STEP 11: CONSOLIDATING RESULTS
+echo ========================================
+echo.
+echo Creating consolidated results...
+echo.
+
+"C:\Program Files\R\R-4.5.1\bin\Rscript.exe" -e "source('scripts/core/consolidation.R'); consolidate_all_results('results/consolidated')"
+if %errorlevel% neq 0 (
+    echo [WARNING] Consolidation had issues, continuing...
+) else (
+    echo [OK] Results consolidated
+)
+echo.
+
+REM =============================================================================
+REM STEP 12: CREATE FINAL DASHBOARD
+REM =============================================================================
+
+echo ========================================
+echo STEP 12: CREATING FINAL DASHBOARD
+echo ========================================
+echo.
+echo Creating comprehensive Excel dashboard...
+echo.
+
+"C:\Program Files\R\R-4.5.1\bin\Rscript.exe" scripts\core\create_final_dashboard.R
+if %errorlevel% neq 0 (
+    echo [WARNING] Dashboard creation had issues, continuing...
+) else (
+    echo [OK] Final Excel dashboard created
+)
+echo.
+
+REM =============================================================================
+REM STEP 13: GENERATE HTML DASHBOARD VISUALIZATIONS
+REM =============================================================================
+
+echo ========================================
+echo STEP 13: GENERATING HTML DASHBOARD
+echo ========================================
+echo.
+echo Generating visualization plots and HTML dashboard...
+echo.
+
+"C:\Program Files\R\R-4.5.1\bin\Rscript.exe" scripts\evaluation\generate_dashboard_visualizations.R
+if %errorlevel% neq 0 (
+    echo [WARNING] HTML dashboard generation had issues, continuing...
+) else (
+    echo [OK] HTML dashboard visualizations generated
+)
+echo.
+
+REM =============================================================================
+REM SUMMARY
+REM =============================================================================
+
+echo.
+echo ========================================
+echo PIPELINE COMPLETED
+echo ========================================
+echo.
+echo Results saved to:
+echo   - results\consolidated\NF_GARCH_Results_manual.xlsx
+echo   - results\consolidated\NF_vs_Standard_GARCH_Comparison.xlsx
+echo   - results\consolidated\Distributional_Metrics.xlsx
+echo   - results\consolidated\Stylized_Facts.xlsx
+echo   - results\consolidated\VaR_Backtesting.xlsx
+echo   - results\consolidated\Stress_Testing.xlsx
+echo   - results\consolidated\Final_Dashboard.xlsx (Excel dashboard)
+echo   - results\dashboard_visualizations.html (Interactive HTML dashboard)
+echo   - results\dashboard_plots\ (13 visualization plots)
+echo   - results\diagnostics\ (investigation summaries)
+echo.
+echo Next steps:
+echo   1. Review results in: results\consolidated\
+echo   2. Check comparison: NF_vs_Standard_GARCH_Comparison.xlsx
+echo   3. View comprehensive dashboards:
+echo      - Excel: Final_Dashboard.xlsx (includes all metrics)
+echo      - HTML: dashboard_visualizations.html (interactive with plots)
+echo   4. Review distributional metrics: Distributional_Metrics.xlsx
+echo   5. Review stylized facts: Stylized_Facts.xlsx
+echo   6. Review VaR backtesting: VaR_Backtesting.xlsx
+echo   7. Review stress testing: Stress_Testing.xlsx
+echo   8. Run: start_research_dashboard.bat (opens HTML dashboard in browser)
+echo.
+echo ========================================
 echo.
 pause

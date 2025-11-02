@@ -1,4 +1,4 @@
-name: Deploy to GitHub Pages
+name: Update Results Site
 
 on:
   push:
@@ -7,18 +7,9 @@ on:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
-
-concurrency:
-  group: "pages"
-  cancel-in-progress: false
 
 jobs:
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+  update-manifest:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -29,22 +20,24 @@ jobs:
         with:
           python-version: '3.9'
           
-      - name: Install dependencies
+      - name: Generate manifest
         run: |
-          pip install pandas numpy openpyxl plotly jinja2 pyyaml
+          python tools/generate_results_site.py
           
-      - name: Build results and dashboard
+      - name: Check for changes
+        id: changes
         run: |
-          python tools/build_results.py
+          if git diff --quiet docs/manifest.json; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+          fi
           
-      - name: Setup Pages
-        uses: actions/configure-pages@v3
-        
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v2
-        with:
-          path: './docs'
-          
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v2
+      - name: Commit changes
+        if: steps.changes.outputs.changed == 'true'
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add docs/manifest.json
+          git commit -m "chore: update results site manifest [skip ci]"
+          git push

@@ -30,14 +30,14 @@ resolve_conflicts <- function() {
   # Suppress warnings for known conflicts
   options(xts.warn_dplyr_breaks_lag = FALSE)
   
-  cat("✓ Package conflicts resolved\n")
+  cat("[OK] Package conflicts resolved\n")
 }
 
 # Initialize pipeline with conflict resolution
 initialize_pipeline <- function() {
   cat("Initializing pipeline with conflict resolution...\n")
   resolve_conflicts()
-  cat("✓ Pipeline initialization complete\n")
+  cat("[OK] Pipeline initialization complete\n")
 }
 
 # =============================================================================
@@ -50,7 +50,7 @@ parse_cli_args <- function() {
   
   # Default values
   config <- list(
-    engine = "rugarch",
+    engine = "manual",  # Only manual engine available (rugarch removed)
     verbose = FALSE,
     debug = FALSE
   )
@@ -117,7 +117,7 @@ safe_write_csv <- function(data, file_path, ...) {
     }
     
     write.csv(data, file_path, ...)
-    cat("✓ File written successfully:", file_path, "\n")
+    cat("[OK] File written successfully:", file_path, "\n")
   }, error = function(e) {
     stop("Error writing file ", file_path, ": ", e$message)
   })
@@ -127,7 +127,7 @@ safe_write_csv <- function(data, file_path, ...) {
 ensure_directory <- function(dir_path) {
   if (!dir.exists(dir_path)) {
     dir.create(dir_path, recursive = TRUE)
-    cat("✓ Directory created:", dir_path, "\n")
+    cat("[OK] Directory created:", dir_path, "\n")
   }
   return(dir_path)
 }
@@ -339,7 +339,7 @@ save_enhanced_plot <- function(plot, filename, width = 10, height = 8,
     format = format
   )
   
-  cat("✓ Plot saved:", filename, "\n")
+  cat("[OK] Plot saved:", filename, "\n")
 }
 
 # =============================================================================
@@ -462,7 +462,7 @@ export_to_excel <- function(data_list, filename, sheet_names = NULL) {
   
   # Save workbook
   saveWorkbook(wb, filename, overwrite = TRUE)
-  cat("✓ Excel file saved:", filename, "\n")
+  cat("[OK] Excel file saved:", filename, "\n")
 }
 
 # Export results to LaTeX table
@@ -474,7 +474,7 @@ export_to_latex <- function(data, filename, caption = NULL, label = NULL) {
   
   # Save to file
   print(latex_table, file = filename, include.rownames = FALSE)
-  cat("✓ LaTeX table saved:", filename, "\n")
+  cat("[OK] LaTeX table saved:", filename, "\n")
 }
 
 # =============================================================================

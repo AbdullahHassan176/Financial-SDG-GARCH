@@ -133,7 +133,7 @@ fit_egarch_manual <- function(returns, dist = c("norm", "std"), init = NULL) {
       par = init,
       fn = neg_ll,
       method = "L-BFGS-B",
-      control = list(maxit = 500, factr = 1e8)  # More relaxed tolerance
+      control = list(maxit = 150, factr = 1e6)  # Faster optimization
     )
     if (opt_result$value < best_value) {
       best_result <- opt_result
@@ -150,7 +150,7 @@ fit_egarch_manual <- function(returns, dist = c("norm", "std"), init = NULL) {
         par = init,
         fn = neg_ll,
         method = "Nelder-Mead",
-        control = list(maxit = 1000)
+        control = list(maxit = 200)
       )
       if (opt_result$value < best_value) {
         best_result <- opt_result
@@ -179,7 +179,7 @@ fit_egarch_manual <- function(returns, dist = c("norm", "std"), init = NULL) {
         par = simple_init,
         fn = neg_ll,
         method = "Nelder-Mead",
-        control = list(maxit = 500)
+        control = list(maxit = 150)
       )
       if (opt_result$value < best_value) {
         best_result <- opt_result

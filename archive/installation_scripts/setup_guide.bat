@@ -8,7 +8,7 @@ echo This guide will help you set up and run the NF-GARCH pipeline.
 echo.
 
 echo Step 1: Check if R is installed...
-Rscript --version >nul 2>&1
+"C:\Program Files\R\R-4.5.1\bin\Rscript.exe" --version >nul 2>&1
 if %errorlevel% equ 0 (
     echo ✓ R is installed and working
 ) else (
@@ -33,7 +33,7 @@ if %errorlevel% equ 0 (
 echo.
 echo Step 3: Install required packages...
 echo Installing R packages...
-Rscript quick_install.R
+"C:\Program Files\R\R-4.5.1\bin\Rscript.exe" quick_install.R
 if %errorlevel% neq 0 (
     echo WARNING: R package installation had issues
 )

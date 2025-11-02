@@ -6,7 +6,7 @@
 # MODEL CONFIGURATION
 # =============================================================================
 
-# GARCH Model Specifications
+# Standard GARCH Model Specifications
 GARCH_MODELS <- list(
   sGARCH_norm = list(
     model = "sGARCH",
@@ -35,24 +35,21 @@ GARCH_MODELS <- list(
   )
 )
 
-# NF-GARCH Model Specifications  
+# NF-GARCH Model Specifications (using NF residuals)
 NF_GARCH_MODELS <- list(
-  "NF--sGARCH" = list(
-    base_model = "sGARCH",
-    description = "Normalizing Flow with Standard GARCH"
-  ),
-  "NF--eGARCH" = list(
-    base_model = "eGARCH", 
-    description = "Normalizing Flow with Exponential GARCH"
-  ),
-  "NF--gjrGARCH" = list(
-    base_model = "gjrGARCH",
-    description = "Normalizing Flow with GJR-GARCH"
-  ),
-  "NF--TGARCH" = list(
-    base_model = "TGARCH",
+  "NF_tGarch" = list(
+    model = "NF_tGarch",
+    distribution = "sstd",
+    submodel = "TGARCH",
     description = "Normalizing Flow with Threshold GARCH"
   )
+)
+
+# Engine Configuration - Manual engine only
+ENGINE_CONFIG <- list(
+  standard_garch_engine = "manual",
+  nf_garch_engine = "manual",
+  results_dir = "results/manual_results"
 )
 
 # =============================================================================
@@ -92,7 +89,8 @@ ASSET_METADATA <- list(
 # Excel sheet schemas for validation
 OUTPUT_SCHEMAS <- list(
   Model_Performance_Summary = c(
-    "Model", "Source", "Avg_AIC", "Avg_BIC", "Avg_LogLik", "Avg_MSE", "Avg_MAE"
+    "Model", "Model_Family", "Engine", "Split_Type", "Source", 
+    "Avg_AIC", "Avg_BIC", "Avg_LogLik", "Avg_MSE", "Avg_MAE"
   ),
   VaR_Performance_Summary = c(
     "Model", "Asset", "Confidence_Level", "Total_Obs", "Expected_Rate", 
@@ -111,111 +109,28 @@ OUTPUT_SCHEMAS <- list(
 )
 
 # =============================================================================
-# PIPELINE CONFIGURATION
+# CURRENT PIPELINE STRUCTURE
 # =============================================================================
 
-# Pipeline steps and dependencies
-PIPELINE_STEPS <- list(
-  nf_residual_generation = list(
-    description = "Generate NF residuals",
-    dependencies = c(),
-    script = "scripts/core/nf_residuals.R"
-  ),
-  eda = list(
-    description = "Exploratory Data Analysis",
-    dependencies = c(),
-    script = "scripts/core/eda.R"
-  ),
-  data_prep = list(
-    description = "Data preparation and preprocessing",
-    dependencies = c(),
-    script = "scripts/core/data_prep.R"
-  ),
-  garch_fitting = list(
-    description = "Fit classical GARCH models",
-    dependencies = c("data_prep"),
-    script = "scripts/core/garch_fitting.R"
-  ),
-  residual_extraction = list(
-    description = "Extract GARCH residuals",
-    dependencies = c("garch_fitting"),
-    script = "scripts/core/residual_extraction.R"
-  ),
-  nf_training = list(
-    description = "Train Normalizing Flow models",
-    dependencies = c("residual_extraction"),
-    script = "scripts/core/nf_training.R"
-  ),
-  nf_evaluation = list(
-    description = "Evaluate NF models",
-    dependencies = c("nf_training"),
-    script = "scripts/core/nf_evaluation.R"
-  ),
-  nf_garch_manual = list(
-    description = "NF-GARCH simulation with manual engine",
-    dependencies = c("nf_evaluation"),
-    script = "scripts/core/simulation.R"
-  ),
-  nf_garch_rugarch = list(
-    description = "NF-GARCH simulation with rugarch engine", 
-    dependencies = c("nf_evaluation"),
-    script = "scripts/core/simulation.R"
-  ),
-  legacy_nf_garch = list(
-    description = "Legacy NF-GARCH simulation",
-    dependencies = c("nf_evaluation"),
-    script = "scripts/core/simulation.R"
-  ),
-  forecasting = list(
-    description = "Generate forecasts",
-    dependencies = c("garch_fitting", "nf_evaluation"),
-    script = "scripts/core/forecasting.R"
-  ),
-  forecast_evaluation = list(
-    description = "Evaluate forecasts",
-    dependencies = c("forecasting"),
-    script = "scripts/core/forecast_evaluation.R"
-  ),
-  stylized_facts = list(
-    description = "Compute stylized facts",
-    dependencies = c("garch_fitting", "nf_evaluation"),
-    script = "scripts/core/stylized_facts.R"
-  ),
-  var_backtesting = list(
-    description = "VaR backtesting for classical models",
-    dependencies = c("garch_fitting"),
-    script = "scripts/core/backtesting.R"
-  ),
-  nfgarch_var_backtesting = list(
-    description = "VaR backtesting for NF-GARCH models",
-    dependencies = c("nf_garch_manual", "nf_garch_rugarch"),
-    script = "scripts/core/backtesting.R"
-  ),
-  stress_testing = list(
-    description = "Stress testing for classical models",
-    dependencies = c("garch_fitting"),
-    script = "scripts/core/stress_testing.R"
-  ),
-  nfgarch_stress_testing = list(
-    description = "Stress testing for NF-GARCH models",
-    dependencies = c("nf_garch_manual", "nf_garch_rugarch"),
-    script = "scripts/core/stress_testing.R"
-  ),
-  final_summary = list(
-    description = "Generate final summaries",
-    dependencies = c("var_backtesting", "stress_testing", "nfgarch_var_backtesting", "nfgarch_stress_testing"),
-    script = "scripts/core/summary.R"
-  ),
-  consolidation = list(
-    description = "Consolidate all results",
-    dependencies = c("final_summary"),
-    script = "scripts/core/consolidation.R"
-  ),
-  validation = list(
-    description = "Validate pipeline outputs",
-    dependencies = c("consolidation"),
-    script = "scripts/core/validation.R"
-  )
+# Current pipeline scripts (as used by run_all.bat and run_modular.bat)
+CURRENT_PIPELINE_SCRIPTS <- list(
+  pipeline_diagnostic = "scripts/utils/pipeline_diagnostic.R",
+  eda = "scripts/eda/eda_summary_stats.R",
+  garch_fitting = "scripts/model_fitting/fit_garch_models.R",
+  residual_extraction = "scripts/model_fitting/extract_residuals.R",
+  nf_training = "scripts/model_fitting/train_nf_models.py",
+  nf_evaluation = "scripts/model_fitting/evaluate_nf_fit.py",
+  nf_garch_manual = "scripts/simulation_forecasting/simulate_nf_garch_engine.R",
+  forecasting = "scripts/simulation_forecasting/forecast_garch_variants.R",
+  forecast_evaluation = "scripts/evaluation/wilcoxon_winrate_analysis.R",
+  stylized_facts = "scripts/evaluation/stylized_fact_tests.R",
+  var_backtesting = "scripts/evaluation/var_backtesting.R",
+  nfgarch_var_backtesting = "scripts/evaluation/nfgarch_var_backtesting.R",
+  stress_testing = "scripts/stress_tests/evaluate_under_stress.R",
+  nfgarch_stress_testing = "scripts/evaluation/nfgarch_stress_testing.R",
+  consolidation = "scripts/core/consolidation.R",
+  validation = "scripts/utils/validate_pipeline.py",
+  appendix_log = "scripts/utils/generate_appendix_log.py"
 )
 
 # =============================================================================
@@ -224,7 +139,7 @@ PIPELINE_STEPS <- list(
 
 # Input data paths
 DATA_PATHS <- list(
-  raw_data = "data/processed/raw (FX + EQ).csv",
+  raw_data = "data/processed/combined_data.csv",
   nf_residuals_dir = "nf_generated_residuals",
   checkpoints_dir = "checkpoints"
 )
@@ -237,7 +152,9 @@ OUTPUT_PATHS <- list(
   var_backtest = "outputs/var_backtest",
   stress_tests = "outputs/stress_tests",
   consolidated_results = "outputs/Consolidated_NF_GARCH_Results.xlsx",
-  dissertation_results = "outputs/Dissertation_Consolidated_Results.xlsx"
+  dissertation_results = "outputs/Dissertation_Consolidated_Results.xlsx",
+  # Results paths
+  manual_results = "results/manual_results"
 )
 
 # =============================================================================
@@ -250,6 +167,15 @@ SIMULATION_PARAMS <- list(
   forecast_horizon = 10,
   confidence_levels = c(0.95, 0.99),
   seed = 12345
+)
+
+# OPTIMIZED TSCV PARAMETERS for speed
+TSCV_OPTIMIZATION <- list(
+  window_size = 500,
+  step_size = 150,  # Increased from 50 for speed
+  forecast_horizon = 20,  # Reduced from 40 for speed
+  max_windows = 4,  # Limit to 3-4 non-overlapping windows
+  parallel_cores = 4  # Use up to 4 cores for parallel processing
 )
 
 # =============================================================================
@@ -268,19 +194,28 @@ VALIDATION_THRESHOLDS <- list(
 # UTILITY FUNCTIONS
 # =============================================================================
 
-# Get all model names (classical + NF)
+# Get all model names (standard GARCH + NF-GARCH)
 get_all_models <- function() {
   c(names(GARCH_MODELS), names(NF_GARCH_MODELS))
 }
 
-# Get classical models only
-get_classical_models <- function() {
+# Get standard GARCH models only
+get_standard_garch_models <- function() {
   names(GARCH_MODELS)
 }
 
-# Get NF models only  
-get_nf_models <- function() {
+# Get NF-GARCH models only  
+get_nf_garch_models <- function() {
   names(NF_GARCH_MODELS)
+}
+
+# Get current pipeline script paths
+get_pipeline_script <- function(step_name) {
+  if (step_name %in% names(CURRENT_PIPELINE_SCRIPTS)) {
+    return(CURRENT_PIPELINE_SCRIPTS[[step_name]])
+  } else {
+    stop("Unknown pipeline step: ", step_name)
+  }
 }
 
 # Get assets by type
@@ -313,12 +248,15 @@ validate_schema <- function(data, schema_name) {
 # Print configuration summary
 print_config_summary <- function() {
   cat("=== FINANCIAL-SDG-GARCH CONFIGURATION SUMMARY ===\n")
-  cat("Classical GARCH Models:", length(GARCH_MODELS), "\n")
+  cat("Standard GARCH Models:", length(GARCH_MODELS), "\n")
   cat("NF-GARCH Models:", length(NF_GARCH_MODELS), "\n")
   cat("FX Assets:", length(ASSETS$fx), "\n")
   cat("Equity Assets:", length(ASSETS$equity), "\n")
-  cat("Pipeline Steps:", length(PIPELINE_STEPS), "\n")
+  cat("Current Pipeline Scripts:", length(CURRENT_PIPELINE_SCRIPTS), "\n")
   cat("Output Schemas:", length(OUTPUT_SCHEMAS), "\n")
+  cat("Engine Configuration:\n")
+  cat("  - Standard GARCH Engine:", ENGINE_CONFIG$standard_garch_engine, "\n")
+  cat("  - NF-GARCH Engine:", ENGINE_CONFIG$nf_garch_engine, "\n")
   cat("================================================\n")
 }
 

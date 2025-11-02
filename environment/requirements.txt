@@ -6,4 +6,6 @@ seaborn>=0.11.0
 torch>=1.9.0
 torchvision>=0.10.0
 pyyaml>=5.4.0
-pathlib2>=2.3.0
+openpyxl>=3.0.0
+plotly>=5.0.0
+nflows>=0.14.0
